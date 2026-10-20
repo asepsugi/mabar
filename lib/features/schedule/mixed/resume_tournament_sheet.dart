@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -36,37 +34,24 @@ class _ResumeTournamentSheet extends ConsumerStatefulWidget {
 }
 
 class _ResumeTournamentSheetState extends ConsumerState<_ResumeTournamentSheet> {
-  static const _hourOptions = [0, 1, 2, 3];
+  static const _maxExtraHours = 6;
 
   /// Tambahan jam per court id.
   final Map<String, int> _extraHours = {};
 
   ActiveTournament get _source => widget.source;
 
-  /// Round yang masih muat setelah ditambah — dihitung dari court yang paling
-  /// lama tersedia, karena round tetap jalan selama masih ada satu court.
-  int get _roundsAhead {
-    final duration = _source.config.matchDurationMinutes;
-    var best = 0;
-    for (final c in _source.config.courts) {
-      final minutes = _source.remainingBookingMinutes(c) + (_extraHours[c.id] ?? 0) * 60;
-      best = max(best, minutes ~/ duration);
-    }
-    return best;
-  }
+  Map<String, int> get _extraMinutes => {for (final e in _extraHours.entries) e.key: e.value * 60};
 
   void _resume() {
-    ref
-        .read(tournamentProvider.notifier)
-        .resume({
-          for (final e in _extraHours.entries) e.key: e.value * 60,
-        }, from: widget.archived ? _source : null);
+    ref.read(tournamentProvider.notifier).resume(_extraMinutes, from: widget.archived ? _source : null);
     Navigator.pop(context, true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final rounds = _roundsAhead;
+    final ahead = _source.capacityAhead(_extraMinutes);
+    final lastRound = _source.roundCount;
     final unplayed = _source.matches.where((m) => m.status == MatchStatus.cancelled).length;
 
     return SafeArea(
@@ -109,7 +94,7 @@ class _ResumeTournamentSheetState extends ConsumerState<_ResumeTournamentSheet> 
                       ),
                     ),
                     Text(
-                      'Skor & peringkat R1–R${_source.roundCount} tetap',
+                      'Skor & peringkat ${lastRound == 1 ? 'R1' : 'R1–R$lastRound'} tetap',
                       style: const TextStyle(fontSize: 11, color: MabarColors.text4),
                     ),
                   ],
@@ -122,28 +107,38 @@ class _ResumeTournamentSheetState extends ConsumerState<_ResumeTournamentSheet> 
               _CourtExtensionRow(
                 court: c,
                 remainingMinutes: _source.remainingBookingMinutes(c),
-                options: _hourOptions,
-                selected: _extraHours[c.id] ?? 0,
-                onSelect: (h) => setState(() => _extraHours[c.id] = h),
+                extraHours: _extraHours[c.id] ?? 0,
+                maxHours: _maxExtraHours,
+                onChanged: (h) => setState(() => _extraHours[c.id] = h),
               ),
             const SizedBox(height: MabarSpacing.x4),
             MabarInfoBox(
-              variant: rounds > 0 ? MabarInfoVariant.success : MabarInfoVariant.warning,
-              icon: rounds > 0 ? Icons.all_inclusive : Icons.timer_off_outlined,
-              title: rounds > 0 ? 'Cukup untuk $rounds round lagi' : 'Tambah jam minimal satu court',
-              caption: unplayed > 0 ? '$unplayed match yang belum dimainkan bisa diisi skornya lagi' : null,
+              variant: ahead.matches > 0 ? MabarInfoVariant.success : MabarInfoVariant.warning,
+              icon: ahead.matches > 0 ? Icons.all_inclusive : Icons.timer_off_outlined,
+              title: ahead.matches > 0 ? 'Cukup untuk ${ahead.matches} match lagi' : 'Tambah jam minimal satu court',
+              caption: [
+                if (ahead.rounds > 0) '${ahead.rounds} round (R${lastRound + 1}–R${lastRound + ahead.rounds})',
+                // Court yang lebih cepat habis — round sesudahnya main dengan court lebih sedikit.
+                if (ahead.fullRounds < ahead.rounds)
+                  'mulai R${lastRound + ahead.fullRounds + 1} court berkurang',
+                if (unplayed > 0) '$unplayed match yang belum dimainkan bisa diisi skornya lagi',
+              ].join(' · ').ifNotEmpty,
             ),
             const SizedBox(height: MabarSpacing.x4),
             MabarPrimaryButton(
               label: 'Lanjutkan',
               icon: Icons.play_arrow_rounded,
-              onPressed: rounds > 0 || unplayed > 0 ? _resume : null,
+              onPressed: ahead.matches > 0 || unplayed > 0 ? _resume : null,
             ),
           ],
         ),
       ),
     );
   }
+}
+
+extension on String {
+  String? get ifNotEmpty => isEmpty ? null : this;
 }
 
 /// 200 → "3j 20m", 60 → "1j", 45 → "45m".
@@ -157,20 +152,21 @@ String _duration(int minutes) {
 class _CourtExtensionRow extends StatelessWidget {
   final Court court;
   final int remainingMinutes;
-  final List<int> options;
-  final int selected;
-  final ValueChanged<int> onSelect;
+  final int extraHours;
+  final int maxHours;
+  final ValueChanged<int> onChanged;
 
   const _CourtExtensionRow({
     required this.court,
     required this.remainingMinutes,
-    required this.options,
-    required this.selected,
-    required this.onSelect,
+    required this.extraHours,
+    required this.maxHours,
+    required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
+    final remaining = remainingMinutes > 0 ? 'Sisa ${_duration(remainingMinutes)}' : 'Waktu habis';
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: const BoxDecoration(
@@ -187,20 +183,13 @@ class _CourtExtensionRow extends StatelessWidget {
                 Row(children: [CourtBadge(court: court)]),
                 const SizedBox(height: 4),
                 Text(
-                  remainingMinutes > 0 ? 'Sisa ${_duration(remainingMinutes)}' : 'Waktu habis',
+                  extraHours == 0 ? remaining : '$remaining → ${_duration(remainingMinutes + extraHours * 60)}',
                   style: const TextStyle(fontSize: 11, color: MabarColors.text4),
                 ),
               ],
             ),
           ),
-          for (final h in options) ...[
-            const SizedBox(width: 5),
-            MabarChip(
-              label: h == 0 ? '0' : '+${h}j',
-              variant: selected == h ? MabarChipVariant.active : MabarChipVariant.filled,
-              onTap: () => onSelect(h),
-            ),
-          ],
+          MabarStepper(value: extraHours, min: 0, max: maxHours, unit: 'jam', onChanged: onChanged),
         ],
       ),
     );

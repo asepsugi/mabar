@@ -335,58 +335,8 @@ class _CourtCountRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const Text('Jumlah court', style: TextStyle(fontSize: 12, color: MabarColors.text3)),
-        Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(color: MabarColors.raised, borderRadius: BorderRadius.circular(MabarRadius.xl)),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _StepperButton(label: '−', enabled: count > min, onTap: () => onChanged(count - 1)),
-              SizedBox(
-                width: 40,
-                child: Text(
-                  '$count',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: MabarColors.text1),
-                ),
-              ),
-              _StepperButton(label: '+', enabled: count < max, onTap: () => onChanged(count + 1)),
-            ],
-          ),
-        ),
+        MabarStepper(value: count, min: min, max: max, onChanged: onChanged),
       ],
-    );
-  }
-}
-
-class _StepperButton extends StatelessWidget {
-  final String label;
-  final bool enabled;
-  final VoidCallback onTap;
-
-  const _StepperButton({required this.label, required this.enabled, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Opacity(
-      opacity: enabled ? 1 : 0.3,
-      child: GestureDetector(
-        onTap: enabled ? onTap : null,
-        child: Container(
-          width: 36,
-          height: 36,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: MabarColors.card,
-            borderRadius: BorderRadius.circular(MabarRadius.md),
-            boxShadow: MabarShadows.sm,
-          ),
-          child: Text(
-            label,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: MabarColors.text2),
-          ),
-        ),
-      ),
     );
   }
 }

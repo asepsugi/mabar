@@ -127,4 +127,23 @@ void main() {
     controller.resume({'c1': 60}, from: fixed);
     expect(read().config.mode, PartnerMode.mixed, reason: 'state tidak berubah');
   });
+
+  test('estimasi: tambahan di court yang lebih pendek tetap mengubah jumlah match', () {
+    // Setelah R1: Court 1 habis, Court 2 sisa 20 menit (2 round).
+    expect(read().capacityAhead(), (rounds: 2, matches: 2, fullRounds: 0));
+
+    // Court 1 +1 jam = 6 round; R2–R3 dua court, R4–R7 satu court.
+    expect(read().capacityAhead({'c1': 60}), (rounds: 6, matches: 8, fullRounds: 2));
+    // Court 2 ikut ditambah: jumlah round sama (Court 1 tetap terpanjang), match bertambah.
+    expect(read().capacityAhead({'c1': 60, 'c2': 30}), (rounds: 6, matches: 11, fullRounds: 5));
+  });
+
+  test('estimasi: match per round dibatasi jumlah pemain', () {
+    for (var i = 0; i < 4; i++) {
+      controller.withdrawPlayer('p$i');
+    }
+    expect(read().activePlayers, hasLength(4));
+    // 4 pemain = 1 match per round meski dua court masih ada waktunya.
+    expect(read().capacityAhead({'c1': 60, 'c2': 60}), (rounds: 8, matches: 8, fullRounds: 6));
+  });
 }

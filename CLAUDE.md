@@ -37,7 +37,7 @@ Konvensi: komentar seperlunya dan dalam bahasa Indonesia, menjelaskan *kenapa*. 
 
 Alur penuh jalan: Home → Peserta → Konfigurasi → Pasangan (Fixed) / Mode Endless (Mixed) → Jadwal 6a/6b → Input Skor + sheet WO → Peringkat → Detail Pemain → Share.
 
-Mesin domain yang sudah ada + ter-test (70 test lulus, `flutter analyze` bersih kecuali 2 info lint lama di `models.dart`):
+Mesin domain yang sudah ada + ter-test (72 test lulus, `flutter analyze` bersih kecuali 2 info lint lama di `models.dart`):
 - `pairing/player_name_parser.dart` — parser textarea nama.
 - `pairing/pair_generator.dart` — pasangan Fixed (acak/manual), sisa pemain ganjil.
 - `schedule/round_robin_generator.dart` — circle method. **Invariant:** satu putaran circle dipotong jadi beberapa round sebesar jumlah court, tidak pernah menggabungkan dua putaran (kalau digabung, satu pair bisa main di dua lapangan bersamaan).
@@ -86,7 +86,8 @@ Seluruh MVP PRD sudah jalan, termasuk bagian 5 (Penyimpanan Data).
   oleh `close()` supaya Beranda tidak menunggu tulisan ke device). Jam ditambah **per court** karena sering cuma
   sebagian court yang bisa diperpanjang, dan dihitung dari akhir round terakhir: `max(booking, round × durasi) + tambahan`
   — court yang waktunya sudah lama habis tetap dapat jam penuh. Match `cancelled` (hanya dibuat oleh "Akhiri")
-  kembali `pending`. Header Jadwal menampilkan booking court **terpanjang** karena sesi baru selesai saat court terakhir habis.
+  kembali `pending`. Estimasi di sheet = `ActiveTournament.capacityAhead` dalam **jumlah match** (bukan round: round jalan
+  selama masih ada satu court, jadi cuma mengikuti court terpanjang dan tambahan di court lain tidak kelihatan). Header Jadwal menampilkan booking court **terpanjang** karena sesi baru selesai saat court terakhir habis.
 - Slot aktif cuma satu, jadi memilih jenis permainan di Home saat ada turnamen berjalan memunculkan
   konfirmasi dulu ("Buang & Mulai Baru").
 - Belum ikut disimpan: `rankingMethodProvider` — setelah resume, metode peringkat kembali ke

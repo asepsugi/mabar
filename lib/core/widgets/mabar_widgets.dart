@@ -420,3 +420,89 @@ class MabarStatusBadge extends StatelessWidget {
     );
   }
 }
+
+/// Stepper − n + (mis. "Jumlah court" di Konfigurasi, tambahan jam court).
+/// [unit] ditulis kecil di sebelah angka, mis. "2 jam".
+class MabarStepper extends StatelessWidget {
+  final int value;
+  final int min;
+  final int max;
+  final String? unit;
+  final ValueChanged<int> onChanged;
+
+  const MabarStepper({
+    super.key,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+    this.unit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(color: MabarColors.raised, borderRadius: BorderRadius.circular(MabarRadius.xl)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _StepperButton(label: '−', enabled: value > min, onTap: () => onChanged(value - 1)),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 40),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Text.rich(
+                TextSpan(
+                  text: '$value',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: MabarColors.text1),
+                  children: [
+                    if (unit != null)
+                      TextSpan(
+                        text: ' $unit',
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: MabarColors.text3),
+                      ),
+                  ],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          _StepperButton(label: '+', enabled: value < max, onTap: () => onChanged(value + 1)),
+        ],
+      ),
+    );
+  }
+}
+
+class _StepperButton extends StatelessWidget {
+  final String label;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _StepperButton({required this.label, required this.enabled, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: enabled ? 1 : 0.3,
+      child: GestureDetector(
+        onTap: enabled ? onTap : null,
+        child: Container(
+          width: 36,
+          height: 36,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: MabarColors.card,
+            borderRadius: BorderRadius.circular(MabarRadius.md),
+            boxShadow: MabarShadows.sm,
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: MabarColors.text2),
+          ),
+        ),
+      ),
+    );
+  }
+}

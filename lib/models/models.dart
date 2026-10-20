@@ -322,11 +322,31 @@ class ActiveTournament {
     return left < 0 ? 0 : left;
   }
 
+  /// Perkiraan round & match yang masih muat kalau tiap court ditambah
+  /// [extraMinutes] (per court id). Round jalan selama masih ada satu court,
+  /// jadi jumlah round cuma mengikuti court terpanjang — jumlah match-lah yang
+  /// mencerminkan tambahan di tiap court. Match per round juga dibatasi pemain.
+  ({int rounds, int matches, int fullRounds}) capacityAhead([Map<String, int> extraMinutes = const {}]) {
+    final perCourt = [
+      for (final c in config.courts)
+        (remainingBookingMinutes(c) + (extraMinutes[c.id] ?? 0)) ~/ config.matchDurationMinutes,
+    ];
+    final matchesPerRound = activePlayers.length ~/ 4;
+    var rounds = 0, matches = 0, fullRounds = 0;
+    for (var r = 1; ; r++) {
+      final courts = perCourt.where((n) => n >= r).length;
+      if (courts == 0) break;
+      rounds = r;
+      matches += courts < matchesPerRound ? courts : matchesPerRound;
+      if (courts == perCourt.length) fullRounds = r;
+    }
+    return (rounds: rounds, matches: matches, fullRounds: fullRounds);
+  }
+
   /// Mode Mixed: turnamen yang sudah diakhiri atau kehabisan waktu booking
   /// bisa dilanjutkan dengan menambah jam court.
   bool get canResume =>
-      config.mode == PartnerMode.mixed &&
-      (tournament.isFinished || courtsAvailableForRound(roundCount + 1).isEmpty);
+      config.mode == PartnerMode.mixed && (tournament.isFinished || courtsAvailableForRound(roundCount + 1).isEmpty);
 
   /// Mode Mixed: round terakhir boleh dibatalkan & dibuat ulang selama belum
   /// ada satu skor pun (mis. pemain baru datang dan ingin langsung main).
