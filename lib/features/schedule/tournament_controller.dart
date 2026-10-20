@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -225,7 +226,46 @@ class TournamentController extends Notifier<ActiveTournament?> {
   Future<void> close() async {
     final current = state;
     state = null;
-    if (current != null) await _store.archiveActive(current);
+    if (current == null) return;
+    // Diset langsung, tidak menunggu tulisan ke device, supaya Beranda yang
+    // dibuka sesudahnya sudah menampilkan kartu "Turnamen terakhir".
+    ref.read(lastFinishedProvider.notifier).state = current;
+    await _store.archiveActive(current);
+  }
+
+  /// Mode Mixed: lanjutkan turnamen yang sudah diakhiri / kehabisan waktu,
+  /// tanpa mengulang. [from] diisi kalau turnamennya sudah ditutup (slot
+  /// "turnamen terakhir"); kosong berarti turnamen aktif.
+  ///
+  /// [extraMinutes] per court id dihitung dari akhir round terakhir, bukan
+  /// ditambahkan ke booking awal: court yang waktunya sudah lama habis tetap
+  /// dapat jam penuh. Match yang dibatalkan saat "Akhiri" kembali menunggu skor.
+  void resume(Map<String, int> extraMinutes, {ActiveTournament? from}) {
+    final current = from ?? state;
+    if (current == null || current.config.mode != PartnerMode.mixed) return;
+    // Turnamen yang sudah ditutup selalu boleh dibuka lagi, meski waktunya
+    // masih ada (host bisa menekan "Selesai" tanpa "Akhiri" dulu).
+    if (from == null && !current.canResume) return;
+
+    final used = current.roundCount * current.config.matchDurationMinutes;
+    final courts = [
+      for (final c in current.config.courts)
+        if ((extraMinutes[c.id] ?? 0) > 0)
+          c.copyWith(bookingDurationMinutes: max(c.bookingDurationMinutes, used) + extraMinutes[c.id]!)
+        else
+          c,
+    ];
+
+    state = current.copyWith(
+      tournament: current.tournament.copyWith(
+        isFinished: false,
+        config: current.config.copyWith(courts: courts),
+        matches: [
+          for (final m in current.matches)
+            if (m.status == MatchStatus.cancelled) m.copyWith(status: MatchStatus.pending) else m,
+        ],
+      ),
+    );
   }
 
   /// Hentikan turnamen: match yang belum dimainkan ditandai "tidak dimainkan"
@@ -242,6 +282,12 @@ class TournamentController extends Notifier<ActiveTournament?> {
     );
   }
 }
+
+/// Turnamen terakhir yang sudah ditutup (tombol "Selesai" di layar Bagikan).
+/// Mode Mixed bisa dilanjutkan dari kartu di Beranda.
+final lastFinishedProvider = StateProvider<ActiveTournament?>(
+  (ref) => ref.read(tournamentStoreProvider).loadLastFinished(),
+);
 
 final tournamentProvider = NotifierProvider<TournamentController, ActiveTournament?>(TournamentController.new);
 

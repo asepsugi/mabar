@@ -6,6 +6,7 @@ import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_brand_mark.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
+import '../schedule/mixed/resume_tournament_sheet.dart';
 import '../schedule/tournament_controller.dart';
 
 /// Screen 1 · Home — pilih jenis permainan (tidak ada default, wajib pilih).
@@ -16,6 +17,8 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Turnamen yang belum ditutup, dibaca dari device saat app dibuka.
     final active = ref.watch(tournamentProvider);
+    // Turnamen yang sudah ditutup; hanya Mixed yang bisa dilanjutkan.
+    final last = ref.watch(lastFinishedProvider);
     return Scaffold(
       backgroundColor: MabarColors.card,
       body: SafeArea(
@@ -36,7 +39,28 @@ class HomeScreen extends ConsumerWidget {
               const _Gutter(child: _QuickStats()),
               if (active != null) ...[
                 const SizedBox(height: MabarSpacing.x4),
-                _Gutter(child: _ResumeCard(active: active)),
+                _Gutter(
+                  child: _ResumeCard(
+                    title: 'Lanjutkan turnamen',
+                    active: active,
+                    // Config-nya dioper apa adanya supaya `startIfNeeded` mengenalinya sebagai
+                    // turnamen yang sama (perbandingannya `identical`) dan tidak menimpa state.
+                    onTap: () => context.push('/schedule', extra: active.config),
+                  ),
+                ),
+              ] else if (last != null && last.config.mode == PartnerMode.mixed) ...[
+                const SizedBox(height: MabarSpacing.x4),
+                _Gutter(
+                  child: _ResumeCard(
+                    title: 'Turnamen terakhir · tambah jam',
+                    active: last,
+                    onTap: () async {
+                      if (!await showResumeTournamentSheet(context, last, archived: true)) return;
+                      final resumed = ref.read(tournamentProvider);
+                      if (resumed != null && context.mounted) context.push('/schedule', extra: resumed.config);
+                    },
+                  ),
+                ),
               ],
               const Spacer(),
               const Text(
@@ -176,10 +200,13 @@ class _QuickStats extends StatelessWidget {
 }
 
 /// Jalan masuk kembali ke turnamen yang belum ditutup — tanpa kartu ini,
-/// turnamen yang di-resume dari device tidak bisa dicapai lagi.
+/// turnamen yang di-resume dari device tidak bisa dicapai lagi. Dipakai juga
+/// untuk melanjutkan turnamen Mixed yang sudah ditutup.
 class _ResumeCard extends StatelessWidget {
+  final String title;
   final ActiveTournament active;
-  const _ResumeCard({required this.active});
+  final VoidCallback onTap;
+  const _ResumeCard({required this.title, required this.active, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -187,9 +214,7 @@ class _ResumeCard extends StatelessWidget {
     final played = active.playedMatchCount;
 
     return GestureDetector(
-      // Config-nya dioper apa adanya supaya `startIfNeeded` mengenalinya sebagai
-      // turnamen yang sama (perbandingannya `identical`) dan tidak menimpa state.
-      onTap: () => context.push('/schedule', extra: active.config),
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(MabarSpacing.x4),
         decoration: BoxDecoration(
@@ -205,9 +230,9 @@ class _ResumeCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Lanjutkan turnamen',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: MabarColors.brandDark),
+                  Text(
+                    title,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: MabarColors.brandDark),
                   ),
                   const SizedBox(height: 2),
                   Text(

@@ -44,8 +44,10 @@ class ScheduleHeaderTitle extends StatelessWidget {
     return h > 0 ? '${h}j ${m}m' : '${m}m';
   }
 
+  /// Sesi baru selesai saat court terakhir habis — booking bisa beda per
+  /// court, apalagi setelah sebagian court diperpanjang (Lanjutkan Turnamen).
   String get _booking {
-    final minutes = active.config.courts.map((c) => c.bookingDurationMinutes).reduce((a, b) => a < b ? a : b);
+    final minutes = active.config.courts.map((c) => c.bookingDurationMinutes).reduce((a, b) => a > b ? a : b);
     final h = minutes ~/ 60;
     final m = minutes % 60;
     return m == 0 ? '${h}j' : '${h}j ${m}m';

@@ -37,7 +37,7 @@ Konvensi: komentar seperlunya dan dalam bahasa Indonesia, menjelaskan *kenapa*. 
 
 Alur penuh jalan: Home → Peserta → Konfigurasi → Pasangan (Fixed) / Mode Endless (Mixed) → Jadwal 6a/6b → Input Skor + sheet WO → Peringkat → Detail Pemain → Share.
 
-Mesin domain yang sudah ada + ter-test (64 test lulus, `flutter analyze` bersih kecuali 2 info lint lama di `models.dart`):
+Mesin domain yang sudah ada + ter-test (70 test lulus, `flutter analyze` bersih kecuali 2 info lint lama di `models.dart`):
 - `pairing/player_name_parser.dart` — parser textarea nama.
 - `pairing/pair_generator.dart` — pasangan Fixed (acak/manual), sisa pemain ganjil.
 - `schedule/round_robin_generator.dart` — circle method. **Invariant:** satu putaran circle dipotong jadi beberapa round sebesar jumlah court, tidak pernah menggabungkan dua putaran (kalau digabung, satu pair bisa main di dua lapangan bersamaan).
@@ -79,6 +79,14 @@ Seluruh MVP PRD sudah jalan, termasuk bagian 5 (Penyimpanan Data).
   awal yang masih dipegang layar konfirmasi Mixed di belakang jadwal); dua-duanya dianggap turnamen yang sama.
 - `close()` (tombol "Selesai" di layar Share) memindahkan turnamen ke slot `lastFinished`,
   tidak menghapusnya, sesuai PRD. Future-nya dikembalikan supaya test bisa menunggu tulisannya.
+- **Lanjutkan Turnamen** (Mixed saja; Fixed sengaja tidak — keputusan host): `TournamentController.resume`
+  + sheet `features/schedule/mixed/resume_tournament_sheet.dart`, tes di `test/services/resume_tournament_test.dart`.
+  Muncul kalau `ActiveTournament.canResume` (sudah "Akhiri" atau waktu booking semua court habis) di layar Jadwal,
+  dan dari kartu "Turnamen terakhir" di Beranda untuk slot `lastFinished` (`lastFinishedProvider`, diset sinkron
+  oleh `close()` supaya Beranda tidak menunggu tulisan ke device). Jam ditambah **per court** karena sering cuma
+  sebagian court yang bisa diperpanjang, dan dihitung dari akhir round terakhir: `max(booking, round × durasi) + tambahan`
+  — court yang waktunya sudah lama habis tetap dapat jam penuh. Match `cancelled` (hanya dibuat oleh "Akhiri")
+  kembali `pending`. Header Jadwal menampilkan booking court **terpanjang** karena sesi baru selesai saat court terakhir habis.
 - Slot aktif cuma satu, jadi memilih jenis permainan di Home saat ada turnamen berjalan memunculkan
   konfirmasi dulu ("Buang & Mulai Baru").
 - Belum ikut disimpan: `rankingMethodProvider` — setelah resume, metode peringkat kembali ke

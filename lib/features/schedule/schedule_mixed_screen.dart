@@ -8,6 +8,7 @@ import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
 import 'mixed/manage_players_sheet.dart';
+import 'mixed/resume_tournament_sheet.dart';
 import 'schedule_widgets.dart';
 import 'tournament_controller.dart';
 
@@ -161,27 +162,43 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: MabarSpacing.x5),
                 child: Column(
                   children: [
-                    if (!active.tournament.isFinished) ...[
-                      _GenerateButton(label: 'Buat R$nextRound', onPressed: canGenerate ? _generateNext : null),
+                    if (active.canResume) ...[
+                      _GenerateButton(
+                        label: 'Lanjutkan Turnamen',
+                        icon: Icons.more_time,
+                        onPressed: () => showResumeTournamentSheet(context, active),
+                      ),
                       const SizedBox(height: MabarSpacing.x2),
                       Text(
-                        _generateHint(canGenerate: canGenerate, courtsLeft: courtsLeft.length, lastRound: lastRound),
+                        active.tournament.isFinished
+                            ? 'Turnamen sudah diakhiri · tambah jam court untuk main lagi'
+                            : 'Waktu booking semua court sudah habis',
                         textAlign: TextAlign.center,
                         style: const TextStyle(fontSize: 11, color: MabarColors.text4),
                       ),
-                      if (active.canRedoLastRound)
-                        TextButton.icon(
-                          onPressed: () => _redoLastRound(active),
-                          icon: const Icon(Icons.refresh, size: 16),
-                          label: Text('Batalkan & buat ulang R$lastRound'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: MabarColors.text3,
-                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                        ),
-                      const SizedBox(height: MabarSpacing.x3),
+                    ] else if (!active.tournament.isFinished) ...[
+                      _GenerateButton(label: 'Buat R$nextRound', onPressed: canGenerate ? _generateNext : null),
+                      const SizedBox(height: MabarSpacing.x2),
+                      Text(
+                        _generateHint(canGenerate: canGenerate, lastRound: lastRound),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 11, color: MabarColors.text4),
+                      ),
                     ],
+                    if (active.canRedoLastRound)
+                      TextButton.icon(
+                        onPressed: () => _redoLastRound(active),
+                        icon: const Icon(Icons.refresh, size: 16),
+                        label: Text('Batalkan & buat ulang R$lastRound'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: MabarColors.text3,
+                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ),
+                    // Di mode Mixed selalu ada salah satu tombol di atas
+                    // (turnamen yang diakhiri selalu bisa dilanjutkan).
+                    const SizedBox(height: MabarSpacing.x3),
                     ScheduleFooterActions(
                       onRanking: () => context.push('/leaderboard'),
                       onFinish: _finish,
@@ -203,8 +220,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
     );
   }
 
-  static String _generateHint({required bool canGenerate, required int courtsLeft, required int lastRound}) {
-    if (courtsLeft == 0) return 'Waktu booking semua court sudah habis';
+  static String _generateHint({required bool canGenerate, required int lastRound}) {
     if (!canGenerate) return 'Isi semua skor R$lastRound dulu';
     return 'Pemain yang istirahat diprioritaskan di round berikutnya';
   }
@@ -213,9 +229,10 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
 /// `.btn.btn-outlined-brand` — tombol generate round berikutnya.
 class _GenerateButton extends StatelessWidget {
   final String label;
+  final IconData icon;
   final VoidCallback? onPressed;
 
-  const _GenerateButton({required this.label, this.onPressed});
+  const _GenerateButton({required this.label, this.icon = Icons.add, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -227,7 +244,7 @@ class _GenerateButton extends StatelessWidget {
         height: ScheduleFooterActions.height,
         child: OutlinedButton.icon(
           onPressed: onPressed,
-          icon: const Icon(Icons.add, size: 18),
+          icon: Icon(icon, size: 18),
           label: Text(label),
           style: OutlinedButton.styleFrom(
             backgroundColor: MabarColors.brandTint,

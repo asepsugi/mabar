@@ -199,11 +199,11 @@ class TournamentConfig {
 
   int get courtCount => courts.length;
 
-  TournamentConfig copyWith({List<Player>? players}) => TournamentConfig(
+  TournamentConfig copyWith({List<Player>? players, List<Court>? courts}) => TournamentConfig(
     sport: sport,
     mode: mode,
     matchDurationMinutes: matchDurationMinutes,
-    courts: courts,
+    courts: courts ?? this.courts,
     players: players ?? this.players,
     fixedPairs: fixedPairs,
   );
@@ -314,6 +314,19 @@ class ActiveTournament {
       !tournament.isFinished &&
       (roundCount == 0 || isRoundComplete(roundCount)) &&
       courtsAvailableForRound(roundCount + 1).isNotEmpty;
+
+  /// Sisa waktu booking [court] setelah round terakhir. Booking dihitung dari
+  /// awal turnamen, jadi round ke-n memakai menit sampai n × durasi match.
+  int remainingBookingMinutes(Court court) {
+    final left = court.bookingDurationMinutes - roundCount * config.matchDurationMinutes;
+    return left < 0 ? 0 : left;
+  }
+
+  /// Mode Mixed: turnamen yang sudah diakhiri atau kehabisan waktu booking
+  /// bisa dilanjutkan dengan menambah jam court.
+  bool get canResume =>
+      config.mode == PartnerMode.mixed &&
+      (tournament.isFinished || courtsAvailableForRound(roundCount + 1).isEmpty);
 
   /// Mode Mixed: round terakhir boleh dibatalkan & dibuat ulang selama belum
   /// ada satu skor pun (mis. pemain baru datang dan ingin langsung main).
