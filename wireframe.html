@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mabar — Wireframe Preview</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f2f5;
+    color: #111827;
+    padding: 32px 16px;
+  }
+  h1.page-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: #14532D;
+  }
+  p.page-sub {
+    text-align: center;
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 32px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .phone-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #14532D;
+    background: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .phone {
+    width: 100%;
+    max-width: 360px;
+    background: #ffffff;
+    border-radius: 28px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 6px solid #1f2937;
+  }
+  .screen {
+    padding: 18px 18px 24px;
+    min-height: 620px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+  }
+  .screen-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .back-btn { font-size: 13px; color: #6b7280; text-decoration: none; }
+  .step-num { font-size: 11px; color: #9ca3af; }
+  .brand-mark { text-align: center; margin: 32px 0; }
+  .brand-mark .icon { font-size: 48px; margin-bottom: 8px; }
+  .brand-mark .name { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+  .brand-mark .sub { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+  .big-btn {
+    background: #16a34a;
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+  }
+  .big-btn.secondary { background: transparent; color: #111827; border: 1.5px solid #e5e7eb; }
+  .label { font-size: 12px; color: #6b7280; font-weight: 500; margin-bottom: 6px; display: block; }
+  h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; }
+  input[type="text"], input[type="number"] {
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+  }
+  input:focus { border-color: #16a34a; }
+  .chip {
+    display: inline-block;
+    background: #f3f4f6;
+    color: #374151;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .chip.active { background: #16a34a; color: white; }
+  .player-list-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: #f9fafb;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+  .player-list-item .rm { color: #ef4444; cursor: pointer; }
+  .mode-card {
+    flex: 1;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px 12px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .mode-card.active { border-color: #16a34a; background: #f0fdf4; }
+  .mode-card .title { font-weight: 700; font-size: 14px; }
+  .mode-card .desc { font-size: 11px; color: #6b7280; margin-top: 4px; }
+  .pair-slot {
+    background: #f9fafb;
+    border: 1.5px dashed #d1d5db;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    font-size: 12px;
+    color: #9ca3af;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pair-slot.filled {
+    border-style: solid;
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #111827;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .pool-chip {
+    display: inline-block;
+    background: white;
+    border: 1.5px solid #e5e7eb;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin: 3px;
+    font-weight: 500;
+  }
+  .pool-chip.done { background: #f3f4f6; color: #d1d5db; border-color: #f3f4f6; text-decoration: line-through; }
+  .match-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .match-card.done { background: #f0fdf4; border-color: #86efac; }
+  .match-card.wo { background: #fef2f2; border-color: #fecaca; }
+  .match-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #9ca3af;
+    margin-bottom: 6px;
+  }
+  .match-teams { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .match-teams .team { flex: 1; font-weight: 600; }
+  .match-teams .vs { color: #d1d5db; font-size: 10px; }
+  .match-score {
+    text-align: center;
+    font-weight: 700;
+    color: #16a34a;
+    margin-top: 6px;
+    font-size: 14px;
+  }
+  .match-score.wo { color: #ef4444; }
+  .match-score.empty { color: #d1d5db; font-weight: 500; font-size: 12px; }
+  .score-input-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 24px 0;
+  }
+  .big-num-input {
+    width: 68px;
+    height: 68px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 30px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .big-num-input:focus { border-color: #16a34a; outline: none; }
+  .lb-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+  }
+  .lb-row.rank-1 { background: #f0fdf4; }
+  .lb-pos { width: 28px; font-weight: 700; font-size: 15px; }
+  .lb-pos.gold { color: #16a34a; }
+  .lb-name { flex: 1; font-weight: 600; font-size: 14px; }
+  .lb-stats { text-align: right; font-size: 12px; }
+  .lb-stats .pct { font-weight: 700; color: #111827; font-size: 14px; }
+  .lb-stats .rec { color: #9ca3af; font-size: 11px; }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .stat-box {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-box .val { font-size: 20px; font-weight: 700; }
+  .stat-box.pos .val { color: #16a34a; }
+  .stat-box .lbl { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+  .match-hist {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 12px;
+  }
+  .result-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+  .result-dot.w { background: #16a34a; }
+  .result-dot.l { background: #ef4444; }
+  .result-dot.wo { background: #f59e0b; }
+  .share-preview {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .share-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+  }
+  .share-row:last-child { border-bottom: none; }
+  .wa-btn {
+    background: #25D366;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 8px;
+  }
+  .info-box {
+    background: #fefce8;
+    border: 1px solid #fef9c3;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #92400e;
+    margin: 12px 0;
+  }
+  .info-box.ok {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #166534;
+  }
+  input[type="range"] { width: 100%; accent-color: #16a34a; }
+  code { background: #e5e7eb; padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">🎾 MABAR — Wireframe Preview</h1>
+<p class="page-sub">10 screen · design system hijau lapangan · Flutter target</p>
+
+<div class="grid">
+
+<!-- 1. HOME -->
+<div class="phone-wrap">
+  <div class="phone-label">1 · HOME</div>
+  <div class="phone"><div class="screen">
+    <div class="screen-header">
+      <span class="chip">v1.0</span>
+      <span style="font-size:14px;color:#9ca3af;">⋮</span>
+    </div>
+    <div class="brand-mark">
+      <div class="icon">🎾</div>
+      <div class="name">MABAR</div>
+      <div class="sub">Tennis · Padel · Turnamen</div>
+    </div>
+    <div style="flex:1;"></div>
+    <button class="big-btn">Buat Turnamen Baru</button>
+    <div style="margin-top:14px;font-size:11px;color:#9ca3af;line-height:1.6;text-align:center;">
+      Pemain max 20 · Fixed / Mixed<br>1 device host
+    </div>
+  </div></div>
+</div>
+
+<!-- 2. INPUT PESERTA -->
+<div class="phone-wrap">
+  <div class="phone-label">2 · INPUT PESERTA</div>
+  <div class="phone"><div class="screen">
+    <div class="screen-header">
+      <a class="back-btn">← Kembali</a>
+      <span class="step-num">02 / 10</span>
+    </div>
+    <h2>Peserta Turnamen</h2>
+    <span class="label">Tempel / ketik nama (1 baris = 1 pemain)</span>
+    <textarea style="width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;resize:none;min-height:120px;outline:none;line-height:1.6;" placeholder="Andi P&#10;Budi S&#10;Citra L&#10;...">1. Andi P
+2. Budi S
+3) Citra L
+Dewant R
+- Eko M
+Fajar K</textarea>
+    <div style="font-size:11px;color:#9ca3af;margin-top:4px;line-height:1.5;">
+      Nomor urut / bullet (<code>1.</code> <code>2)</code> <code>-</code>) otomatis dibersihkan
+    </div>
+    <div style="display:flex;gap:6px;margin:10px 0;">
+      <span class="chip">📋 Paste clipboard</span>
+      <span class="chip">Sample 8</span>
+      <span class="chip" style="background:#fef2f2;color:#ef4444;">Bersihkan</span>
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:12px;font-weight:600;color:#166534;">Terdeteksi: 6 pemain</span>
+        <span style="font-size:11px;color:#166534;">✓ Valid</span>
+      </div>
+      <div style="font-size:11px;color:#374151;line-height:1.5;">
+        Andi P · Budi S · Citra L · Dewant R · Eko M · Fajar K
+      </div>
+    </div>
+    <div style="flex:1;"></div>
+    <button class="big-btn">Lanjut → Pilih Mode (6)</button>
+  </div></div>
+</div>
+
+<!-- 3. MODE SELECTION -->
+<div class="phone-wrap">
+  <div class="phone-label">3 · MODE + COURT + DURASI</div>
+  <div class="phone"><div class="screen">
+    <div class="screen-header">
+      <a class="back-btn">← Kembali</a>
+      <span class="step-num">03 / 10</span>
+    </div>
+    <h2>Konfigurasi Turnamen</h2>
+    <span class="label">Mode Partner</span>
+    <div style="display:flex;gap:10px;margin-bottom:14px;">
+      <div class="mode-card active">
+        <div class="title">FIXED</div>
+        <div class="desc">Pasangan tetap</div>
+      </div>
+      <div class="mode-card">
+        <div class="title">MIXED</div>
+        <div class="desc">Berganti tiap round</div>
+      </div>
+    </div>
+    <span class="label">Durasi per Match</span>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+      <input type="number" value="20" style="flex:1;font-size:14px;padding:8px 10px;">
+      <span style="font-size:12px;color:#6b7280;">menit</span>
+    </div>
+    <span class="label">Court & Durasi Booking</span>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+      <span style="font-size:11px;color:#6b7280;">Jumlah:</span>
+      <button style="width:32px;height:32px;border-radius:6px;border:1.5px solid #e5e7eb;background:white;font-size:16px;font-weight:600;cursor:pointer;">−</button>
+      <div style="width:36px;text-align:center;font-size:18px;font-weight:700;color:#16a34a;">2</div>
+      <button style="width:32px;height:32px;border-radius:6px;border:1.5px solid #16a34a;background:#f0fdf4;color:#16a34a;font-size:16px;font-weight:600;cursor:pointer;">+</button>
+      <span style="font-size:10px;color:#9ca3af;margin-left:auto;">max 10</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:11px;color:#9ca3af;width:20px;">#1</span>
+        <input type="text" placeholder="Court 1" style="flex:1.4;font-size:13px;padding:7px 10px;">
+        <input type="number" value="2" style="flex:0.6;font-size:13px;padding:7px 10px;text-align:center;">
+        <span style="font-size:11px;color:#6b7280;">jam</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:11px;color:#9ca3af;width:20px;">#2</span>
+        <input type="text" placeholder="Court 2" value="Merah" style="flex:1.4;font-size:13px;padding:7px 10px;">
+        <input type="number" value="2" style="flex:0.6;font-size:13px;padding:7px 10px;text-align:center;">
+        <span style="font-size:11px;color:#6b7280;">jam</span>
+      </div>
+    </div>
+    <div class="info-box ok" style="font-size:11px;padding:8px 10px;line-height:1.5;">
+      ✅ 2 court · 20 mnt/match · 2 jam booking<br>
+      → <strong>~6 round</strong> total (12 match kapasitas)
+    </div>
+    <div style="flex:1;"></div>
+    <button class="big-btn">Lanjut → Buat Pasangan</button>
+  </div></div>
+</div>
+
+<!-- 4. FIXED PAIR SETUP -->
+<div class="phone-wrap">
+  <div class="phone-label">4 · FIXED — BUAT PAIR</div>
+  <div class="phone"><div class="screen">
+    <div class="screen-header">
+      <a class="back-btn">← Kembali</a>
+      <span class="step-num">04 / 10</span>
+    </div>
+    <h2>Buat Pasangan</h2>
+    <div style="display:flex;gap:6px;margin-bottom:12px;">
+      <button style="flex:1;background:#f0fdf4;color:#16a34a;border:1.5px solid #16a34a;padding:10px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;">🎲 Acak Otomatis</button>
+      <button style="flex:1;background:transparent;color:#6b7280;border:1.5px solid #e5e7eb;padding:10px;border-radius:10px;font-size:12px;font-weight:600;">✋ Manual</button>
+    </div>
+    <div style="font-size:11px;color:#9ca3af;margin-bottom:10px;text-align:center;">
+      Acak = sistem randomize · Manual = ketuk 2 pemain per pair
+    </div>
+    <span class="label">Pool (0 tersisa)</span>
+    <div style="background:#f9fafb;border-radius:10px;padding:8px;margin-bottom:14px;">
+      <span class="pool-chip done">Andi P</span>
+      <span class="pool-chip done">Budi S</span>
+      <span class="pool-chip done">Citra L</span>
+      <span class="pool-chip done">Dewant R</span>
+      <span class="pool-chip done">Eko M</span>
+      <span class="pool-chip done">Fajar K</span>
+    </div>
+    <span class="label">Pasangan (hasil acak)</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div class="pair-slot filled">Andi + Fajar</div>
+      <div class="pair-slot filled">Budi + Eko</div>
+      <div class="pair-slot filled">Citra + Dewant</div>
+    </div>
+    <button style="width:100%;background:transparent;color:#6b7280;border:1px dashed #d1d5db;padding:8px;border-radius:8px;font-size:12px;cursor:pointer;margin-bottom:10px;">🎲 Acak ulang</button>
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 10px;font-size:11px;color:#991b1b;margin-bottom:10px;line-height:1.5;">
+      ⚠ Pasangan tidak bisa diubah setelah selesai
+    </div>
+    <div style="flex:1;"></div>
+    <button class="big-btn">Kunci Pasangan & Buat Jadwal</button>
+  </div></div>
+</div>
+
+<!-- 5. MIXED ROUND SETUP -->
+<div class="phone-wrap">
+  <div class="phone-label">5 · MIXED — KONFIRMASI</div>
+  <div class="phone"><div class="screen">
+    <div class="screen-header">
+      <a class="back-btn">← Kembali</a>
+      <span class="step-num">04 / 10</span>
+    </div>
+    <h2>Mixed Partner</h2>
+    <div class="info-box ok" style="margin-bottom:14px;">
+      ♾ Sistem generate 1 round dulu. Setelah selesai, tekan "Round Berikutnya" untuk lanjut. Stop kapan saja.
+    </div>
+    <div style="background:#f9fafb;border-radius:10px;padding:12px;font-size:12px;margin-bottom:14px;line-height:1.7;">
+      <div style="font-weight:600;color:#111827;margin-bottom:6px;">Cara sistem pilih pemain tiap round:</div>
+      <div style="color:#6b7280;">✓ Pemain yang paling sedikit main = prioritas</div>
+      <div style="color:#6b7280;">✓ Pasangan yang belum pernah bertemu = prioritas</div>
+      <div style="color:#6b7280;">✓ Selisih match antar pemain ≤ 1</div>
+    </div>
+    <span class="label">Estimasi dari setup</span>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;font-size:12px;line-height:1.7;color:#166534;">
+      <div style="display:flex;justify-content:space-between;"><span>Pemain</span><strong>8</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span>Court</span><strong>2</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span>Booking</span><strong>2 jam</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span>Match/round</span><strong>2</strong></div>
+      <div style="display:flex;justify-content:space-between;border-top:1px solid #bbf7d0;padding-top:6px;margin-top:6px;"><span>Max round</span><strong>6 round</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span>Match/pemain</span><strong>~6</strong></div>
+    </div>
+    <div style="flex:1;"></div>
+    <button class="big-btn">Mulai Round 1</button>
+  </div></div>
+</div>
+
+<!-- 6a. JADWAL FIXED -->
+<div class="phone-wrap">
+  <div class="phone-label">6a · JADWAL FIXED</div>
+  <div class="phone"><div class="screen">
+    <div class="screen-header">
+      <a class="back-btn">← Setup</a>
+      <span class="step-num">05 / 11</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <h2 style="margin:0;">Jadwal Fixed</h2>
+      <span style="font-size:12px;color:#9ca3af;">R 2/7 · ⏱ 45m/2j</span>
+    </div>
+    <div style="overflow-x:auto;margin:0 -18px 12px;padding:0 18px;scrollbar-width:none;">
+      <div style="display:flex;gap:6px;min-width:min-content;">
+        <div style="padding:6px 12px;background:#f3f4f6;border-radius:8px;font-size:12px;font-weight:600;color:#9ca3af;white-space:nowrap;cursor:pointer;">R1 ✓</div>
+        <div style="padding:6px 12px;background:#16a34a;border-radius:8px;font-size:12px;font-weight:700;color:white;white-space:nowrap;">R2 ●</div>
+        <div style="padding:6px 12px;background:white;border:1.5px solid #e5e7eb;border-radius:8px;font-size:12px;font-weight:600;color:#6b7280;white-space:nowrap;">R3</div>
+        <div style="padding:6px 12px;background:white;border:1.5px solid #e5e7eb;border-radius:8px;font-size:12px;font-weight:600;color:#6b7280;white-space:nowrap;">R4</div>
+        <div style="padding:6px 12px;background:white;border:1.5px solid #e5e7eb;border-radius:8px;font-size:12px;font-weight:600;color:#6b7280;white-space:nowrap;">R5</div>
+        <div style="padding:6px 12px;background:white;border:1.5px solid #e5e7eb;border-radius:8px;font-size:12px;font-weight:600;color:#6b7280;white-space:nowrap;">R6</div>
+        <div style="padding:6px 12px;background:white;border:1.5px solid #e5e7eb;border-radius:8px;font-size:12px;font-weight:600;color:#6b7280;white-space:nowrap;">R7</div>
+      </div>
+    </div>
+    <div style="height:3px;background:#e5e7eb;border-radius:2px;margin-bottom:14px;overflow:hidden;">
+      <div style="width:28%;height:100%;background:#16a34a;"></div>
+    </div>
+    <div class="match-card done">
+      <div class="match-header"><span>M1 · <span style="color:#16a34a;font-weight:600;">🎾 Court 1</span></span><span>✓ Selesai</span></div>
+      <div class="match-teams"><span class="team">Andi + Budi</span><span class="vs">VS</span><span class="team">Citra + Dewant</span></div>
+      <div class="match-score">6-4, 6-3</div>
+    </div>
+    <div class="match-card">
+      <div class="match-header"><span>M2 · <span style="color:#dc2626;font-weight:600;">🎾 Merah</span></span><span>Belum</span></div>
+      <div class="match-teams"><span class="team">Eko + Feri</span><span class="vs">VS</span><span class="team">Gina + Hana</span></div>
+      <div class="match-score empty">Tap untuk input skor</div>
+    </div>
+    <div style="background:#f3f4f6;border-radius:8px;padding:8px 12px;font-size:11px;color:#6b7280;margin-bottom:12px;text-align:center;">
+      🛋 Bye round ini: <strong style="color:#111827;">Indra + Joko</strong>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="display:flex;gap:6px;">
+      <button class="big-btn secondary" style="flex:1;font-size:12px;padding:10px;">🏆 Leaderboard</button>
+      <button style="flex:0 0 auto;background:transparent;color:#ef4444;border:1.5px solid #ef4444;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;">🛑 Selesai</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- 6b. JADWAL MIXED -->
+<div class="phone-wrap">
+  <div class="phone-label">6b · JADWAL MIXED (ENDLESS)</div>
+  <div class="phone"><div class="screen">
+    <div class="screen-header">
+      <a class="back-btn">← Setup</a>
+      <span class="step-num">05 / 11</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <h2 style="margin:0;">Jadwal Mixed</h2>
+      <span style="font-size:12px;color:#f59e0b;font-weight:600;">R 2 · Live · ⏱ 45m/2j</span>
+    </div>
+    <div style="overflow-x:auto;margin:0 -18px 12px;padding:0 18px;scrollbar-width:none;">
+      <div style="display:flex;gap:6px;min-width:min-content;">
+        <div style="padding:6px 12px;background:#f3f4f6;border-radius:8px;font-size:12px;font-weight:600;color:#9ca3af;white-space:nowrap;cursor:pointer;">R1 ✓</div>
+        <div style="padding:6px 12px;background:#16a34a;border-radius:8px;font-size:12px;font-weight:700;color:white;white-space:nowrap;">R2 ●</div>
+        <div style="padding:6px 12px;background:white;border:1.5px dashed #d1d5db;border-radius:8px;font-size:12px;font-weight:500;color:#d1d5db;white-space:nowrap;">R3 ?</div>
+      </div>
+    </div>
+    <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;font-size:11px;color:#92400e;margin-bottom:12px;line-height:1.4;">
+      ♾ Endless · Round berikutnya digenerate setelah skor round ini masuk
+    </div>
+    <div class="match-card done">
+      <div class="match-header"><span>M1 · <span style="color:#16a34a;font-weight:600;">🎾 Court 1</span></span><span>✓ Selesai</span></div>
+      <div class="match-teams"><span class="team">Andi + Citra</span><span class="vs">VS</span><span class="team">Budi + Dewant</span></div>
+      <div class="match-score">6-4, 6-3</div>
+    </div>
+    <div class="match-card">
+      <div class="match-header"><span>M2 · <span style="color:#dc2626;font-weight:600;">🎾 Merah</span></span><span>Belum</span></div>
+      <div class="match-teams"><span class="team">Eko + Feri</span><span class="vs">VS</span><span class="team">Gina + Hana</span></div>
+      <div class="match-score empty">Tap untuk input skor</div>
+    </div>
+    <div style="background:#f3f4f6;border-radius:8px;padding:8px 12px;font-size:11px;color:#6b7280;margin-bottom:12px;text-align:center;">
+      🛋 Rest round ini: <strong style="color:#111827;">Indra, Joko</strong>
+      <div style="font-size:10px;color:#9ca3af;margin-top:2px;">→ Prioritas main di R3</div>
+    </div>
+    <div style="flex:1;"></div>
+    <button style="width:100%;background:#f0fdf4;color:#16a34a;border:1.5px solid #16a34a;padding:12px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:8px;opacity:0.5;" disabled>
+      ♾ Generate R3 (input skor dulu)
+    </button>
+    <div style="display:flex;gap:6px;">
+      <button class="big-btn secondary" style="flex:1;font-size:12px;padding:10px;">🏆 Leaderboard</button>
+      <button style="flex:0 0 auto;background:transparent;color:#ef4444;border:1.5px solid #ef4444;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;">🛑 Selesai</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- 7. INPUT SKOR -->
+<div class="phone-wrap">
+  <div class="phone-label">7 · INPUT SKOR</div>
+  <div class="phone"><div class="screen">
+    <div class="screen-header">
+      <a class="back-btn">← Jadwal</a>
+      <span class="step-num">06 / 10</span>
+    </div>
+    <div style="background:#f9fafb;border-radius:10px;padding:12px;margin-bottom:16px;">
+      <div style="font-size:11px;color:#6b7280;">Round 2 · Match 2</div>
+      <div style="font-size:14px;font-weight:700;margin-top:4px;line-height:1.3;">Eko + Feri<br><span style="color:#d1d5db;font-weight:400;">vs</span><br>Gina + Hana</div>
+    </div>
+    <div style="text-align:center;font-size:11px;color:#9ca3af;margin-bottom:8px;">SET 1</div>
+    <div class="score-input-row">
+      <div style="text-align:center;">
+        <div style="font-size:10px;color:#9ca3af;margin-bottom:4px;">Eko+Feri</div>
+        <input class="big-num-input" type="number" value="6">
+      </div>
+      <div style="font-size:24px;color:#d1d5db;">–</div>
+      <div style="text-align:center;">
+        <div style="font-size:10px;color:#9ca3af;margin-bottom:4px;">Gina+Hana</div>
+        <input class="big-num-input" type="number" value="4">
+      </div>
+    </div>
+    <div style="text-align:center;font-size:12px;color:#16a34a;font-weight:600;margin-bottom:16px;">+2 games</div>
+    <button class="big-btn secondary" style="font-size:13px;padding:10px;">+ Tambah Set 2</button>
+    <div style="flex:1;"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button style="background:transparent;color:#ef4444;border:1.5px solid #ef4444;padding:12px 14px;border-radius:10px;font-size:13px;font-weight:600;">WO</button>
+      <button class="big-btn">Simpan Skor</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- 8. LEADERBOARD -->
+<div class="phone-wrap">
+  <div class="phone-label">8 · LEADERBOARD</div>
+  <div class="phone"><div class="screen">
+    <div class="screen-header">
+      <a class="back-btn">← Jadwal</a>
+      <span class="step-num">08 / 10</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <h2 style="margin:0;">🏆 Peringkat</h2>
+      <span style="font-size:11px;color:#f59e0b;font-weight:600;">⏱ Sementara</span>
+    </div>
+    <div style="font-size:11px;color:#9ca3af;margin-bottom:12px;">
+      Round 2/7 · 8 dari 28 pertandingan selesai (29%)
+    </div>
+    <div style="height:3px;background:#e5e7eb;border-radius:2px;margin-bottom:14px;overflow:hidden;">
+      <div style="width:29%;height:100%;background:#f59e0b;"></div>
+    </div>
+    <span class="label">Metode ranking</span>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;">
+      <span class="chip">Win %</span>
+      <span class="chip">Total Games</span>
+      <span class="chip active">Kombinasi</span>
+    </div>
+    <div class="lb-row rank-1">
+      <div class="lb-pos gold">1</div>
+      <div class="lb-name">Andi P</div>
+      <div class="lb-stats"><div class="pct">85.7%</div><div class="rec">6–1 · +42g</div></div>
+    </div>
+    <div class="lb-row">
+      <div class="lb-pos">2</div>
+      <div class="lb-name">Budi S</div>
+      <div class="lb-stats"><div class="pct">71.4%</div><div class="rec">5–1 · +18g</div></div>
+    </div>
+    <div class="lb-row">
+      <div class="lb-pos">3</div>
+      <div class="lb-name">Citra L</div>
+      <div class="lb-stats"><div class="pct">57.1%</div><div class="rec">4–2 · +8g</div></div>
+    </div>
+    <div class="lb-row">
+      <div class="lb-pos">4</div>
+      <div class="lb-name">Dewant R</div>
+      <div class="lb-stats"><div class="pct">50.0%</div><div class="rec">3–2 · +3g</div></div>
+    </div>
+    <div class="lb-row">
+      <div class="lb-pos">5</div>
+      <div class="lb-name">Eko M</div>
+      <div class="lb-stats"><div class="pct">42.9%</div><div class="rec">3–2 · -2g</div></div>
+    </div>
+    <div class="lb-row">
+      <div class="lb-pos">6</div>
+      <div class="lb-name">Fajar K</div>
+      <div class="lb-stats"><div class="pct">42.9%</div><div class="rec">3–2 · -5g</div></div>
+    </div>
+    <div style="font-size:11px;color:#ef4444;text-align:center;margin:10px 0;">⚠ 2 pertandingan WO</div>
+    <div style="flex:1;"></div>
+    <div style="display:flex;gap:6px;">
+      <button class="big-btn secondary" style="font-size:13px;">Detail</button>
+      <button class="big-btn" style="font-size:13px;">Share</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- 9. DETAIL PLAYER -->
+<div class="phone-wrap">
+  <div class="phone-label">9 · DETAIL PLAYER</div>
+  <div class="phone"><div class="screen">
+    <div class="screen-header">
+      <a class="back-btn">← Peringkat</a>
+      <span class="step-num">09 / 10</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <div style="width:44px;height:44px;border-radius:50%;background:#16a34a;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;">A</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;">Andi P</div>
+        <div style="font-size:11px;color:#9ca3af;">Peringkat #1</div>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-box pos"><div class="val">85.7%</div><div class="lbl">Win %</div></div>
+      <div class="stat-box pos"><div class="val">+42</div><div class="lbl">Game Diff</div></div>
+      <div class="stat-box"><div class="val">6–1</div><div class="lbl">W–L</div></div>
+      <div class="stat-box"><div class="val">7</div><div class="lbl">Matches</div></div>
+    </div>
+    <div style="border-top:1px solid #e5e7eb;padding-top:10px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;"><span style="color:#9ca3af;">Partner unik</span><span style="font-weight:600;">6 / 19</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;"><span style="color:#9ca3af;">Lawan unik</span><span style="font-weight:600;">11 / 19</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;"><span style="color:#9ca3af;">WO</span><span style="font-weight:600;">0</span></div>
+    </div>
+    <div style="border-top:1px solid #e5e7eb;padding-top:10px;">
+      <div style="font-size:12px;font-weight:600;margin-bottom:6px;">Pertandingan</div>
+      <div class="match-hist"><span class="result-dot w">W</span><span>R1 · vs Budi+Citra · 6-4, 6-3</span></div>
+      <div class="match-hist"><span class="result-dot wo">WO</span><span>R2 · vs Eko+Dewant · WO</span></div>
+      <div class="match-hist"><span class="result-dot w">W</span><span>R3 · vs Feri+Gina · 6-7, 6-3, 6-4</span></div>
+      <div class="match-hist"><span class="result-dot w">W</span><span>R4 · vs Hadi+Ika · 6-2, 6-5</span></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- 10. SHARE HASIL -->
+<div class="phone-wrap">
+  <div class="phone-label">10 · SHARE HASIL</div>
+  <div class="phone"><div class="screen">
+    <div class="screen-header">
+      <a class="back-btn">← Peringkat</a>
+      <span class="step-num">10 / 10</span>
+    </div>
+    <h2>Bagikan Hasil</h2>
+    <div class="share-preview">
+      <div style="font-size:10px;color:#9ca3af;margin-bottom:8px;font-weight:600;">PREVIEW</div>
+      <div class="share-row"><span><strong>1.</strong> Andi P</span><span style="color:#6b7280;font-size:12px;">85.7% · +42</span></div>
+      <div class="share-row"><span><strong>2.</strong> Budi S</span><span style="color:#6b7280;font-size:12px;">71.4% · +18</span></div>
+      <div class="share-row"><span><strong>3.</strong> Citra L</span><span style="color:#6b7280;font-size:12px;">57.1% · +8</span></div>
+      <div class="share-row"><span><strong>4.</strong> Dewant R</span><span style="color:#6b7280;font-size:12px;">50.0% · +3</span></div>
+      <div class="share-row"><span><strong>5.</strong> Eko M</span><span style="color:#6b7280;font-size:12px;">42.9% · -2</span></div>
+      <div style="border-top:1px solid #e5e7eb;margin-top:8px;padding-top:8px;font-size:11px;color:#9ca3af;">7 round · 14 pertandingan · 1 WO</div>
+    </div>
+    <span class="label">Format</span>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <div style="flex:1;padding:8px;border:1.5px solid #16a34a;background:#f0fdf4;border-radius:8px;text-align:center;font-size:12px;font-weight:600;">Ringkas</div>
+      <div style="flex:1;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;text-align:center;font-size:12px;">Lengkap</div>
+    </div>
+    <button class="wa-btn">📱 Share ke WhatsApp</button>
+    <div style="display:flex;gap:6px;margin-top:8px;">
+      <button class="big-btn secondary" style="flex:1;font-size:12px;">📋 Copy</button>
+      <button style="background:transparent;color:#ef4444;border:1.5px solid #ef4444;padding:12px;border-radius:10px;font-size:12px;font-weight:600;">Reset</button>
+    </div>
+  </div></div>
+</div>
+
+</div>
+
+<div style="text-align:center;margin-top:32px;font-size:12px;color:#9ca3af;">
+  Mabar Wireframe · Flutter target · Palet hijau #16A34A
+</div>
+
+</body>
+</html>

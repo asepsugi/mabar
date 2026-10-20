@@ -1,0 +1,46 @@
+# Build PWA lalu publish ke GitHub Pages (https://asepsugi.github.io/mabar/) tiap push ke main.
+# Lewat tool/build_web.sh, bukan `flutter build web` langsung — tanpa itu sw.js kosong dan app tidak jalan offline.
+name: Deploy web
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Deploy yang lebih baru membatalkan yang masih antre, supaya yang tayang selalu commit terakhir.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.4
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter test
+      # Pages tanpa custom domain menyajikan app di sub-path /mabar/.
+      - run: tool/build_web.sh --base-href /mabar/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

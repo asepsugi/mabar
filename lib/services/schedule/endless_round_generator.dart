@@ -1,0 +1,186 @@
+import 'dart:math';
+
+import '../../models/models.dart';
+
+/// Hasil generate satu round mode Mixed (endless).
+class EndlessRound {
+  final List<MatchGame> matches;
+  final List<Player> resting;
+
+  const EndlessRound({required this.matches, required this.resting});
+}
+
+/// Generator round mode Mixed.
+///
+/// Urutannya persis seperti di PRD:
+/// 1. Pilih pemain prioritas — paling sedikit main, lalu paling lama istirahat.
+/// 2. Acak pasangan di antara pemain aktif dengan constraint dari history.
+/// 3. Tempatkan tiap match ke satu court.
+///
+/// Constraint pairing di-relax berjenjang lewat bobot penalti: mengulang lawan
+/// jauh lebih murah daripada mengulang partner, dan mengulang pertandingan yang
+/// persis sama paling mahal — jadi kalau tidak ada solusi bersih, yang dikorbankan
+/// adalah constraint yang paling lunak.
+class EndlessRoundGenerator {
+  static const _repeatMatchPenalty = 1000;
+  static const _repeatPartnerPenalty = 10;
+  static const _repeatOpponentPenalty = 3;
+  static const _maxAttempts = 400;
+
+  /// [players] hanya pemain aktif (yang keluar tidak dioper). [matchCredits]
+  /// ditambahkan ke jumlah main saat memilih prioritas — lihat [catchUpCredit].
+  static EndlessRound? generateRound({
+    required List<Player> players,
+    required List<Court> courts,
+    required List<MatchGame> history,
+    required int roundNumber,
+    Map<String, int> matchCredits = const {},
+    Random? random,
+  }) {
+    final rng = random ?? Random();
+    final stats = _History(history, matchCredits);
+
+    // Satu match butuh 4 pemain, jadi kapasitas selalu kelipatan 4.
+    final capacity = (min(players.length, courts.length * 4) ~/ 4) * 4;
+    if (capacity < 4) return null;
+
+    final sorted = [...players]..shuffle(rng);
+    sorted.sort((a, b) {
+      final byMatches = stats.matchCount(a.id).compareTo(stats.matchCount(b.id));
+      if (byMatches != 0) return byMatches;
+      return stats.lastRound(a.id).compareTo(stats.lastRound(b.id));
+    });
+
+    final active = sorted.take(capacity).toList();
+    final resting = sorted.skip(capacity).toList();
+
+    final arrangement = _bestArrangement(active, stats, rng);
+
+    final matches = <MatchGame>[];
+    for (var i = 0; i < arrangement.length; i++) {
+      final (pair1, pair2) = arrangement[i];
+      matches.add(
+        MatchGame(
+          id: 'm-r$roundNumber-${i + 1}',
+          roundNumber: roundNumber,
+          matchNumberInRound: i + 1,
+          courtId: courts[i].id,
+          pair1: pair1,
+          pair2: pair2,
+        ),
+      );
+    }
+
+    return EndlessRound(matches: matches, resting: resting);
+  }
+
+  /// Kredit untuk [playerId] yang masuk (atau kembali) di tengah turnamen:
+  /// jumlah mainnya disejajarkan dengan pemain aktif lain yang paling sedikit
+  /// main. Tanpa ini pemain baru (0 match) selalu di urutan prioritas teratas
+  /// dan main terus beberapa round sampai menyusul, sementara yang lain istirahat.
+  /// Kredit tidak pernah turun, jadi pemain yang kembali tidak "diutangi" lagi.
+  static int catchUpCredit({
+    required String playerId,
+    required List<Player> otherActivePlayers,
+    required List<MatchGame> history,
+    Map<String, int> matchCredits = const {},
+  }) {
+    final current = matchCredits[playerId] ?? 0;
+    if (otherActivePlayers.isEmpty) return current;
+
+    final stats = _History(history, matchCredits);
+    final floor = otherActivePlayers.map((p) => stats.matchCount(p.id)).reduce(min);
+    final played = stats.matchCount(playerId) - current;
+    return max(current, floor - played);
+  }
+
+  /// Coba beberapa susunan acak, ambil yang penaltinya paling kecil.
+  static List<(Pair, Pair)> _bestArrangement(List<Player> active, _History stats, Random rng) {
+    List<(Pair, Pair)>? best;
+    var bestPenalty = 1 << 30;
+
+    for (var attempt = 0; attempt < _maxAttempts; attempt++) {
+      final shuffled = [...active]..shuffle(rng);
+      final candidate = <(Pair, Pair)>[];
+      for (var i = 0; i < shuffled.length; i += 4) {
+        candidate.add((_pairOf(shuffled[i], shuffled[i + 1]), _pairOf(shuffled[i + 2], shuffled[i + 3])));
+      }
+
+      final penalty = _penalty(candidate, stats);
+      if (penalty < bestPenalty) {
+        best = candidate;
+        bestPenalty = penalty;
+        if (penalty == 0) break;
+      }
+    }
+
+    return best!;
+  }
+
+  static int _penalty(List<(Pair, Pair)> arrangement, _History stats) {
+    var total = 0;
+    for (final (p1, p2) in arrangement) {
+      total += stats.partnerCount(p1.player1Id, p1.player2Id) * _repeatPartnerPenalty;
+      total += stats.partnerCount(p2.player1Id, p2.player2Id) * _repeatPartnerPenalty;
+      for (final a in p1.playerIds) {
+        for (final b in p2.playerIds) {
+          total += stats.opponentCount(a, b) * _repeatOpponentPenalty;
+        }
+      }
+      if (stats.hasPlayedMatchup(p1, p2)) total += _repeatMatchPenalty;
+    }
+    return total;
+  }
+
+  static Pair _pairOf(Player a, Player b) => Pair(id: _pairKey(a.id, b.id), player1Id: a.id, player2Id: b.id);
+
+  static String _pairKey(String a, String b) => (a.compareTo(b) <= 0) ? '$a+$b' : '$b+$a';
+}
+
+/// Rekap history pertandingan yang sudah terjadi.
+class _History {
+  final Map<String, int> _matchCount = {};
+  final Map<String, int> _lastRound = {};
+  final Map<String, int> _partner = {};
+  final Map<String, int> _opponent = {};
+  final Set<String> _matchups = {};
+
+  final Map<String, int> _credits;
+
+  _History(List<MatchGame> history, this._credits) {
+    for (final m in history) {
+      if (m.status == MatchStatus.cancelled) continue;
+
+      for (final pair in [m.pair1, m.pair2]) {
+        _bump(_partner, EndlessRoundGenerator._pairKey(pair.player1Id, pair.player2Id));
+        for (final id in pair.playerIds) {
+          _matchCount[id] = (_matchCount[id] ?? 0) + 1;
+          _lastRound[id] = m.roundNumber;
+        }
+      }
+      for (final a in m.pair1.playerIds) {
+        for (final b in m.pair2.playerIds) {
+          _bump(_opponent, EndlessRoundGenerator._pairKey(a, b));
+        }
+      }
+      _matchups.add(_matchupKey(m.pair1, m.pair2));
+    }
+  }
+
+  static void _bump(Map<String, int> map, String key) => map[key] = (map[key] ?? 0) + 1;
+
+  static String _matchupKey(Pair a, Pair b) {
+    final keys = [
+      EndlessRoundGenerator._pairKey(a.player1Id, a.player2Id),
+      EndlessRoundGenerator._pairKey(b.player1Id, b.player2Id),
+    ]..sort();
+    return keys.join('|');
+  }
+
+  /// Termasuk kredit — angka inilah yang dipakai untuk prioritas.
+  int matchCount(String playerId) => (_matchCount[playerId] ?? 0) + (_credits[playerId] ?? 0);
+  int lastRound(String playerId) => _lastRound[playerId] ?? 0;
+  int partnerCount(String a, String b) => _partner[EndlessRoundGenerator._pairKey(a, b)] ?? 0;
+  int opponentCount(String a, String b) => _opponent[EndlessRoundGenerator._pairKey(a, b)] ?? 0;
+  bool hasPlayedMatchup(Pair a, Pair b) => _matchups.contains(_matchupKey(a, b));
+}
