@@ -62,7 +62,7 @@ class DetailPlayerScreen extends ConsumerWidget {
                 child: ListView(
                   padding: const EdgeInsets.only(bottom: MabarSpacing.x3),
                   children: [
-                    _StatGrid(standing: standing),
+                    _StatGrid(standing: standing, scoring: active.config.scoring),
                     const SizedBox(height: MabarSpacing.x4),
                     _CoverageCard(
                       partners: profile.partnerIds.length,
@@ -161,7 +161,8 @@ class _PlayerHeader extends StatelessWidget {
 
 class _StatGrid extends StatelessWidget {
   final PlayerStanding standing;
-  const _StatGrid({required this.standing});
+  final ScoringMethod scoring;
+  const _StatGrid({required this.standing, required this.scoring});
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +188,7 @@ class _StatGrid extends StatelessWidget {
             Expanded(
               child: MabarStatBox(
                 value: '${diff >= 0 ? '+' : ''}$diff',
-                label: 'Selisih Game',
+                label: scoring == ScoringMethod.americano ? 'Selisih Poin' : 'Selisih Game',
                 valueColor: diff >= 0 ? MabarColors.brand : MabarColors.danger,
               ),
             ),

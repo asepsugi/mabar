@@ -506,3 +506,36 @@ class _StepperButton extends StatelessWidget {
     );
   }
 }
+
+/// Pilihan berdampingan (mis. format Ringkas/Lengkap, metode skor).
+class MabarOptionButton extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const MabarOptionButton({super.key, required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected ? MabarColors.brandTint : MabarColors.card,
+          border: Border.all(color: selected ? MabarColors.brand : MabarColors.border, width: 2),
+          borderRadius: BorderRadius.circular(MabarRadius.xl),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+            color: selected ? MabarColors.brandDark : MabarColors.text3,
+          ),
+        ),
+      ),
+    );
+  }
+}

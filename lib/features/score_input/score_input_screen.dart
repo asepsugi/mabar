@@ -11,6 +11,7 @@ import '../schedule/tournament_controller.dart';
 import 'walkover_sheet.dart';
 
 /// Screen 7 · Input Skor — skor per set, bisa diedit ulang, plus tombol WO.
+/// Mode Americano: satu skor poin, dan sisi lawan terisi otomatis (total 21).
 class ScoreInputScreen extends ConsumerStatefulWidget {
   final String matchId;
   const ScoreInputScreen({super.key, required this.matchId});
@@ -26,12 +27,16 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
   /// Satu baris per set: controller untuk sisi kiri & kanan.
   final List<(TextEditingController, TextEditingController)> _sets = [];
   bool _seeded = false;
+  ScoringMethod _scoring = ScoringMethod.tennis;
+
+  bool get _americano => _scoring == ScoringMethod.americano;
 
   /// Isi field dari skor yang sudah tersimpan supaya host bisa mengoreksi.
   /// Dilakukan saat build pertama, bukan di initState, karena di sinilah
   /// turnamen dijamin sudah terbaca dari provider.
-  void _seedFrom(MatchGame match) {
+  void _seedFrom(ActiveTournament active, MatchGame match) {
     _seeded = true;
+    _scoring = active.config.scoring;
     for (final s in match.sets) {
       _addSet(side1: s.side1, side2: s.side2);
     }
@@ -57,7 +62,18 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
 
   int? _value(TextEditingController c) => int.tryParse(c.text.trim());
 
-  /// Set dianggap sah kalau dua sisinya terisi dan tidak seri.
+  /// Americano: yang diketik host di satu sisi menentukan sisi lainnya.
+  /// Dipanggil dari `onChanged` (hanya ketikan host), jadi mengisi sisi lain
+  /// lewat controller tidak memicu balik.
+  void _fillComplement(TextEditingController typed, TextEditingController other) {
+    if (!_americano) return;
+    final value = _value(typed);
+    final complement = value == null ? null : ScoringMethodX.americanoComplement(value);
+    other.text = complement?.toString() ?? '';
+  }
+
+  /// Set dianggap sah kalau dua sisinya terisi dan tidak seri. Americano:
+  /// totalnya juga harus pas 21.
   List<SetScore>? get _validSets {
     final result = <SetScore>[];
     for (final (a, b) in _sets) {
@@ -65,6 +81,7 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
       final y = _value(b);
       if (x == null || y == null) return null;
       if (x == y) return null;
+      if (_americano && x + y != ScoringMethodX.americanoTotalPoints) return null;
       result.add(SetScore(side1: x, side2: y));
     }
     return result.isEmpty ? null : result;
@@ -93,7 +110,7 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
     if (active == null || match == null) {
       return const Scaffold(body: Center(child: Text('Match tidak ditemukan')));
     }
-    if (!_seeded) _seedFrom(match);
+    if (!_seeded) _seedFrom(active, match);
 
     final sets = _validSets;
 
@@ -115,13 +132,17 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
                   padding: const EdgeInsets.only(bottom: MabarSpacing.x4),
                   children: [
                     for (var i = 0; i < _sets.length; i++) ...[
-                      _SetLabel(index: i),
+                      _SetLabel(
+                        text: _americano ? 'POIN · TOTAL ${ScoringMethodX.americanoTotalPoints}' : 'SET ${i + 1}',
+                      ),
                       _SetRow(
                         active: active,
                         match: match,
                         controllers: _sets[i],
                         leftValue: _value(_sets[i].$1),
                         rightValue: _value(_sets[i].$2),
+                        onLeftChanged: () => _fillComplement(_sets[i].$1, _sets[i].$2),
+                        onRightChanged: () => _fillComplement(_sets[i].$2, _sets[i].$1),
                       ),
                       _SetSummary(
                         active: active,
@@ -129,19 +150,31 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
                         left: _value(_sets[i].$1),
                         right: _value(_sets[i].$2),
                         setNumber: i + 1,
+                        americano: _americano,
                       ),
                     ],
-                    Padding(
-                      padding: const EdgeInsets.only(top: MabarSpacing.x4),
-                      child: _sets.length < _maxSets
-                          // Set terakhir harus lengkap dulu sebelum menambah set.
-                          ? _AddSetButton(label: 'Tambah Set ${_sets.length + 1}', onTap: () => setState(_addSet))
-                          : const Text(
-                              'Maks. $_maxSets set',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 11, color: MabarColors.text4),
-                            ),
-                    ),
+                    // Americano cuma satu "set" poin.
+                    if (_americano)
+                      const Padding(
+                        padding: EdgeInsets.only(top: MabarSpacing.x4),
+                        child: Text(
+                          'Isi salah satu, skor lawan terisi otomatis',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 11, color: MabarColors.text4),
+                        ),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.only(top: MabarSpacing.x4),
+                        child: _sets.length < _maxSets
+                            // Set terakhir harus lengkap dulu sebelum menambah set.
+                            ? _AddSetButton(label: 'Tambah Set ${_sets.length + 1}', onTap: () => setState(_addSet))
+                            : const Text(
+                                'Maks. $_maxSets set',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 11, color: MabarColors.text4),
+                              ),
+                      ),
                   ],
                 ),
               ),
@@ -248,15 +281,15 @@ class _PairTitle extends StatelessWidget {
 }
 
 class _SetLabel extends StatelessWidget {
-  final int index;
-  const _SetLabel({required this.index});
+  final String text;
+  const _SetLabel({required this.text});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 2),
       child: Text(
-        'SET ${index + 1}',
+        text,
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: MabarColors.text4, letterSpacing: 1),
       ),
@@ -271,6 +304,8 @@ class _SetRow extends StatelessWidget {
   final (TextEditingController, TextEditingController) controllers;
   final int? leftValue;
   final int? rightValue;
+  final VoidCallback onLeftChanged;
+  final VoidCallback onRightChanged;
 
   const _SetRow({
     required this.active,
@@ -278,6 +313,8 @@ class _SetRow extends StatelessWidget {
     required this.controllers,
     required this.leftValue,
     required this.rightValue,
+    required this.onLeftChanged,
+    required this.onRightChanged,
   });
 
   @override
@@ -291,6 +328,7 @@ class _SetRow extends StatelessWidget {
           Expanded(
             child: _ScoreCell(
               controller: controllers.$1,
+              onChanged: onLeftChanged,
               label: active.pairLabel(match.pair1),
               winner: decided && leftValue! > rightValue!,
             ),
@@ -305,6 +343,7 @@ class _SetRow extends StatelessWidget {
           Expanded(
             child: _ScoreCell(
               controller: controllers.$2,
+              onChanged: onRightChanged,
               label: active.pairLabel(match.pair2),
               winner: decided && rightValue! > leftValue!,
             ),
@@ -317,10 +356,11 @@ class _SetRow extends StatelessWidget {
 
 class _ScoreCell extends StatelessWidget {
   final TextEditingController controller;
+  final VoidCallback onChanged;
   final String label;
   final bool winner;
 
-  const _ScoreCell({required this.controller, required this.label, required this.winner});
+  const _ScoreCell({required this.controller, required this.onChanged, required this.label, required this.winner});
 
   @override
   Widget build(BuildContext context) {
@@ -339,6 +379,7 @@ class _ScoreCell extends StatelessWidget {
           ),
           child: TextField(
             controller: controller,
+            onChanged: (_) => onChanged(),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(2)],
             textAlign: TextAlign.center,
@@ -384,6 +425,7 @@ class _SetSummary extends StatelessWidget {
   final int? left;
   final int? right;
   final int setNumber;
+  final bool americano;
 
   const _SetSummary({
     required this.active,
@@ -391,29 +433,36 @@ class _SetSummary extends StatelessWidget {
     required this.left,
     required this.right,
     required this.setNumber,
+    required this.americano,
   });
+
+  static Widget _error(String text) => SizedBox(
+    height: 18,
+    child: Text(
+      text,
+      textAlign: TextAlign.center,
+      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.danger),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
+    const total = ScoringMethodX.americanoTotalPoints;
+    // Angka di atas 21 membuat sisi lawan kosong — beri tahu kenapa.
+    if (americano && ((left ?? 0) > total || (right ?? 0) > total)) return _error('Maksimal $total poin');
     if (left == null || right == null) return const SizedBox(height: 18);
+    if (americano && left! + right! != total) return _error('Total poin harus $total');
 
-    if (left == right) {
-      return const SizedBox(
-        height: 18,
-        child: Text(
-          'Skor seri, harus ada pemenang',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.danger),
-        ),
-      );
-    }
+    if (left == right) return _error('Skor seri, harus ada pemenang');
 
     final winnerPair = left! > right! ? match.pair1 : match.pair2;
     final diff = (left! - right!).abs();
     return SizedBox(
       height: 18,
       child: Text(
-        '+$diff game · ${active.pairLabel(winnerPair)} menang set $setNumber',
+        americano
+            ? '+$diff poin · ${active.pairLabel(winnerPair)} menang'
+            : '+$diff game · ${active.pairLabel(winnerPair)} menang set $setNumber',
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.brand),
       ),

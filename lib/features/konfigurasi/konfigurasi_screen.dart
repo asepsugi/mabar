@@ -25,6 +25,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
   static const _defaultBookingHours = 2;
 
   PartnerMode _mode = PartnerMode.fixed;
+  ScoringMethod _scoring = ScoringMethod.tennis;
   late final TextEditingController _matchDuration;
   final List<_CourtDraft> _courts = [];
 
@@ -86,6 +87,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
     matchDurationMinutes: int.tryParse(_matchDuration.text) ?? 0,
     courts: [for (var i = 0; i < _courts.length; i++) _courts[i].toCourt(i)],
     players: widget.players,
+    scoring: _scoring,
   );
 
   void _next() {
@@ -118,6 +120,27 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
                       const MabarPageTitle(title: 'Konfigurasi', subtitle: 'Pilih mode dan atur court.'),
                       const MabarFieldLabel('Pasangan'),
                       _ModeGrid(selected: _mode, onSelect: (m) => setState(() => _mode = m)),
+                      const SizedBox(height: MabarSpacing.x5),
+                      const MabarFieldLabel('Metode Skor'),
+                      Row(
+                        children: [
+                          for (final m in ScoringMethod.values) ...[
+                            Expanded(
+                              child: MabarOptionButton(
+                                label: m.label,
+                                selected: _scoring == m,
+                                onTap: () => setState(() => _scoring = m),
+                              ),
+                            ),
+                            if (m != ScoringMethod.values.last) const SizedBox(width: MabarSpacing.x2),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: MabarSpacing.x2),
+                      Text(
+                        _scoring.description,
+                        style: const TextStyle(fontSize: 11, color: MabarColors.text4, height: 1.5),
+                      ),
                       const SizedBox(height: MabarSpacing.x5),
                       const MabarFieldLabel('Durasi per Match'),
                       _DurationField(controller: _matchDuration),

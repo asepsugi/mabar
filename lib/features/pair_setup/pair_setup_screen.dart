@@ -83,14 +83,7 @@ class _PairSetupScreenState extends State<PairSetupScreen> {
   }
 
   void _lock() {
-    final config = TournamentConfig(
-      sport: widget.config.sport,
-      mode: widget.config.mode,
-      matchDurationMinutes: widget.config.matchDurationMinutes,
-      courts: widget.config.courts,
-      players: widget.config.players,
-      fixedPairs: _draft.pairs,
-    );
+    final config = widget.config.copyWith(fixedPairs: _draft.pairs);
     context.push('/schedule', extra: config);
   }
 

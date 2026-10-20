@@ -120,7 +120,7 @@ class _ShareResultScreenState extends ConsumerState<ShareResultScreen> {
                       children: [
                         for (final f in ShareFormat.values) ...[
                           Expanded(
-                            child: _FormatOption(
+                            child: MabarOptionButton(
                               label: f.label,
                               selected: _format == f,
                               onTap: () => setState(() => _format = f),
@@ -210,38 +210,6 @@ class _Swatch extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(shape: BoxShape.circle, gradient: theme.gradient),
             child: selected ? Icon(Icons.check, size: 14, color: theme.ink) : null,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FormatOption extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _FormatOption({required this.label, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected ? MabarColors.brandTint : MabarColors.card,
-          border: Border.all(color: selected ? MabarColors.brand : MabarColors.border, width: 2),
-          borderRadius: BorderRadius.circular(MabarRadius.xl),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-            color: selected ? MabarColors.brandDark : MabarColors.text3,
           ),
         ),
       ),

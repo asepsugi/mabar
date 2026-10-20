@@ -97,6 +97,7 @@ class LeaderboardScreen extends ConsumerWidget {
                     position: i + 1,
                     entry: entries[i],
                     method: method,
+                    scoring: active.config.scoring,
                     // Di mode Fixed statistik kedua anggota pasangan identik,
                     // jadi detail anggota pertama mewakili barisnya.
                     onTap: () => context.push('/detail-player', extra: entries[i].players.first.id),
@@ -133,9 +134,16 @@ class _StandingRow extends StatelessWidget {
   final int position;
   final StandingEntry entry;
   final RankingMethod method;
+  final ScoringMethod scoring;
   final VoidCallback onTap;
 
-  const _StandingRow({required this.position, required this.entry, required this.method, required this.onTap});
+  const _StandingRow({
+    required this.position,
+    required this.entry,
+    required this.method,
+    required this.scoring,
+    required this.onTap,
+  });
 
   PlayerStanding get standing => entry.standing;
 
@@ -148,7 +156,7 @@ class _StandingRow extends StatelessWidget {
       return '${standing.winPercent.toStringAsFixed(1)}% win';
     }
     final diff = standing.gameDiff;
-    return '${diff >= 0 ? '+' : ''}$diff game';
+    return '${diff >= 0 ? '+' : ''}$diff ${scoring.unit}';
   }
 
   @override

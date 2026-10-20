@@ -35,6 +35,35 @@ extension PartnerModeX on PartnerMode {
   };
 }
 
+/// Cara skor satu match dihitung — dipilih host di Konfigurasi.
+enum ScoringMethod { tennis, americano }
+
+extension ScoringMethodX on ScoringMethod {
+  String get label => switch (this) {
+    ScoringMethod.tennis => 'Skor Tennis',
+    ScoringMethod.americano => 'Americano',
+  };
+
+  String get description => switch (this) {
+    ScoringMethod.tennis => 'Per set, best of 3',
+    ScoringMethod.americano => 'Total ${ScoringMethodX.americanoTotalPoints} poin per match',
+  };
+
+  /// Satuan skor di label selisih ("+3 game" / "+3 poin").
+  String get unit => switch (this) {
+    ScoringMethod.tennis => 'game',
+    ScoringMethod.americano => 'poin',
+  };
+
+  /// Americano: poin kedua tim selalu berjumlah segini, jadi cukup satu sisi
+  /// yang diisi. Ganjil, jadi tidak pernah seri.
+  static const americanoTotalPoints = 21;
+
+  /// Americano: poin tim lawan dari poin satu tim, null kalau di luar 0–21.
+  static int? americanoComplement(int points) =>
+      points < 0 || points > americanoTotalPoints ? null : americanoTotalPoints - points;
+}
+
 enum RankingMethod { winPercent, totalGames }
 
 extension RankingMethodX on RankingMethod {
@@ -181,6 +210,7 @@ class TournamentConfig {
   final List<Court> courts;
   final List<Player> players;
   final List<Pair>? fixedPairs; // null kalau mode = mixed
+  final ScoringMethod scoring;
   const TournamentConfig({
     required this.sport,
     required this.mode,
@@ -188,6 +218,7 @@ class TournamentConfig {
     required this.courts,
     required this.players,
     this.fixedPairs,
+    this.scoring = ScoringMethod.tennis,
   });
 
   /// Max round berdasarkan durasi booking terpendek dari semua court.
@@ -199,13 +230,14 @@ class TournamentConfig {
 
   int get courtCount => courts.length;
 
-  TournamentConfig copyWith({List<Player>? players, List<Court>? courts}) => TournamentConfig(
+  TournamentConfig copyWith({List<Player>? players, List<Court>? courts, List<Pair>? fixedPairs}) => TournamentConfig(
     sport: sport,
     mode: mode,
     matchDurationMinutes: matchDurationMinutes,
     courts: courts ?? this.courts,
     players: players ?? this.players,
-    fixedPairs: fixedPairs,
+    fixedPairs: fixedPairs ?? this.fixedPairs,
+    scoring: scoring,
   );
 }
 

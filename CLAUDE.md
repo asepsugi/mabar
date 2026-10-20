@@ -37,7 +37,7 @@ Konvensi: komentar seperlunya dan dalam bahasa Indonesia, menjelaskan *kenapa*. 
 
 Alur penuh jalan: Home → Peserta → Konfigurasi → Pasangan (Fixed) / Mode Endless (Mixed) → Jadwal 6a/6b → Input Skor + sheet WO → Peringkat → Detail Pemain → Share.
 
-Mesin domain yang sudah ada + ter-test (72 test lulus, `flutter analyze` bersih kecuali 2 info lint lama di `models.dart`):
+Mesin domain yang sudah ada + ter-test (76 test lulus, `flutter analyze` bersih kecuali 2 info lint lama di `models.dart`):
 - `pairing/player_name_parser.dart` — parser textarea nama.
 - `pairing/pair_generator.dart` — pasangan Fixed (acak/manual), sisa pemain ganjil.
 - `schedule/round_robin_generator.dart` — circle method. **Invariant:** satu putaran circle dipotong jadi beberapa round sebesar jumlah court, tidak pernah menggabungkan dua putaran (kalau digabung, satu pair bisa main di dua lapangan bersamaan).
@@ -46,6 +46,12 @@ Mesin domain yang sudah ada + ter-test (72 test lulus, `flutter analyze` bersih 
 - Mixed: round terakhir yang belum ada satu skor pun bisa dibatalkan & dibuat ulang (`TournamentController.redoLastRound`, syaratnya `ActiveTournament.canRedoLastRound`; tombol di bawah "Buat R…"), untuk pemain yang baru datang dan ingin langsung main. Nomor round tetap, round lama utuh. Kredit pemain yang **tidak ada** di round itu (masuk/kembali setelah round dibuat) dihitung ulang dari history tanpa round tersebut — match pending ikut dihitung di `catchUpCredit`, jadi tanpa itu kreditnya kelebihan satu dan dia malah istirahat (paling kelihatan di 12 pemain/2 court, lihat test).
 - `ranking/ranking_calculator.dart` — dua metode: Win % dan **Total Point** (`gamesWon`, yaitu jumlah game yang dimenangkan lintas match: 6-5, 4-6, 3-6 → 13). Default app = Total Point, sesuai keputusan host bahwa total point dihitung lebih dulu; metode "Kombinasi" sudah dihapus karena isinya identik dengan Win %. Tie-break: metode → total point → head-to-head → selisih game → nama (PRD bilang undian; dipakai nama supaya stabil). WO: menang/kalah dihitung, games tidak. `cancelled` & `pending` diabaikan total.
 - `ranking/ranking_calculator.dart` → `standingEntries()` — mengubah klasemen per pemain jadi baris tampilan. Mode Fixed: pasangan tidak pernah berganti sehingga statistik kedua anggotanya identik, jadi dua baris kembar digabung jadi satu baris "Andi + Budi" yang mengambil posisi anggota terbaiknya. Mode Mixed: satu baris per pemain, urutan `rank()` tidak diubah. Pemain sisa (jumlah ganjil) tetap tampil sendiri.
+- **Metode skor** (`TournamentConfig.scoring`, dipilih di Konfigurasi; tes `test/services/scoring_method_test.dart`):
+  Skor Tennis (per set, best of 3) atau **Americano** (total 21 poin per match, `ScoringMethodX.americanoTotalPoints`).
+  Americano disimpan sebagai **satu `SetScore`** berisi poin, jadi ranking/share/codec tidak perlu cabang khusus —
+  Total Point = jumlah poin. Di Input Skor cukup isi satu sisi; sisi lain diisi `21 − x` dari `onChanged` (hanya
+  ketikan host, jadi tidak memantul). Label selisih ikut `ScoringMethod.unit` ("game"/"poin"). Simpanan tanpa kunci
+  `scoring` dibaca sebagai tennis. Config yang disalin wajib lewat `copyWith` supaya `scoring` tidak hilang (Pasangan Fixed dulu menyusun ulang field satu per satu).
 - `share/result_text_builder.dart` — teks share ringkas/lengkap (tiap baris memuat total point).
 - `storage/tournament_codec.dart` + `storage/tournament_store.dart` — persistensi lokal (lihat bawah).
 
