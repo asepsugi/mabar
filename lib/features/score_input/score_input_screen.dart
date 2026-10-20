@@ -262,6 +262,46 @@ class _MatchSummary extends StatelessWidget {
               Flexible(child: _PairTitle(text: active.pairLabel(match.pair2))),
             ],
           ),
+          const SizedBox(height: 10),
+          // Pengingat aturan skor turnamen ini, supaya host tidak mengisi skor
+          // tennis di turnamen Americano (atau sebaliknya).
+          _ScoringChip(config: active.config),
+        ],
+      ),
+    );
+  }
+}
+
+/// Metode skor + aturannya, mis. "Americano · Total 24 poin per match".
+class _ScoringChip extends StatelessWidget {
+  final TournamentConfig config;
+  const _ScoringChip({required this.config});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(color: MabarColors.brandTint, borderRadius: BorderRadius.circular(MabarRadius.full)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.scoreboard_outlined, size: 14, color: MabarColors.brand),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text.rich(
+              TextSpan(
+                text: config.scoring.label,
+                style: const TextStyle(fontWeight: FontWeight.w700, color: MabarColors.brandDark),
+                children: [
+                  TextSpan(
+                    text: ' · ${config.scoringDescription}',
+                    style: const TextStyle(fontWeight: FontWeight.w500, color: MabarColors.text3),
+                  ),
+                ],
+              ),
+              style: const TextStyle(fontSize: 12),
+            ),
+          ),
         ],
       ),
     );

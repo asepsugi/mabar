@@ -59,7 +59,8 @@ Mesin domain yang sudah ada + ter-test (78 test lulus, `flutter analyze` bersih 
   Americano, dan ranking memang sudah menghitung seri setengah menang.
   Americano disimpan sebagai **satu `SetScore`** berisi poin, jadi ranking/share/codec tidak perlu cabang khusus —
   Total Point = jumlah poin. Di Input Skor cukup isi satu sisi; sisi lain diisi `total − x` dari `onChanged` (hanya
-  ketikan host, jadi tidak memantul). Label selisih ikut `ScoringMethod.unit` ("game"/"poin"). Simpanan tanpa kunci
+  ketikan host, jadi tidak memantul). Kartu ringkasan Input Skor memuat chip metode + aturannya
+  (`config.scoringDescription`) sebagai pengingat host. Label selisih ikut `ScoringMethod.unit` ("game"/"poin"). Simpanan tanpa kunci
   `scoring`/`americanoPoints` dibaca sebagai tennis / 21. Config yang disalin wajib lewat `copyWith` supaya `scoring` tidak hilang (Pasangan Fixed dulu menyusun ulang field satu per satu).
 - `share/result_text_builder.dart` — teks share ringkas/lengkap (tiap baris memuat total point).
 - `storage/tournament_codec.dart` + `storage/tournament_store.dart` — persistensi lokal (lihat bawah).
