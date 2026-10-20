@@ -160,4 +160,64 @@ void main() {
     expect(old.withdrawnPlayerIds, isEmpty);
     expect(old.matchCredits, isEmpty);
   });
+
+  bool plays(MatchGame m, String id) => m.pair1.contains(id) || m.pair2.contains(id);
+
+  test('batalkan round tanpa skor: pemain yang baru datang langsung main', () {
+    // 12 pemain, 2 court: R3 berisi tepat 8 pemain dengan jumlah main paling
+    // sedikit, jadi kredit yang ikut menghitung R3 membuat Zaki kalah prioritas.
+    controller.startIfNeeded(_mixedConfig(12));
+    for (var i = 0; i < 2; i++) {
+      _playRound(controller, read);
+    }
+    final before = read();
+    expect(before.roundCount, 3);
+    expect(before.canRedoLastRound, isTrue);
+
+    controller.addPlayer('Zaki');
+    final zakiId = read().config.players.last.id;
+    controller.redoLastRound();
+
+    final after = read();
+    expect(after.roundCount, 3, reason: 'round diganti, bukan ditambah');
+    expect(after.matchesOfRound(3).every((m) => m.status == MatchStatus.pending), isTrue);
+    for (var r = 1; r <= 2; r++) {
+      expect(after.matchesOfRound(r), before.matchesOfRound(r), reason: 'R$r utuh');
+    }
+    // Kredit dihitung ulang tanpa R3 yang dibuang; kalau tidak, Zaki istirahat.
+    expect(after.matchesOfRound(3).any((m) => plays(m, zakiId)), isTrue);
+    final counts = _scheduledCounts(after);
+    final effective = [
+      for (final p in after.activePlayers) (counts[p.id] ?? 0) + (after.matchCredits[p.id] ?? 0),
+    ]..sort();
+    expect(effective.last - effective.first, lessThanOrEqualTo(1));
+  });
+
+  test('batalkan round pertama tetap menyisakan satu round', () {
+    controller.startIfNeeded(_mixedConfig(8));
+    controller.addPlayer('Zaki');
+    controller.redoLastRound();
+    expect(read().roundCount, 1);
+    expect(read().restingPlayerIdsByRound[1], hasLength(1));
+  });
+
+  test('pemain yang keluar ikut hilang dari round yang dibuat ulang', () {
+    controller.startIfNeeded(_mixedConfig(9));
+    _playRound(controller, read);
+    final inRound = read().matchesOfRound(2).first.pair1.playerIds.first;
+    controller.withdrawPlayer(inRound);
+    controller.redoLastRound();
+    expect(read().matchesOfRound(2).any((m) => plays(m, inRound)), isFalse);
+  });
+
+  test('round yang sudah ada skornya tidak bisa dibatalkan', () {
+    controller.startIfNeeded(_mixedConfig(9));
+    final first = read().matchesOfRound(1).first;
+    controller.submitScore(first.id, const [SetScore(side1: 6, side2: 4)]);
+    expect(read().canRedoLastRound, isFalse);
+
+    final before = read();
+    controller.redoLastRound();
+    expect(read(), same(before));
+  });
 }

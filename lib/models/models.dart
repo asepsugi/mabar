@@ -315,6 +315,14 @@ class ActiveTournament {
       (roundCount == 0 || isRoundComplete(roundCount)) &&
       courtsAvailableForRound(roundCount + 1).isNotEmpty;
 
+  /// Mode Mixed: round terakhir boleh dibatalkan & dibuat ulang selama belum
+  /// ada satu skor pun (mis. pemain baru datang dan ingin langsung main).
+  bool get canRedoLastRound =>
+      config.mode == PartnerMode.mixed &&
+      !tournament.isFinished &&
+      roundCount > 0 &&
+      matchesOfRound(roundCount).every((m) => m.status == MatchStatus.pending);
+
   ActiveTournament copyWith({
     Tournament? tournament,
     Map<int, List<String>>? resting,

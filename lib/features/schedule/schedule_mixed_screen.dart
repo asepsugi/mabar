@@ -50,6 +50,29 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
     setState(() => _selectedRound = null);
   }
 
+  Future<void> _redoLastRound(ActiveTournament active) async {
+    final round = active.roundCount;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: MabarColors.card,
+        title: Text('Batalkan R$round?'),
+        content: Text(
+          'Susunan R$round dibuang dan dibuat ulang dari ${active.activePlayers.length} pemain aktif. '
+          'Pemain yang baru datang tambahkan dulu lewat tombol Peserta.',
+          style: const TextStyle(fontSize: 14, color: MabarColors.text3, height: 1.5),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Buat Ulang R$round')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    ref.read(tournamentProvider.notifier).redoLastRound();
+    setState(() => _selectedRound = null);
+  }
+
   @override
   Widget build(BuildContext context) {
     final active = ref.watch(tournamentProvider);
@@ -146,6 +169,17 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
                         textAlign: TextAlign.center,
                         style: const TextStyle(fontSize: 11, color: MabarColors.text4),
                       ),
+                      if (active.canRedoLastRound)
+                        TextButton.icon(
+                          onPressed: () => _redoLastRound(active),
+                          icon: const Icon(Icons.refresh, size: 16),
+                          label: Text('Batalkan & buat ulang R$lastRound'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: MabarColors.text3,
+                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ),
                       const SizedBox(height: MabarSpacing.x3),
                     ],
                     ScheduleFooterActions(

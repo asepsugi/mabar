@@ -84,6 +84,48 @@ class TournamentController extends Notifier<ActiveTournament?> {
     );
   }
 
+  /// Mode Mixed: buang round terakhir yang belum ada skornya lalu buat ulang
+  /// dengan peserta aktif sekarang — pemain yang baru datang bisa langsung main.
+  void redoLastRound() {
+    final current = state;
+    if (current == null || !current.canRedoLastRound) return;
+
+    final round = current.roundCount;
+    final history = [
+      for (final m in current.matches)
+        if (m.roundNumber != round) m,
+    ];
+    final scheduled = {
+      for (final m in current.matchesOfRound(round)) ...[...m.pair1.playerIds, ...m.pair2.playerIds],
+      ...?current.restingPlayerIdsByRound[round],
+    };
+
+    // Pemain yang tidak ada di round ini berarti masuk/kembali setelah round
+    // ini dibuat, dan kreditnya ikut menghitung match round ini (pending tetap
+    // dihitung). Tanpa dihitung ulang dari history tanpa round ini, kreditnya
+    // kelebihan satu dan dia justru istirahat di round pengganti.
+    final credits = {...current.matchCredits};
+    for (final p in current.activePlayers) {
+      if (scheduled.contains(p.id) || !credits.containsKey(p.id)) continue;
+      credits[p.id] = EndlessRoundGenerator.catchUpCredit(
+        playerId: p.id,
+        otherActivePlayers: [
+          for (final o in current.activePlayers)
+            if (o.id != p.id) o,
+        ],
+        history: history,
+        matchCredits: {...credits}..remove(p.id),
+      );
+    }
+
+    state = current.copyWith(
+      tournament: current.tournament.copyWith(matches: history),
+      resting: {...current.restingPlayerIdsByRound}..remove(round),
+      matchCredits: credits,
+    );
+    generateNextRound();
+  }
+
   /// Mode Mixed: tambah pemain di tengah turnamen, ikut mulai round berikutnya.
   /// Mengembalikan pesan error untuk ditampilkan, atau null kalau berhasil.
   String? addPlayer(String rawName) {
