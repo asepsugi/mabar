@@ -172,24 +172,24 @@ class _CourtExtensionRow extends StatelessWidget {
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: MabarColors.borderSubtle)),
       ),
+      // Badge di tengah tinggi blok kanan (stepper + keterangan sisa jam).
       child: Row(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Di dalam Row supaya badge selebar isinya; `alignment` di
-                // CourtBadge membuatnya melebar penuh kalau lebarnya dibatasi.
-                Row(children: [CourtBadge(court: court)]),
-                const SizedBox(height: 4),
-                Text(
-                  extraHours == 0 ? remaining : '$remaining → ${_duration(remainingMinutes + extraHours * 60)}',
-                  style: const TextStyle(fontSize: 11, color: MabarColors.text4),
-                ),
-              ],
-            ),
+          // Di dalam Row supaya badge selebar isinya; `alignment` di CourtBadge
+          // membuatnya melebar penuh kalau lebarnya dibatasi.
+          CourtBadge(court: court),
+          const Spacer(),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              MabarStepper(value: extraHours, min: 0, max: maxHours, unit: 'jam', onChanged: onChanged),
+              const SizedBox(height: 4),
+              Text(
+                extraHours == 0 ? remaining : '$remaining → ${_duration(remainingMinutes + extraHours * 60)}',
+                style: const TextStyle(fontSize: 11, color: MabarColors.text4),
+              ),
+            ],
           ),
-          MabarStepper(value: extraHours, min: 0, max: maxHours, unit: 'jam', onChanged: onChanged),
         ],
       ),
     );
