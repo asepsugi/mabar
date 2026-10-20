@@ -394,12 +394,13 @@ class ActiveTournament {
   bool get canResume =>
       config.mode == PartnerMode.mixed && (tournament.isFinished || courtsAvailableForRound(roundCount + 1).isEmpty);
 
-  /// Mode Mixed: round terakhir boleh dibatalkan & dibuat ulang selama belum
-  /// ada satu skor pun (mis. pemain baru datang dan ingin langsung main).
-  bool get canRedoLastRound =>
+  /// Mode Mixed: round terakhir boleh dibatalkan (dihapus) selama belum ada
+  /// satu skor pun, mis. pemain baru datang dan ingin langsung main. R1 tidak
+  /// pernah — turnamen tanpa round tidak punya layar jadwal.
+  bool get canCancelLastRound =>
       config.mode == PartnerMode.mixed &&
       !tournament.isFinished &&
-      roundCount > 0 &&
+      roundCount > 1 &&
       matchesOfRound(roundCount).every((m) => m.status == MatchStatus.pending);
 
   ActiveTournament copyWith({

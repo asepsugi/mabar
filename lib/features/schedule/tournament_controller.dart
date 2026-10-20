@@ -85,11 +85,11 @@ class TournamentController extends Notifier<ActiveTournament?> {
     );
   }
 
-  /// Mode Mixed: buang round terakhir yang belum ada skornya lalu buat ulang
-  /// dengan peserta aktif sekarang — pemain yang baru datang bisa langsung main.
-  void redoLastRound() {
+  /// Mode Mixed: hapus round terakhir yang belum ada skornya. Host lalu
+  /// menekan "Buat R…" lagi dengan peserta terbaru (mis. pemain baru datang).
+  void cancelLastRound() {
     final current = state;
-    if (current == null || !current.canRedoLastRound) return;
+    if (current == null || !current.canCancelLastRound) return;
 
     final round = current.roundCount;
     final history = [
@@ -104,7 +104,7 @@ class TournamentController extends Notifier<ActiveTournament?> {
     // Pemain yang tidak ada di round ini berarti masuk/kembali setelah round
     // ini dibuat, dan kreditnya ikut menghitung match round ini (pending tetap
     // dihitung). Tanpa dihitung ulang dari history tanpa round ini, kreditnya
-    // kelebihan satu dan dia justru istirahat di round pengganti.
+    // kelebihan satu dan dia justru istirahat di round yang dibuat berikutnya.
     final credits = {...current.matchCredits};
     for (final p in current.activePlayers) {
       if (scheduled.contains(p.id) || !credits.containsKey(p.id)) continue;
@@ -124,7 +124,6 @@ class TournamentController extends Notifier<ActiveTournament?> {
       resting: {...current.restingPlayerIdsByRound}..remove(round),
       matchCredits: credits,
     );
-    generateNextRound();
   }
 
   /// Mode Mixed: tambah pemain di tengah turnamen, ikut mulai round berikutnya.
