@@ -18,14 +18,7 @@ Future<void> main() async {
   // Seluruh layout mockup disusun untuk portrait; landscape tidak pernah didesain.
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
-  // Latar semua layar terang (MabarColors.card), jadi ikon status bar harus gelap.
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark, // Android
-      statusBarBrightness: Brightness.light, // iOS
-    ),
-  );
+  SystemChrome.setSystemUIOverlayStyle(MabarTheme.statusBarDark);
 
   runApp(
     ProviderScope(overrides: [tournamentStoreProvider.overrideWithValue(await _openStore())], child: const MabarApp()),
@@ -54,6 +47,11 @@ class MabarApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: MabarTheme.light(),
       routerConfig: appRouter,
+      // Default untuk semua layar. Beranda memasang region putih sendiri; tanpa
+      // default ini gaya putihnya terbawa ke layar berikutnya (Flutter hanya
+      // mengganti gaya status bar kalau menemukan region lain).
+      builder: (context, child) =>
+          AnnotatedRegion<SystemUiOverlayStyle>(value: MabarTheme.statusBarDark, child: child!),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Design tokens converted from design-tokens.json
 class MabarColors {
@@ -85,6 +86,21 @@ class MabarShadows {
 }
 
 class MabarTheme {
+  /// Ikon status bar gelap — latar semua layar terang (MabarColors.card).
+  static const statusBarDark = SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark, // Android
+    statusBarBrightness: Brightness.light, // iOS
+  );
+
+  /// Ikon status bar putih — untuk Beranda, yang hero birunya naik sampai di
+  /// bawah status bar.
+  static const statusBarLight = SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light, // Android
+    statusBarBrightness: Brightness.dark, // iOS
+  );
+
   static ThemeData light() {
     const fontFamily = 'Inter';
 

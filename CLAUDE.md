@@ -109,7 +109,10 @@ Sumber aslinya JPEG berlatar putih; konversinya: potong bingkai tipis 1-2px di t
 ## Target platform
 
 `android/`, `ios/`, dan `web/` semuanya ada. Bundle id / applicationId: **`id.mabar.app`** (label `Mabar`),
-minSdk 24, iOS minimum 15. Orientasi dikunci portrait di dua tempat — `SystemChrome` di `lib/main.dart`
+minSdk 24, iOS minimum 15. Beranda tanpa header: hero biru naik sampai di bawah status bar (`SafeArea(top: false)` + inset di hero) dengan
+ikon status bar putih lewat `AnnotatedRegion` (`MabarTheme.statusBarLight`); default gelap dipasang di `builder`
+`MaterialApp` supaya gaya putih tidak terbawa ke layar lain. Versi ("v1.0", hardcode) ada di teks bawah Beranda.
+Orientasi dikunci portrait di dua tempat — `SystemChrome` di `lib/main.dart`
 dan `UISupportedInterfaceOrientations` di `ios/Runner/Info.plist`; kalau menambah layar landscape,
 keduanya harus diubah bareng.
 

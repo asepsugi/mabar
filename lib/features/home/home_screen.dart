@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,68 +20,68 @@ class HomeScreen extends ConsumerWidget {
     final active = ref.watch(tournamentProvider);
     // Turnamen yang sudah ditutup; hanya Mixed yang bisa dilanjutkan.
     final last = ref.watch(lastFinishedProvider);
-    return Scaffold(
-      backgroundColor: MabarColors.card,
-      body: SafeArea(
-        child: Padding(
-          // Padding horizontal dipasang per-bagian, bukan di sini, supaya hero
-          // bisa full-bleed sampai tepi layar.
-          padding: const EdgeInsets.only(top: MabarSpacing.x2, bottom: 28),
-          child: Column(
-            children: [
-              const _Gutter(
-                child: MabarScreenHeader(
-                  leading: MabarChip(label: 'v1.0', variant: MabarChipVariant.outlined),
-                  trailing: _HeaderIcon(),
-                ),
-              ),
-              const _BrandHero(),
-              const SizedBox(height: MabarSpacing.x5),
-              const _Gutter(child: _QuickStats()),
-              if (active != null) ...[
-                const SizedBox(height: MabarSpacing.x4),
-                _Gutter(
-                  child: _ResumeCard(
-                    title: 'Lanjutkan turnamen',
-                    active: active,
-                    // Config-nya dioper apa adanya supaya `startIfNeeded` mengenalinya sebagai
-                    // turnamen yang sama (perbandingannya `identical`) dan tidak menimpa state.
-                    onTap: () => context.push('/schedule', extra: active.config),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: MabarTheme.statusBarLight,
+      child: Scaffold(
+        backgroundColor: MabarColors.card,
+        // Tanpa SafeArea atas: hero biru naik sampai di bawah status bar, jarak
+        // amannya diberikan di dalam hero.
+        body: SafeArea(
+          top: false,
+          child: Padding(
+            // Padding horizontal dipasang per-bagian, bukan di sini, supaya hero
+            // bisa full-bleed sampai tepi layar.
+            padding: const EdgeInsets.only(bottom: 28),
+            child: Column(
+              children: [
+                const _BrandHero(),
+                const SizedBox(height: MabarSpacing.x5),
+                const _Gutter(child: _QuickStats()),
+                if (active != null) ...[
+                  const SizedBox(height: MabarSpacing.x4),
+                  _Gutter(
+                    child: _ResumeCard(
+                      title: 'Lanjutkan turnamen',
+                      active: active,
+                      // Config-nya dioper apa adanya supaya `startIfNeeded` mengenalinya sebagai
+                      // turnamen yang sama (perbandingannya `identical`) dan tidak menimpa state.
+                      onTap: () => context.push('/schedule', extra: active.config),
+                    ),
+                  ),
+                ] else if (last != null && last.config.mode == PartnerMode.mixed) ...[
+                  const SizedBox(height: MabarSpacing.x4),
+                  _Gutter(
+                    child: _ResumeCard(
+                      title: 'Turnamen terakhir · tambah jam',
+                      active: last,
+                      onTap: () async {
+                        if (!await showResumeTournamentSheet(context, last, archived: true)) return;
+                        final resumed = ref.read(tournamentProvider);
+                        if (resumed != null && context.mounted) context.push('/schedule', extra: resumed.config);
+                      },
+                    ),
+                  ),
+                ],
+                const Spacer(),
+                const Text(
+                  'PILIH JENIS PERMAINAN',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: MabarColors.text4,
+                    letterSpacing: 0.3,
                   ),
                 ),
-              ] else if (last != null && last.config.mode == PartnerMode.mixed) ...[
-                const SizedBox(height: MabarSpacing.x4),
-                _Gutter(
-                  child: _ResumeCard(
-                    title: 'Turnamen terakhir · tambah jam',
-                    active: last,
-                    onTap: () async {
-                      if (!await showResumeTournamentSheet(context, last, archived: true)) return;
-                      final resumed = ref.read(tournamentProvider);
-                      if (resumed != null && context.mounted) context.push('/schedule', extra: resumed.config);
-                    },
-                  ),
+                const SizedBox(height: 10),
+                const _Gutter(child: _SportSelector()),
+                const SizedBox(height: 14),
+                const Text(
+                  'Skor tersimpan otomatis · v1.0',
+                  style: TextStyle(fontSize: 11, color: MabarColors.text4, height: 1.5),
+                  textAlign: TextAlign.center,
                 ),
               ],
-              const Spacer(),
-              const Text(
-                'PILIH JENIS PERMAINAN',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: MabarColors.text4,
-                  letterSpacing: 0.3,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const _Gutter(child: _SportSelector()),
-              const SizedBox(height: 14),
-              const Text(
-                'Skor tersimpan otomatis',
-                style: TextStyle(fontSize: 11, color: MabarColors.text4, height: 1.5),
-                textAlign: TextAlign.center,
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -102,20 +103,6 @@ class _Gutter extends StatelessWidget {
   }
 }
 
-class _HeaderIcon extends StatelessWidget {
-  const _HeaderIcon();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(color: MabarColors.muted, borderRadius: BorderRadius.circular(MabarRadius.md)),
-      child: const Icon(Icons.more_vert, size: 16, color: MabarColors.text3),
-    );
-  }
-}
-
 class _BrandHero extends StatelessWidget {
   const _BrandHero();
 
@@ -130,7 +117,7 @@ class _BrandHero extends StatelessWidget {
         borderRadius: _heroRadius,
         child: MabarCourtBackground(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
+            padding: EdgeInsets.fromLTRB(24, 32 + MediaQuery.paddingOf(context).top, 24, 40),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
