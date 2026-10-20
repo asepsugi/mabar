@@ -11,7 +11,8 @@ import '../schedule/tournament_controller.dart';
 import 'walkover_sheet.dart';
 
 /// Screen 7 · Input Skor — skor per set, bisa diedit ulang, plus tombol WO.
-/// Mode Americano: satu skor poin, dan sisi lawan terisi otomatis (total 21).
+/// Mode Americano: satu skor poin, dan sisi lawan terisi otomatis (total poin
+/// dari Konfigurasi). Total genap bisa seri.
 class ScoreInputScreen extends ConsumerStatefulWidget {
   final String matchId;
   const ScoreInputScreen({super.key, required this.matchId});
@@ -27,16 +28,19 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
   /// Satu baris per set: controller untuk sisi kiri & kanan.
   final List<(TextEditingController, TextEditingController)> _sets = [];
   bool _seeded = false;
-  ScoringMethod _scoring = ScoringMethod.tennis;
 
-  bool get _americano => _scoring == ScoringMethod.americano;
+  /// Total poin per match kalau Americano; null untuk skor tennis.
+  int? _americanoTotal;
+
+  bool get _americano => _americanoTotal != null;
 
   /// Isi field dari skor yang sudah tersimpan supaya host bisa mengoreksi.
   /// Dilakukan saat build pertama, bukan di initState, karena di sinilah
   /// turnamen dijamin sudah terbaca dari provider.
   void _seedFrom(ActiveTournament active, MatchGame match) {
     _seeded = true;
-    _scoring = active.config.scoring;
+    final config = active.config;
+    _americanoTotal = config.scoring == ScoringMethod.americano ? config.americanoPoints : null;
     for (final s in match.sets) {
       _addSet(side1: s.side1, side2: s.side2);
     }
@@ -68,20 +72,19 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
   void _fillComplement(TextEditingController typed, TextEditingController other) {
     if (!_americano) return;
     final value = _value(typed);
-    final complement = value == null ? null : ScoringMethodX.americanoComplement(value);
+    final complement = value == null ? null : ScoringMethodX.americanoComplement(value, total: _americanoTotal!);
     other.text = complement?.toString() ?? '';
   }
 
   /// Set dianggap sah kalau dua sisinya terisi dan tidak seri. Americano:
-  /// totalnya juga harus pas 21.
+  /// totalnya harus pas, dan seri boleh (hanya mungkin kalau totalnya genap).
   List<SetScore>? get _validSets {
     final result = <SetScore>[];
     for (final (a, b) in _sets) {
       final x = _value(a);
       final y = _value(b);
       if (x == null || y == null) return null;
-      if (x == y) return null;
-      if (_americano && x + y != ScoringMethodX.americanoTotalPoints) return null;
+      if (_americano ? x + y != _americanoTotal : x == y) return null;
       result.add(SetScore(side1: x, side2: y));
     }
     return result.isEmpty ? null : result;
@@ -132,9 +135,7 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
                   padding: const EdgeInsets.only(bottom: MabarSpacing.x4),
                   children: [
                     for (var i = 0; i < _sets.length; i++) ...[
-                      _SetLabel(
-                        text: _americano ? 'POIN · TOTAL ${ScoringMethodX.americanoTotalPoints}' : 'SET ${i + 1}',
-                      ),
+                      _SetLabel(text: _americano ? 'POIN · TOTAL $_americanoTotal' : 'SET ${i + 1}'),
                       _SetRow(
                         active: active,
                         match: match,
@@ -150,7 +151,7 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
                         left: _value(_sets[i].$1),
                         right: _value(_sets[i].$2),
                         setNumber: i + 1,
-                        americano: _americano,
+                        americanoTotal: _americanoTotal,
                       ),
                     ],
                     // Americano cuma satu "set" poin.
@@ -425,7 +426,7 @@ class _SetSummary extends StatelessWidget {
   final int? left;
   final int? right;
   final int setNumber;
-  final bool americano;
+  final int? americanoTotal;
 
   const _SetSummary({
     required this.active,
@@ -433,7 +434,7 @@ class _SetSummary extends StatelessWidget {
     required this.left,
     required this.right,
     required this.setNumber,
-    required this.americano,
+    required this.americanoTotal,
   });
 
   static Widget _error(String text) => SizedBox(
@@ -447,13 +448,25 @@ class _SetSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const total = ScoringMethodX.americanoTotalPoints;
-    // Angka di atas 21 membuat sisi lawan kosong — beri tahu kenapa.
+    final total = americanoTotal;
+    final americano = total != null;
+    // Angka di atas total membuat sisi lawan kosong — beri tahu kenapa.
     if (americano && ((left ?? 0) > total || (right ?? 0) > total)) return _error('Maksimal $total poin');
     if (left == null || right == null) return const SizedBox(height: 18);
     if (americano && left! + right! != total) return _error('Total poin harus $total');
 
-    if (left == right) return _error('Skor seri, harus ada pemenang');
+    if (left == right) {
+      if (!americano) return _error('Skor seri, harus ada pemenang');
+      // Americano total genap: seri sah, dihitung setengah menang di Win %.
+      return const SizedBox(
+        height: 18,
+        child: Text(
+          'Seri',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.text3),
+        ),
+      );
+    }
 
     final winnerPair = left! > right! ? match.pair1 : match.pair2;
     final diff = (left! - right!).abs();

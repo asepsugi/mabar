@@ -27,6 +27,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
   PartnerMode _mode = PartnerMode.fixed;
   ScoringMethod _scoring = ScoringMethod.tennis;
   late final TextEditingController _matchDuration;
+  final _americanoPoints = TextEditingController(text: '${ScoringMethodX.defaultAmericanoPoints}');
   final List<_CourtDraft> _courts = [];
 
   @override
@@ -34,6 +35,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
     super.initState();
     _matchDuration = TextEditingController(text: widget.sport.defaultMatchDurationMinutes.toString())
       ..addListener(_refresh);
+    _americanoPoints.addListener(_refresh);
     for (var i = 0; i < _defaultCourtCount; i++) {
       _courts.add(_createCourt(i));
     }
@@ -42,6 +44,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
   @override
   void dispose() {
     _matchDuration.dispose();
+    _americanoPoints.dispose();
     for (final c in _courts) {
       c.dispose();
     }
@@ -88,6 +91,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
     courts: [for (var i = 0; i < _courts.length; i++) _courts[i].toCourt(i)],
     players: widget.players,
     scoring: _scoring,
+    americanoPoints: int.tryParse(_americanoPoints.text) ?? 0,
   );
 
   void _next() {
@@ -98,7 +102,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
   @override
   Widget build(BuildContext context) {
     final config = _config;
-    final valid = config.maxRounds > 0;
+    final valid = config.maxRounds > 0 && config.hasValidScoring;
 
     return Scaffold(
       backgroundColor: MabarColors.card,
@@ -136,14 +140,24 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
                           ],
                         ],
                       ),
+                      if (_scoring == ScoringMethod.americano) ...[
+                        const SizedBox(height: MabarSpacing.x2),
+                        _NumberField(controller: _americanoPoints, suffix: 'poin'),
+                      ],
                       const SizedBox(height: MabarSpacing.x2),
                       Text(
-                        _scoring.description,
-                        style: const TextStyle(fontSize: 11, color: MabarColors.text4, height: 1.5),
+                        config.hasValidScoring
+                            ? config.scoringDescription
+                            : 'Total poin ${ScoringMethodX.minAmericanoPoints}–${ScoringMethodX.maxAmericanoPoints}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: config.hasValidScoring ? MabarColors.text4 : MabarColors.danger,
+                          height: 1.5,
+                        ),
                       ),
                       const SizedBox(height: MabarSpacing.x5),
                       const MabarFieldLabel('Durasi per Match'),
-                      _DurationField(controller: _matchDuration),
+                      _NumberField(controller: _matchDuration, suffix: 'menit'),
                       const SizedBox(height: MabarSpacing.x5),
                       const MabarFieldLabel('Court & Durasi Booking'),
                       _CourtCountRow(
@@ -325,9 +339,11 @@ class _ModeCard extends StatelessWidget {
   }
 }
 
-class _DurationField extends StatelessWidget {
+/// Field angka dengan satuan di kanan (durasi match, total poin Americano).
+class _NumberField extends StatelessWidget {
   final TextEditingController controller;
-  const _DurationField({required this.controller});
+  final String suffix;
+  const _NumberField({required this.controller, required this.suffix});
 
   @override
   Widget build(BuildContext context) {
@@ -336,9 +352,9 @@ class _DurationField extends StatelessWidget {
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: MabarColors.text1),
-      decoration: const InputDecoration(
-        suffixText: 'menit',
-        suffixStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: MabarColors.text3),
+      decoration: InputDecoration(
+        suffixText: suffix,
+        suffixStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: MabarColors.text3),
       ),
     );
   }

@@ -44,24 +44,23 @@ extension ScoringMethodX on ScoringMethod {
     ScoringMethod.americano => 'Americano',
   };
 
-  String get description => switch (this) {
-    ScoringMethod.tennis => 'Per set, best of 3',
-    ScoringMethod.americano => 'Total ${ScoringMethodX.americanoTotalPoints} poin per match',
-  };
-
   /// Satuan skor di label selisih ("+3 game" / "+3 poin").
   String get unit => switch (this) {
     ScoringMethod.tennis => 'game',
     ScoringMethod.americano => 'poin',
   };
 
-  /// Americano: poin kedua tim selalu berjumlah segini, jadi cukup satu sisi
-  /// yang diisi. Ganjil, jadi tidak pernah seri.
-  static const americanoTotalPoints = 21;
+  /// Americano: default total poin kedua tim per match. Ganjil, jadi tidak
+  /// pernah seri; total genap (16/24/32) bisa seri dan dihitung setengah menang.
+  static const defaultAmericanoPoints = 21;
 
-  /// Americano: poin tim lawan dari poin satu tim, null kalau di luar 0–21.
-  static int? americanoComplement(int points) =>
-      points < 0 || points > americanoTotalPoints ? null : americanoTotalPoints - points;
+  /// Batas total poin Americano yang boleh dipilih — kotak skor cuma 2 digit.
+  static const minAmericanoPoints = 2;
+  static const maxAmericanoPoints = 99;
+
+  /// Americano: poin tim lawan dari poin satu tim, null kalau di luar 0–[total].
+  static int? americanoComplement(int points, {required int total}) =>
+      points < 0 || points > total ? null : total - points;
 }
 
 enum RankingMethod { winPercent, totalGames }
@@ -211,6 +210,10 @@ class TournamentConfig {
   final List<Player> players;
   final List<Pair>? fixedPairs; // null kalau mode = mixed
   final ScoringMethod scoring;
+
+  /// Americano: total poin kedua tim per match. Diabaikan untuk skor tennis.
+  final int americanoPoints;
+
   const TournamentConfig({
     required this.sport,
     required this.mode,
@@ -219,7 +222,17 @@ class TournamentConfig {
     required this.players,
     this.fixedPairs,
     this.scoring = ScoringMethod.tennis,
+    this.americanoPoints = ScoringMethodX.defaultAmericanoPoints,
   });
+
+  String get scoringDescription => switch (scoring) {
+    ScoringMethod.tennis => 'Per set, best of 3',
+    ScoringMethod.americano => 'Total $americanoPoints poin per match',
+  };
+
+  bool get hasValidScoring =>
+      scoring != ScoringMethod.americano ||
+      (americanoPoints >= ScoringMethodX.minAmericanoPoints && americanoPoints <= ScoringMethodX.maxAmericanoPoints);
 
   /// Max round berdasarkan durasi booking terpendek dari semua court.
   int get maxRounds {
@@ -238,6 +251,7 @@ class TournamentConfig {
     players: players ?? this.players,
     fixedPairs: fixedPairs ?? this.fixedPairs,
     scoring: scoring,
+    americanoPoints: americanoPoints,
   );
 }
 

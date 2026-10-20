@@ -65,6 +65,7 @@ class TournamentCodec {
     'mode': c.mode.name,
     'matchDurationMinutes': c.matchDurationMinutes,
     'scoring': c.scoring.name,
+    'americanoPoints': c.americanoPoints,
     'courts': [
       for (final court in c.courts)
         {
@@ -113,6 +114,7 @@ class TournamentCodec {
     matchDurationMinutes: j['matchDurationMinutes'] as int,
     // Simpanan dari sebelum ada pilihan metode skor selalu skor tennis.
     scoring: ScoringMethod.values.byName((j['scoring'] as String?) ?? ScoringMethod.tennis.name),
+    americanoPoints: (j['americanoPoints'] as int?) ?? ScoringMethodX.defaultAmericanoPoints,
     courts: [
       for (final c in j['courts'] as List)
         Court(
