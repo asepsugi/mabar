@@ -120,6 +120,14 @@ dart run flutter_launcher_icons             # sebar ke android/ + ios/ + web/ico
 
 `tool/` sengaja di luar `test/` supaya generator tidak ikut `flutter test` biasa. Ulangi kedua perintah itu setiap kali `mabar_brand_mark.dart` berubah. Foreground adaptive icon dibuat lebih kecil (0.40 kanvas) karena Android memangkas ~25% tiap sisi.
 
+## Deploy web
+
+Repo public `github.com/asepsugi/mabar`; tiap push ke `main` → `.github/workflows/deploy-web.yml` (flutter test →
+`tool/build_web.sh --base-href /mabar/` → GitHub Pages) → **https://asepsugi.github.io/mabar/**. Sub-path itu
+alasan `sw.js` didaftarkan relatif dan `start_url: "."` — jangan diganti jadi path absolut `/...`. Pages memberi
+`max-age=600` yang tidak bisa diatur, jadi update baru terlihat paling lambat ~10 menit + reload kedua (lihat SW di bawah).
+Versi Flutter di workflow dipatok (3.47.4); naikkan bareng kalau toolchain lokal naik.
+
 ## Cara menjalankan & verifikasi visual
 
 `flutter run` biasa untuk device. Untuk cek cepat di browser (dipakai selama ini):
