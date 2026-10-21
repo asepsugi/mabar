@@ -8,6 +8,7 @@ import 'package:mabar/features/share/share_card.dart';
 import 'package:mabar/models/models.dart';
 import 'package:mabar/services/ranking/ranking_calculator.dart';
 import 'package:mabar/services/share/result_text_builder.dart';
+import 'package:mabar/features/share/share_theme.dart';
 
 /// Turnamen dengan [count] pemain, satu round yang seluruh match-nya selesai.
 ActiveTournament _active(int count) {

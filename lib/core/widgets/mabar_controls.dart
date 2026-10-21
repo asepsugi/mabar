@@ -298,15 +298,14 @@ class MabarRowAction extends StatelessWidget {
           height: MabarSize.iconButton,
           child: Center(
             widthFactor: 1,
+            // Tepi `inset box-shadow` tidak memakan tempat: foregroundDecoration, bukan border dekorasi (yang
+            // oleh Container ditambahkan ke padding).
             child: Container(
               height: MabarSize.rowAction,
               padding: const EdgeInsets.symmetric(horizontal: 14),
               alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: off ? Colors.transparent : MabarColors.card,
-                borderRadius: radius,
-                border: Border.all(color: MabarColors.line),
-              ),
+              decoration: BoxDecoration(color: off ? Colors.transparent : MabarColors.card, borderRadius: radius),
+              foregroundDecoration: BoxDecoration(borderRadius: radius, border: Border.all(color: MabarColors.line)),
               child: Text(
                 label,
                 style: MabarType.body.copyWith(fontSize: 14, fontWeight: FontWeight.w600, height: 1, color: color),

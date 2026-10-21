@@ -25,9 +25,9 @@ Widget _lines(List<Widget> rows) => ClipRRect(
         mainAxisSize: MainAxisSize.min,
         children: [
           for (var i = 0; i < rows.length; i++)
+            // Container menambahkan tebal garis atas ke padding, jadi isi tetap 39 di bawah garis (border-box).
             Container(
               height: MabarSize.rosterRow,
-              padding: EdgeInsets.only(top: i == 0 ? 0 : 1),
               decoration: i == 0 ? null : const BoxDecoration(border: Border(top: BorderSide(color: MabarColors.line))),
               child: rows[i],
             ),

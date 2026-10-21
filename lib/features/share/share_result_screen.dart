@@ -12,6 +12,7 @@ import '../../models/models.dart';
 import '../../services/share/result_text_builder.dart';
 import '../schedule/tournament_controller.dart';
 import 'share_card.dart';
+import 'share_theme.dart';
 
 /// Screen 10 · Bagikan Hasil — preview kartu hasil lalu share sebagai gambar.
 class ShareResultScreen extends ConsumerStatefulWidget {

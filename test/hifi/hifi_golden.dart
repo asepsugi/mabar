@@ -75,6 +75,15 @@ Future<Uint8List> _rgba(ui.Image image) async =>
 Future<ui.Image> hifiFrame(WidgetTester tester, String frameId) async =>
     (await tester.runAsync(() => _decode(File('design/frames/$frameId.png').readAsBytesSync())))!;
 
+/// Ukuran frame dalam pt: 390×844 untuk layar, atau ukuran lembar gambar (poster Feed/Story, 11d dst.),
+/// dibaca dari header PNG-nya.
+Size hifiFrameSize(String frameId) {
+  final header = File('design/frames/$frameId.png').openSync()..setPositionSync(16);
+  final bytes = ByteData.sublistView(header.readSync(8));
+  header.closeSync();
+  return Size(bytes.getUint32(0) / hifiPixelRatio, bytes.getUint32(4) / hifiPixelRatio);
+}
+
 Map<String, dynamic>? _rects;
 
 /// Posisi satu elemen di frame hi-fi (pt, relatif ke layar), dari `design/spec/rects.json` yang ditulis
@@ -99,7 +108,7 @@ Rect hifiRect(String frameId, String cssClass, {String? text, int index = 0}) {
 /// Dengan [region] (pt), hanya piksel di dalamnya yang dihitung — dipakai golden per komponen.
 Future<HifiDiff> compareWithHifi(WidgetTester tester, Widget screen, String frameId, {Rect? region}) async {
   await loadHifiFonts();
-  tester.view.physicalSize = hifiScreenSize * hifiPixelRatio;
+  tester.view.physicalSize = hifiFrameSize(frameId) * hifiPixelRatio;
   tester.view.devicePixelRatio = hifiPixelRatio;
   addTearDown(tester.view.reset);
 
