@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
@@ -125,10 +126,10 @@ class _PairSetupScreenState extends State<PairSetupScreen> {
                       _PairGrid(slotCount: slotCount, pairs: _draft.pairs, label: _pairLabel),
                       const SizedBox(height: MabarSpacing.x3),
                       if (_mode == _PairMode.acak)
-                        _GhostButton(icon: Icons.refresh, label: 'Acak Ulang', onTap: _shuffle)
+                        _GhostButton(icon: MabarIcons.arrowClockwise, label: 'Acak Ulang', onTap: _shuffle)
                       else
                         _GhostButton(
-                          icon: Icons.undo,
+                          icon: MabarIcons.arrowCounterClockwise,
                           label: 'Urungkan',
                           onTap: _draft.pairs.isEmpty ? null : _undoLastPair,
                         ),
@@ -136,14 +137,14 @@ class _PairSetupScreenState extends State<PairSetupScreen> {
                       if (_draft.unpaired.isNotEmpty)
                         MabarInfoBox(
                           variant: MabarInfoVariant.warning,
-                          icon: Icons.error_outline,
+                          icon: MabarIcons.info,
                           title: '${_draft.unpaired.length} pemain belum punya pasangan',
                           caption: _draft.unpaired.map((e) => e.name).join(', '),
                         )
                       else
                         const MabarInfoBox(
                           variant: MabarInfoVariant.danger,
-                          icon: Icons.lock_outline,
+                          icon: MabarIcons.lockSimple,
                           title: 'Pasangan tidak bisa diubah setelah jadwal dibuat',
                         ),
                     ],
@@ -153,7 +154,7 @@ class _PairSetupScreenState extends State<PairSetupScreen> {
               const SizedBox(height: 14),
               MabarPrimaryButton(
                 label: 'Buat Jadwal',
-                icon: Icons.lock_outline,
+                icon: MabarIcons.lockSimple,
                 onPressed: _draft.isComplete ? _lock : null,
               ),
             ],
@@ -176,7 +177,7 @@ class _ModeButtons extends StatelessWidget {
       children: [
         Expanded(
           child: _ModeButton(
-            icon: Icons.casino_outlined,
+            icon: MabarIcons.shuffle,
             label: 'Acak',
             active: mode == _PairMode.acak,
             onTap: () => onSelect(_PairMode.acak),
@@ -185,7 +186,7 @@ class _ModeButtons extends StatelessWidget {
         const SizedBox(width: MabarSpacing.x2),
         Expanded(
           child: _ModeButton(
-            icon: Icons.checklist,
+            icon: MabarIcons.userList,
             label: 'Manual',
             active: mode == _PairMode.manual,
             onTap: () => onSelect(_PairMode.manual),
@@ -212,21 +213,21 @@ class _ModeButton extends StatelessWidget {
         height: 48,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: active ? MabarColors.brandTint : MabarColors.card,
-          border: Border.all(color: active ? MabarColors.brand : MabarColors.border, width: 1.5),
+          color: active ? MabarColors.paper : MabarColors.card,
+          border: Border.all(color: active ? MabarColors.ink : MabarColors.line, width: 1.5),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: active ? MabarColors.brand : MabarColors.text1),
+            Icon(icon, size: 16, color: active ? MabarColors.ink : MabarColors.ink),
             const SizedBox(width: MabarSpacing.x2),
             Text(
               label,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: active ? MabarColors.brand : MabarColors.text1,
+                color: active ? MabarColors.ink : MabarColors.ink,
               ),
             ),
           ],
@@ -250,7 +251,7 @@ class _Pool extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(color: MabarColors.raised, borderRadius: BorderRadius.circular(14)),
+      decoration: BoxDecoration(color: MabarColors.paper, borderRadius: BorderRadius.circular(14)),
       child: Wrap(
         spacing: 6,
         runSpacing: 6,
@@ -282,19 +283,19 @@ class _PoolChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: MabarSpacing.x3, vertical: 6),
       decoration: BoxDecoration(
         color: picked
-            ? MabarColors.brand
+            ? MabarColors.ink
             : done
-            ? MabarColors.muted
+            ? MabarColors.fill
             : MabarColors.card,
         border: Border.all(
           color: picked
-              ? MabarColors.brand
+              ? MabarColors.ink
               : done
               ? Colors.transparent
-              : MabarColors.border,
+              : MabarColors.line,
           width: 1.5,
         ),
-        borderRadius: BorderRadius.circular(MabarRadius.lg),
+        borderRadius: BorderRadius.circular(MabarRadius.group),
       ),
       child: Text(
         name,
@@ -302,12 +303,12 @@ class _PoolChip extends StatelessWidget {
           fontSize: 13,
           fontWeight: FontWeight.w600,
           color: picked
-              ? MabarColors.textInverse
+              ? Colors.white
               : done
-              ? MabarColors.text5
-              : MabarColors.text1,
+              ? MabarColors.line
+              : MabarColors.ink,
           decoration: done ? TextDecoration.lineThrough : null,
-          decorationColor: MabarColors.text5,
+          decorationColor: MabarColors.line,
         ),
       ),
     );
@@ -359,19 +360,19 @@ class _PairSlot extends StatelessWidget {
       alignment: Alignment.center,
       decoration: filled
           ? BoxDecoration(
-              color: MabarColors.brandTint,
-              border: Border.all(color: MabarColors.brand, width: 2),
-              borderRadius: BorderRadius.circular(MabarRadius.xl),
+              color: MabarColors.paper,
+              border: Border.all(color: MabarColors.ink, width: 2),
+              borderRadius: BorderRadius.circular(MabarRadius.group),
             )
-          : BoxDecoration(color: MabarColors.raised, borderRadius: BorderRadius.circular(MabarRadius.xl)),
-      foregroundDecoration: filled ? null : MabarDashedBorder(color: MabarColors.border, radius: MabarRadius.xl),
+          : BoxDecoration(color: MabarColors.paper, borderRadius: BorderRadius.circular(MabarRadius.group)),
+      foregroundDecoration: filled ? null : MabarDashedBorder(color: MabarColors.line, radius: MabarRadius.group),
       child: Text(
         text,
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: filled ? 13 : 12,
           fontWeight: filled ? FontWeight.w700 : FontWeight.w500,
-          color: filled ? MabarColors.text1 : MabarColors.text4,
+          color: filled ? MabarColors.ink : MabarColors.faint,
         ),
       ),
     );
@@ -393,13 +394,13 @@ class _GhostButton extends StatelessWidget {
       height: 44,
       child: TextButton.icon(
         onPressed: onTap,
-        icon: Icon(icon, size: 14, color: enabled ? MabarColors.text2 : MabarColors.text5),
+        icon: Icon(icon, size: 14, color: enabled ? MabarColors.ink2 : MabarColors.line),
         label: Text(
           label,
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: enabled ? MabarColors.text2 : MabarColors.text5,
+            color: enabled ? MabarColors.ink2 : MabarColors.line,
           ),
         ),
       ),

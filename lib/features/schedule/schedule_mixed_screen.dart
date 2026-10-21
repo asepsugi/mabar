@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
@@ -61,13 +62,13 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
         content: Text(
           'Jadwal R$round dihapus. Tambahkan pemain yang baru datang lewat Peserta, '
           'lalu tekan "Buat R$round" lagi.',
-          style: const TextStyle(fontSize: 14, color: MabarColors.text3, height: 1.5),
+          style: const TextStyle(fontSize: 14, color: MabarColors.ink3, height: 1.5),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Batalkan R$round', style: const TextStyle(color: MabarColors.danger)),
+            child: Text('Batalkan R$round', style: const TextStyle(color: MabarColors.clay)),
           ),
         ],
       ),
@@ -129,7 +130,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
                     if (!active.tournament.isFinished)
                       MabarInfoBox(
                         variant: MabarInfoVariant.warning,
-                        icon: Icons.all_inclusive,
+                        icon: MabarIcons.shuffle,
                         title: 'R$nextRound dibuat setelah skor R$lastRound lengkap',
                         caption: courtsLeft.length < active.config.courtCount
                             ? 'Sisa waktu booking: ${courtsLeft.length} dari ${active.config.courtCount} court'
@@ -169,7 +170,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
                     if (active.canResume) ...[
                       _GenerateButton(
                         label: 'Lanjutkan Turnamen',
-                        icon: Icons.more_time,
+                        icon: MabarIcons.clock,
                         onPressed: () => showResumeTournamentSheet(context, active),
                       ),
                       const SizedBox(height: MabarSpacing.x2),
@@ -178,7 +179,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
                             ? 'Turnamen sudah diakhiri · tambah jam court untuk main lagi'
                             : 'Waktu booking semua court sudah habis',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 11, color: MabarColors.text4),
+                        style: const TextStyle(fontSize: 11, color: MabarColors.faint),
                       ),
                     ] else if (!active.tournament.isFinished) ...[
                       _GenerateButton(label: 'Buat R$nextRound', onPressed: canGenerate ? _generateNext : null),
@@ -186,17 +187,17 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
                       Text(
                         _generateHint(canGenerate: canGenerate, lastRound: lastRound),
                         textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 11, color: MabarColors.text4),
+                        style: const TextStyle(fontSize: 11, color: MabarColors.faint),
                       ),
                     ],
                     if (active.canCancelLastRound)
                       TextButton.icon(
                         onPressed: () => _cancelLastRound(active),
-                        icon: const Icon(Icons.close, size: 16),
+                        icon: const Icon(MabarIcons.arrowCounterClockwise, size: 16),
                         label: Text('Batalkan R$lastRound'),
                         style: TextButton.styleFrom(
-                          foregroundColor: MabarColors.text3,
-                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                          foregroundColor: MabarColors.ink3,
+                          textStyle: const TextStyle(fontFamily: MabarType.family, fontSize: 12, fontWeight: FontWeight.w600),
                           visualDensity: VisualDensity.compact,
                         ),
                       ),
@@ -210,7 +211,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
                           ? null
                           : OutlinedButton.icon(
                               onPressed: () => showManagePlayersSheet(context),
-                              icon: const Icon(Icons.group_outlined, size: 18),
+                              icon: const Icon(MabarIcons.users, size: 18),
                               label: Text('Peserta (${active.activePlayers.length})'),
                             ),
                     ),
@@ -236,7 +237,7 @@ class _GenerateButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onPressed;
 
-  const _GenerateButton({required this.label, this.icon = Icons.add, this.onPressed});
+  const _GenerateButton({required this.label, this.icon = MabarIcons.plus, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -251,12 +252,12 @@ class _GenerateButton extends StatelessWidget {
           icon: Icon(icon, size: 18),
           label: Text(label),
           style: OutlinedButton.styleFrom(
-            backgroundColor: MabarColors.brandTint,
-            foregroundColor: MabarColors.brand,
-            disabledForegroundColor: MabarColors.brand,
-            side: const BorderSide(color: MabarColors.brand, width: 1.5),
+            backgroundColor: MabarColors.paper,
+            foregroundColor: MabarColors.ink,
+            disabledForegroundColor: MabarColors.ink,
+            side: const BorderSide(color: MabarColors.ink, width: 1.5),
             minimumSize: const Size.fromHeight(48),
-            textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            textStyle: const TextStyle(fontFamily: MabarType.family, fontSize: 14, fontWeight: FontWeight.w600),
           ),
         ),
       ),

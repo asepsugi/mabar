@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
@@ -14,8 +15,8 @@ class ScheduleHeaderIcon extends StatelessWidget {
     return Container(
       width: 32,
       height: 32,
-      decoration: BoxDecoration(color: MabarColors.muted, borderRadius: BorderRadius.circular(MabarRadius.md)),
-      child: const Icon(Icons.more_vert, size: 16, color: MabarColors.text3),
+      decoration: BoxDecoration(color: MabarColors.fill, borderRadius: BorderRadius.circular(MabarRadius.chip)),
+      child: const Icon(MabarIcons.dotsThree, size: 16, color: MabarColors.ink3),
     );
   }
 }
@@ -61,10 +62,10 @@ class ScheduleHeaderTitle extends StatelessWidget {
       children: [
         Text(
           _title,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: MabarColors.text1),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: MabarColors.ink),
         ),
         const SizedBox(height: 2),
-        Text('$round · ⏱ $_elapsed / $_booking', style: const TextStyle(fontSize: 11, color: MabarColors.text4)),
+        Text('$round · ⏱ $_elapsed / $_booking', style: const TextStyle(fontSize: 11, color: MabarColors.faint)),
       ],
     );
   }
@@ -107,7 +108,7 @@ class ScheduleRoundTabs extends StatelessWidget {
         itemBuilder: (_, i) {
           final round = i + 1;
           if (showPlaceholderTab && round > roundCount) {
-            return _Tab(label: 'R$round ?', background: MabarColors.card, foreground: MabarColors.text5, dashed: true);
+            return _Tab(label: 'R$round ?', background: MabarColors.card, foreground: MabarColors.line, dashed: true);
           }
 
           final done = isRoundComplete(round);
@@ -124,17 +125,17 @@ class ScheduleRoundTabs extends StatelessWidget {
                       ? ' ●'
                       : ''}',
               background: isActive
-                  ? MabarColors.brand
+                  ? MabarColors.ink
                   : done
-                  ? MabarColors.muted
+                  ? MabarColors.fill
                   : MabarColors.card,
               foreground: isActive
-                  ? MabarColors.textInverse
+                  ? Colors.white
                   : done
-                  ? MabarColors.text4
+                  ? MabarColors.faint
                   : upcoming
-                  ? MabarColors.text5
-                  : MabarColors.text3,
+                  ? MabarColors.line
+                  : MabarColors.ink3,
               bordered: !isActive && !done,
               highlighted: isActive,
               dashed: upcoming && !isActive,
@@ -170,16 +171,15 @@ class _Tab extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(MabarRadius.lg),
+        borderRadius: BorderRadius.circular(MabarRadius.group),
         border: bordered && !dashed
-            ? Border.all(color: MabarColors.border, width: 1.5)
+            ? Border.all(color: MabarColors.line, width: 1.5)
             : highlighted
-            ? Border.all(color: MabarColors.brand, width: 1.5)
+            ? Border.all(color: MabarColors.ink, width: 1.5)
             : null,
-        boxShadow: highlighted ? MabarShadows.brand : null,
       ),
       foregroundDecoration: dashed
-          ? const MabarDashedBorder(color: MabarColors.border, radius: MabarRadius.lg, width: 1.5)
+          ? const MabarDashedBorder(color: MabarColors.line, radius: MabarRadius.group, width: 1.5)
           : null,
       child: Text(
         label,
@@ -200,12 +200,12 @@ class ScheduleProgressBar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: MabarSpacing.x4),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(MabarRadius.full),
+        borderRadius: BorderRadius.circular(MabarRadius.chip),
         child: LinearProgressIndicator(
           value: total == 0 ? 0 : done / total,
           minHeight: 4,
-          backgroundColor: MabarColors.muted,
-          valueColor: const AlwaysStoppedAnimation(MabarColors.brand),
+          backgroundColor: MabarColors.fill,
+          valueColor: const AlwaysStoppedAnimation(MabarColors.ink),
         ),
       ),
     );
@@ -239,16 +239,16 @@ class ScheduleMatchCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isWo
-            ? MabarColors.dangerTint
+            ? MabarColors.paper
             : isDone
-            ? MabarColors.brandTint
+            ? MabarColors.paper
             : MabarColors.card,
         border: Border.all(
           color: isWo
-              ? MabarColors.dangerBorder
+              ? MabarColors.line
               : isDone
-              ? MabarColors.brandBorder
-              : MabarColors.border,
+              ? MabarColors.line
+              : MabarColors.line,
           width: 1.5,
         ),
         borderRadius: BorderRadius.circular(14),
@@ -263,7 +263,7 @@ class ScheduleMatchCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: MabarColors.text4,
+                  color: MabarColors.faint,
                   letterSpacing: 0.3,
                 ),
               ),
@@ -289,7 +289,7 @@ class ScheduleMatchCard extends StatelessWidget {
               ),
               const Text(
                 'VS',
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: MabarColors.text5, letterSpacing: 1),
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: MabarColors.line, letterSpacing: 1),
               ),
               Expanded(
                 child: _TeamColumn(
@@ -302,7 +302,7 @@ class ScheduleMatchCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          const Divider(height: 1, color: MabarColors.border),
+          const Divider(height: 1, color: MabarColors.line),
           const SizedBox(height: 10),
           _ScoreLine(match: match, locked: locked),
         ],
@@ -342,7 +342,7 @@ class _TeamColumn extends StatelessWidget {
             fontWeight: FontWeight.w700,
             height: 1.3,
             letterSpacing: -0.2,
-            color: isWinner ? MabarColors.brand : MabarColors.text1,
+            color: isWinner ? MabarColors.ink : MabarColors.ink,
           ),
         ),
         if (result != null) ...[
@@ -352,7 +352,7 @@ class _TeamColumn extends StatelessWidget {
             style: const TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: MabarColors.text4,
+              color: MabarColors.faint,
               letterSpacing: 0.3,
             ),
           ),
@@ -378,7 +378,7 @@ class _ScoreLine extends StatelessWidget {
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: MabarColors.brand,
+            color: MabarColors.ink,
             letterSpacing: 0.5,
           ),
         );
@@ -386,19 +386,19 @@ class _ScoreLine extends StatelessWidget {
         return const Text(
           'Walkover',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: MabarColors.danger),
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: MabarColors.clay),
         );
       case MatchStatus.cancelled:
         return const Text(
           'Tidak dimainkan',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 12, color: MabarColors.text5),
+          style: TextStyle(fontSize: 12, color: MabarColors.line),
         );
       case MatchStatus.pending:
         return Text(
           locked ? 'Menunggu round sebelumnya' : 'Isi skor →',
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: MabarColors.text5),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: MabarColors.line),
         );
     }
   }
@@ -417,7 +417,7 @@ class CourtBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: MabarSpacing.x3),
       decoration: BoxDecoration(
         color: MabarColors.courtPalette[court.colorIndex],
-        borderRadius: BorderRadius.circular(MabarRadius.md),
+        borderRadius: BorderRadius.circular(MabarRadius.chip),
       ),
       child: Text(
         court.name.toUpperCase(),
@@ -438,7 +438,7 @@ class SportBadge extends StatelessWidget {
       width: 32,
       height: 32,
       alignment: Alignment.center,
-      decoration: BoxDecoration(color: MabarColors.muted, borderRadius: BorderRadius.circular(MabarRadius.md)),
+      decoration: BoxDecoration(color: MabarColors.fill, borderRadius: BorderRadius.circular(MabarRadius.chip)),
       child: SizedBox(width: 22, height: 22, child: Image.asset(sport.assetPath, fit: BoxFit.contain)),
     );
   }
@@ -456,14 +456,14 @@ class ScheduleRestingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: MabarSpacing.x3, vertical: 10),
-      decoration: BoxDecoration(color: MabarColors.muted, borderRadius: BorderRadius.circular(MabarRadius.xl)),
+      decoration: BoxDecoration(color: MabarColors.fill, borderRadius: BorderRadius.circular(MabarRadius.group)),
       child: Row(
         children: [
           Container(
             width: 32,
             height: 32,
-            decoration: BoxDecoration(color: MabarColors.card, borderRadius: BorderRadius.circular(MabarRadius.md)),
-            child: const Icon(Icons.hotel_outlined, size: 16, color: MabarColors.text3),
+            decoration: BoxDecoration(color: MabarColors.card, borderRadius: BorderRadius.circular(MabarRadius.chip)),
+            child: const Icon(MabarIcons.clock, size: 16, color: MabarColors.ink3),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -475,15 +475,15 @@ class ScheduleRestingRow extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: MabarColors.text2,
+                    color: MabarColors.ink2,
                     letterSpacing: 0.3,
                   ),
                 ),
-                Text(names, style: const TextStyle(fontSize: 12, color: MabarColors.text3)),
+                Text(names, style: const TextStyle(fontSize: 12, color: MabarColors.ink3)),
                 if (hint != null)
                   Text(
                     hint!,
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: MabarColors.brand),
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: MabarColors.ink),
                   ),
               ],
             ),
@@ -524,7 +524,7 @@ class ScheduleFooterActions extends StatelessWidget {
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: onRanking,
-                icon: const Icon(Icons.leaderboard_outlined, size: 18),
+                icon: const Icon(MabarIcons.ranking, size: 18),
                 label: const Text('Peringkat'),
               ),
             ),
@@ -537,10 +537,10 @@ class ScheduleFooterActions extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   minimumSize: Size.zero,
                   padding: EdgeInsets.zero,
-                  foregroundColor: MabarColors.danger,
-                  side: const BorderSide(color: MabarColors.danger, width: 1.5),
+                  foregroundColor: MabarColors.clay,
+                  side: const BorderSide(color: MabarColors.clay, width: 1.5),
                 ),
-                child: const Icon(Icons.stop_circle_outlined, size: 20),
+                child: const Icon(MabarIcons.flag, size: 20),
               ),
             ),
           ],
@@ -559,13 +559,13 @@ Future<bool> confirmFinishTournament(BuildContext context) async {
       title: const Text('Akhiri turnamen?'),
       content: const Text(
         'Match yang belum main tidak dihitung.',
-        style: TextStyle(fontSize: 14, color: MabarColors.text3, height: 1.5),
+        style: TextStyle(fontSize: 14, color: MabarColors.ink3, height: 1.5),
       ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
         TextButton(
           onPressed: () => Navigator.pop(ctx, true),
-          child: const Text('Akhiri', style: TextStyle(color: MabarColors.danger)),
+          child: const Text('Akhiri', style: TextStyle(color: MabarColors.clay)),
         ),
       ],
     ),

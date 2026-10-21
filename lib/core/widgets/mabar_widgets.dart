@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/mabar_icons.dart';
 import '../theme/mabar_theme.dart';
 
 /// Header atas setiap screen (`.screen-header` di hifi.html):
@@ -51,18 +52,18 @@ class MabarBackButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(MabarRadius.md),
+      borderRadius: BorderRadius.circular(MabarRadius.chip),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.chevron_left, size: 18, color: MabarColors.text3),
+            const Icon(MabarIcons.caretLeft, size: 18, color: MabarColors.ink3),
             if (label.isNotEmpty) ...[
               const SizedBox(width: MabarSpacing.x1),
               Text(
                 label,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: MabarColors.text3),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: MabarColors.ink3),
               ),
             ],
           ],
@@ -83,7 +84,7 @@ class MabarStepIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       '${step.toString().padLeft(2, '0')} / $total',
-      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: MabarColors.text4, letterSpacing: 0.5),
+      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: MabarColors.faint, letterSpacing: 0.5),
     );
   }
 }
@@ -105,14 +106,14 @@ class MabarPageTitle extends StatelessWidget {
           style: const TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.w800,
-            color: MabarColors.text1,
+            color: MabarColors.ink,
             letterSpacing: -0.8,
             height: 1.2,
           ),
         ),
         if (subtitle != null) ...[
           const SizedBox(height: 6),
-          Text(subtitle!, style: const TextStyle(fontSize: 14, color: MabarColors.text3, height: 1.5)),
+          Text(subtitle!, style: const TextStyle(fontSize: 14, color: MabarColors.ink3, height: 1.5)),
         ],
         const SizedBox(height: MabarSpacing.x6),
       ],
@@ -131,7 +132,7 @@ class MabarFieldLabel extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: MabarSpacing.x2),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: MabarColors.text3, letterSpacing: 0.2),
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: MabarColors.ink3, letterSpacing: 0.2),
       ),
     );
   }
@@ -151,10 +152,10 @@ class MabarChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (bg, fg, border) = switch (variant) {
-      MabarChipVariant.filled => (MabarColors.muted, MabarColors.text2, null),
-      MabarChipVariant.outlined => (Colors.transparent, MabarColors.text2, MabarColors.border),
-      MabarChipVariant.active => (MabarColors.brand, MabarColors.textInverse, null),
-      MabarChipVariant.danger => (MabarColors.dangerTint, MabarColors.danger, null),
+      MabarChipVariant.filled => (MabarColors.fill, MabarColors.ink2, null),
+      MabarChipVariant.outlined => (Colors.transparent, MabarColors.ink2, MabarColors.line),
+      MabarChipVariant.active => (MabarColors.ink, Colors.white, null),
+      MabarChipVariant.danger => (MabarColors.paper, MabarColors.clay, null),
     };
 
     final content = Container(
@@ -162,7 +163,7 @@ class MabarChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: MabarSpacing.x3),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(MabarRadius.full),
+        borderRadius: BorderRadius.circular(MabarRadius.chip),
         border: border == null ? null : Border.all(color: border, width: 1.5),
       ),
       child: Row(
@@ -178,7 +179,7 @@ class MabarChip extends StatelessWidget {
     );
 
     if (onTap == null) return content;
-    return InkWell(onTap: onTap, borderRadius: BorderRadius.circular(MabarRadius.full), child: content);
+    return InkWell(onTap: onTap, borderRadius: BorderRadius.circular(MabarRadius.chip), child: content);
   }
 }
 
@@ -191,13 +192,13 @@ class MabarCode extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(color: MabarColors.muted, borderRadius: BorderRadius.circular(4)),
+      decoration: BoxDecoration(color: MabarColors.fill, borderRadius: BorderRadius.circular(4)),
       child: Text(
         text,
         // 'monospace' hanya dikenal Android; iOS butuh nama family sungguhan.
         style: const TextStyle(
           fontSize: 11,
-          color: MabarColors.text2,
+          color: MabarColors.ink2,
           fontFamily: 'monospace',
           fontFamilyFallback: ['Menlo', 'Courier'],
         ),
@@ -218,7 +219,7 @@ class MabarStatBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: MabarColors.raised, borderRadius: BorderRadius.circular(MabarRadius.xl)),
+      decoration: BoxDecoration(color: MabarColors.paper, borderRadius: BorderRadius.circular(MabarRadius.group)),
       child: Column(
         children: [
           Text(
@@ -226,7 +227,7 @@ class MabarStatBox extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
-              color: valueColor ?? MabarColors.text1,
+              color: valueColor ?? MabarColors.ink,
               letterSpacing: -0.5,
             ),
           ),
@@ -241,7 +242,7 @@ class MabarStatBox extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 11,
-                color: MabarColors.text4,
+                color: MabarColors.faint,
                 fontWeight: FontWeight.w500,
                 letterSpacing: 0.3,
               ),
@@ -253,7 +254,7 @@ class MabarStatBox extends StatelessWidget {
   }
 }
 
-/// `.btn.btn-primary` — tombol aksi utama dengan glow hijau saat aktif.
+/// `.btn.btn-primary` — tombol aksi utama; warna aktif/mati (`.btn-off`) dari tema.
 class MabarPrimaryButton extends StatelessWidget {
   final String label;
   final IconData? icon;
@@ -263,25 +264,14 @@ class MabarPrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final enabled = onPressed != null;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(MabarRadius.xxl + 2),
-        boxShadow: enabled ? MabarShadows.brand : null,
-      ),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          disabledBackgroundColor: MabarColors.brand.withValues(alpha: 0.4),
-          disabledForegroundColor: MabarColors.textInverse,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) ...[Icon(icon, size: 18), const SizedBox(width: MabarSpacing.x2)],
-            Text(label),
-          ],
-        ),
+    return ElevatedButton(
+      onPressed: onPressed,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (icon != null) ...[Icon(icon, size: 18), const SizedBox(width: MabarSpacing.x2)],
+          Text(label),
+        ],
       ),
     );
   }
@@ -301,17 +291,17 @@ class MabarInfoBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (bg, fg, border) = switch (variant) {
-      MabarInfoVariant.success => (MabarColors.brandTint, MabarColors.brandDark, MabarColors.brandBorder),
-      MabarInfoVariant.warning => (MabarColors.warningTint, const Color(0xFF92400E), MabarColors.warningBorder),
-      MabarInfoVariant.danger => (MabarColors.dangerTint, const Color(0xFF991B1B), MabarColors.dangerBorder),
-      MabarInfoVariant.neutral => (MabarColors.raised, MabarColors.text2, null),
+      MabarInfoVariant.success => (MabarColors.paper, MabarColors.ink, MabarColors.line),
+      MabarInfoVariant.warning => (MabarColors.paper, MabarColors.ink2, MabarColors.line),
+      MabarInfoVariant.danger => (MabarColors.paper, MabarColors.clay, MabarColors.line),
+      MabarInfoVariant.neutral => (MabarColors.paper, MabarColors.ink2, null),
     };
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: MabarSpacing.x3),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(MabarRadius.xl),
+        borderRadius: BorderRadius.circular(MabarRadius.group),
         border: border == null ? null : Border.all(color: border),
       ),
       child: Row(
@@ -385,7 +375,7 @@ class _DashedBoxPainter extends BoxPainter {
 
 enum MabarStatusVariant { live, finalized }
 
-/// `.status-badge` — "LIVE" / "SEMENTARA" (kuning) dan "FINAL" (hijau).
+/// `.status-badge` — "LIVE" / "SEMENTARA" (titik bola) dan "FINAL" (titik tinta).
 class MabarStatusBadge extends StatelessWidget {
   final String label;
   final MabarStatusVariant variant;
@@ -395,13 +385,11 @@ class MabarStatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final live = variant == MabarStatusVariant.live;
-    final bg = live ? MabarColors.warningTint : MabarColors.brandTint;
-    final fg = live ? const Color(0xFF92400E) : MabarColors.brandDark;
-    final dot = live ? MabarColors.warning : MabarColors.brand;
+    final dot = live ? MabarColors.ball : MabarColors.ink;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(MabarRadius.full)),
+      decoration: BoxDecoration(color: MabarColors.paper, borderRadius: BorderRadius.circular(MabarRadius.chip)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -413,7 +401,7 @@ class MabarStatusBadge extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             label,
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: fg, letterSpacing: 0.3),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: MabarColors.ink, letterSpacing: 0.3),
           ),
         ],
       ),
@@ -443,7 +431,7 @@ class MabarStepper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(color: MabarColors.raised, borderRadius: BorderRadius.circular(MabarRadius.xl)),
+      decoration: BoxDecoration(color: MabarColors.paper, borderRadius: BorderRadius.circular(MabarRadius.group)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -455,12 +443,12 @@ class MabarStepper extends StatelessWidget {
               child: Text.rich(
                 TextSpan(
                   text: '$value',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: MabarColors.text1),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: MabarColors.ink),
                   children: [
                     if (unit != null)
                       TextSpan(
                         text: ' $unit',
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: MabarColors.text3),
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: MabarColors.ink3),
                       ),
                   ],
                 ),
@@ -494,12 +482,11 @@ class _StepperButton extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: MabarColors.card,
-            borderRadius: BorderRadius.circular(MabarRadius.md),
-            boxShadow: MabarShadows.sm,
+            borderRadius: BorderRadius.circular(MabarRadius.chip),
           ),
           child: Text(
             label,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: MabarColors.text2),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: MabarColors.ink2),
           ),
         ),
       ),
@@ -523,16 +510,16 @@ class MabarOptionButton extends StatelessWidget {
         padding: const EdgeInsets.all(10),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? MabarColors.brandTint : MabarColors.card,
-          border: Border.all(color: selected ? MabarColors.brand : MabarColors.border, width: 2),
-          borderRadius: BorderRadius.circular(MabarRadius.xl),
+          color: selected ? MabarColors.paper : MabarColors.card,
+          border: Border.all(color: selected ? MabarColors.ink : MabarColors.line, width: 2),
+          borderRadius: BorderRadius.circular(MabarRadius.group),
         ),
         child: Text(
           label,
           style: TextStyle(
             fontSize: 12,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-            color: selected ? MabarColors.brandDark : MabarColors.text3,
+            color: selected ? MabarColors.ink : MabarColors.ink3,
           ),
         ),
       ),

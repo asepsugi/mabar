@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
@@ -97,7 +98,7 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
                     if (locked) ...[
                       const MabarInfoBox(
                         variant: MabarInfoVariant.neutral,
-                        icon: Icons.lock_clock,
+                        icon: MabarIcons.lockSimple,
                         title: 'Round belum bisa dimulai',
                         caption: 'Selesaikan skor round sebelumnya',
                       ),

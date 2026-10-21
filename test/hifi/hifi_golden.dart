@@ -9,8 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// Pembanding layar Flutter dengan frame hi-fi (`design/frames/<id>.png`).
 ///
 /// Frame di-render `tool/hifi_extract.py` dari `design/hifi.html` pada 2x, jadi layar app berukuran
-/// 390×844 pt = 780×1688 px. Di sini ukuran, rasio piksel, dan font Archivo disamakan; tanpa
-/// [loadArchivo] `flutter test` memakai Ahem dan hasilnya pasti beda total.
+/// 390×844 pt = 780×1688 px. Di sini ukuran, rasio piksel, font Archivo, dan font ikon Phosphor Bold
+/// disamakan; tanpa [loadHifiFonts] `flutter test` memakai Ahem dan hasilnya pasti beda total.
 ///
 /// Anti-alias teks Chrome dan Skia tidak pernah identik, jadi piksel dihitung "beda" hanya kalau salah
 /// satu kanalnya selisih lebih dari [HifiDiff.channelTolerance], dan layar lolos kalau rasio piksel beda
@@ -18,17 +18,20 @@ import 'package:flutter_test/flutter_test.dart';
 /// `build/hifi_diff/<id>_flutter.png` ditulis untuk dilihat.
 const hifiScreenSize = Size(390, 844);
 const hifiPixelRatio = 2.0;
-const _fontPath = 'assets/fonts/Archivo[wdth,wght].ttf';
+const _fonts = {'Archivo': 'assets/fonts/Archivo[wdth,wght].ttf', 'PhosphorBold': 'assets/fonts/Phosphor-Bold.ttf'};
 
-bool _archivoLoaded = false;
+bool _fontsLoaded = false;
 
-/// Memuat font Archivo variabel sekali per proses test. Berat cukup lewat `fontWeight` (Flutter
-/// meneruskannya ke sumbu `wght`); lebar lewat `FontVariation('wdth', n)` = `font-stretch: n%` di hi-fi.
-Future<void> loadArchivo() async {
-  if (_archivoLoaded) return;
-  final bytes = File(_fontPath).readAsBytesSync();
-  await (FontLoader('Archivo')..addFont(Future.value(ByteData.sublistView(bytes)))).load();
-  _archivoLoaded = true;
+/// Memuat font Archivo variabel dan font ikon Phosphor Bold (`MabarIcons`) sekali per proses test.
+/// Berat cukup lewat `fontWeight` (Flutter meneruskannya ke sumbu `wght`); lebar lewat
+/// `FontVariation('wdth', n)` = `font-stretch: n%` di hi-fi.
+Future<void> loadHifiFonts() async {
+  if (_fontsLoaded) return;
+  for (final MapEntry(key: family, value: path) in _fonts.entries) {
+    final bytes = File(path).readAsBytesSync();
+    await (FontLoader(family)..addFont(Future.value(ByteData.sublistView(bytes)))).load();
+  }
+  _fontsLoaded = true;
 }
 
 class HifiDiff {
@@ -63,7 +66,7 @@ Future<ui.Image> hifiFrame(WidgetTester tester, String frameId) async =>
 /// Me-render [screen] seukuran layar hi-fi lalu membandingkannya dengan `design/frames/<frameId>.png`.
 /// [screen] harus sudah lengkap (MaterialApp, tema, data); helper ini hanya mengatur ukuran layar.
 Future<HifiDiff> compareWithHifi(WidgetTester tester, Widget screen, String frameId) async {
-  await loadArchivo();
+  await loadHifiFonts();
   tester.view.physicalSize = hifiScreenSize * hifiPixelRatio;
   tester.view.devicePixelRatio = hifiPixelRatio;
   addTearDown(tester.view.reset);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
@@ -47,7 +48,7 @@ class MixedConfirmScreen extends StatelessWidget {
                       ),
                       const MabarInfoBox(
                         variant: MabarInfoVariant.warning,
-                        icon: Icons.all_inclusive,
+                        icon: MabarIcons.shuffle,
                         title: 'Round 1 dibuat dulu.',
                         caption: 'Isi semua skor, lalu tekan Buat R2.',
                       ),
@@ -57,8 +58,8 @@ class MixedConfirmScreen extends StatelessWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: MabarColors.raised,
-                          borderRadius: BorderRadius.circular(MabarRadius.xl),
+                          color: MabarColors.paper,
+                          borderRadius: BorderRadius.circular(MabarRadius.group),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,13 +72,13 @@ class MixedConfirmScreen extends StatelessWidget {
                                   children: [
                                     const Padding(
                                       padding: EdgeInsets.only(top: 1),
-                                      child: Icon(Icons.check, size: 16, color: MabarColors.brand),
+                                      child: Icon(MabarIcons.check, size: 16, color: MabarColors.ink),
                                     ),
                                     const SizedBox(width: MabarSpacing.x2),
                                     Expanded(
                                       child: Text(
                                         rule,
-                                        style: const TextStyle(fontSize: 13, color: MabarColors.text2, height: 1.4),
+                                        style: const TextStyle(fontSize: 13, color: MabarColors.ink2, height: 1.4),
                                       ),
                                     ),
                                   ],
@@ -118,7 +119,7 @@ class MixedConfirmScreen extends StatelessWidget {
               const SizedBox(height: 14),
               MabarPrimaryButton(
                 label: 'Mulai Round 1',
-                icon: Icons.play_arrow,
+                icon: MabarIcons.play,
                 onPressed: () => context.push('/schedule', extra: config),
               ),
             ],

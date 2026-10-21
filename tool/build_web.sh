@@ -19,7 +19,10 @@ files=$(find . -type f \
 
 # Versi = hash isi seluruh file, jadi sw.js hanya berubah (dan memicu update) kalau app-nya berubah.
 version=$(echo "$files" | xargs shasum | shasum | cut -c1-12)
-list=$(echo "$files" | sed 's/.*/"&"/' | paste -sd, -)
+# Daftar precache berisi URL, bukan path: Flutter sudah meng-encode nama aset di disk
+# (`Archivo[wdth,wght].ttf` → `Archivo%5Bwdth,wght%5D.ttf`), jadi `%` harus jadi `%25`. Tanpa itu
+# satu URL 404 dan `cache.addAll` menggagalkan install service worker (offline + update mati).
+list=$(echo "$files" | sed -e 's/%/%25/g' -e 's/.*/"&"/' | paste -sd, -)
 
 sed -i.bak -e "s|__MABAR_VERSION__|$version|" -e "s|__MABAR_PRECACHE__|[$list]|" sw.js
 rm sw.js.bak

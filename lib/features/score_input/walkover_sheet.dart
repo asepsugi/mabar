@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
@@ -22,7 +23,7 @@ Future<WalkoverResult?> showWalkoverSheet(
     isScrollControlled: true,
     backgroundColor: MabarColors.card,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(MabarRadius.xxxl + 4)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(MabarRadius.sheet)),
     ),
     builder: (_) => _WalkoverSheet(active: active, match: match),
   );
@@ -74,7 +75,7 @@ class _WalkoverSheetState extends State<_WalkoverSheet> {
                 width: 36,
                 height: 4,
                 margin: const EdgeInsets.only(bottom: MabarSpacing.x4),
-                decoration: BoxDecoration(color: MabarColors.border, borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(color: MabarColors.line, borderRadius: BorderRadius.circular(2)),
               ),
             ),
             Row(
@@ -83,10 +84,10 @@ class _WalkoverSheetState extends State<_WalkoverSheet> {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: MabarColors.dangerTint,
-                    borderRadius: BorderRadius.circular(MabarRadius.md),
+                    color: MabarColors.paper,
+                    borderRadius: BorderRadius.circular(MabarRadius.chip),
                   ),
-                  child: const Icon(Icons.person_off_outlined, size: 18, color: MabarColors.danger),
+                  child: const Icon(MabarIcons.user, size: 18, color: MabarColors.clay),
                 ),
                 const SizedBox(width: 10),
                 Column(
@@ -97,13 +98,13 @@ class _WalkoverSheetState extends State<_WalkoverSheet> {
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
-                        color: MabarColors.text1,
+                        color: MabarColors.ink,
                         letterSpacing: -0.3,
                       ),
                     ),
                     Text(
                       'Round ${match.roundNumber} · Match ${match.matchNumberInRound}',
-                      style: const TextStyle(fontSize: 11, color: MabarColors.text4),
+                      style: const TextStyle(fontSize: 11, color: MabarColors.faint),
                     ),
                   ],
                 ),
@@ -112,7 +113,7 @@ class _WalkoverSheetState extends State<_WalkoverSheet> {
             const SizedBox(height: 6),
             const Text(
               'Pilih pasangan yang tidak bisa main. Lawan otomatis menang.',
-              style: TextStyle(fontSize: 13, color: MabarColors.text3, height: 1.5),
+              style: TextStyle(fontSize: 13, color: MabarColors.ink3, height: 1.5),
             ),
             const SizedBox(height: MabarSpacing.x4),
             for (final pair in [_pair1, _pair2]) ...[
@@ -127,7 +128,7 @@ class _WalkoverSheetState extends State<_WalkoverSheet> {
             if (_winner != null) ...[
               MabarInfoBox(
                 variant: MabarInfoVariant.success,
-                icon: Icons.emoji_events_outlined,
+                icon: MabarIcons.trophy,
                 title: '${active.pairLabel(_winner!)} menang WO',
               ),
               const SizedBox(height: MabarSpacing.x4),
@@ -159,9 +160,9 @@ class _WalkoverSheetState extends State<_WalkoverSheet> {
                         ? null
                         : () => Navigator.pop(context, WalkoverResult(loserPairId: _loserPairId!, reason: _reason)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: MabarColors.danger,
-                      disabledBackgroundColor: MabarColors.danger.withValues(alpha: 0.4),
-                      disabledForegroundColor: MabarColors.textInverse,
+                      backgroundColor: MabarColors.clay,
+                      disabledBackgroundColor: MabarColors.clay.withValues(alpha: 0.4),
+                      disabledForegroundColor: Colors.white,
                     ),
                     child: const Text('Simpan'),
                   ),
@@ -189,8 +190,8 @@ class _PairOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: selected ? MabarColors.dangerTint : MabarColors.card,
-          border: Border.all(color: selected ? MabarColors.danger : MabarColors.border, width: 2),
+          color: selected ? MabarColors.paper : MabarColors.card,
+          border: Border.all(color: selected ? MabarColors.clay : MabarColors.line, width: 2),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
@@ -202,13 +203,13 @@ class _PairOption extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: MabarColors.card,
-                border: Border.all(color: selected ? MabarColors.danger : MabarColors.border, width: 2),
+                border: Border.all(color: selected ? MabarColors.clay : MabarColors.line, width: 2),
               ),
               child: selected
                   ? Container(
                       width: 10,
                       height: 10,
-                      decoration: const BoxDecoration(color: MabarColors.danger, shape: BoxShape.circle),
+                      decoration: const BoxDecoration(color: MabarColors.clay, shape: BoxShape.circle),
                     )
                   : null,
             ),
@@ -219,7 +220,7 @@ class _PairOption extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: MabarColors.text1),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: MabarColors.ink),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -227,7 +228,7 @@ class _PairOption extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                      color: selected ? MabarColors.danger : MabarColors.text4,
+                      color: selected ? MabarColors.clay : MabarColors.faint,
                     ),
                   ),
                 ],
@@ -239,7 +240,7 @@ class _PairOption extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: MabarColors.danger,
+                  color: MabarColors.clay,
                   letterSpacing: 0.5,
                 ),
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/mabar_icons.dart';
 import '../../../core/theme/mabar_theme.dart';
 import '../../../core/widgets/mabar_widgets.dart';
 import '../tournament_controller.dart';
@@ -14,7 +15,7 @@ Future<void> showManagePlayersSheet(BuildContext context) {
     isScrollControlled: true,
     backgroundColor: MabarColors.card,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(MabarRadius.xxxl + 4)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(MabarRadius.sheet)),
     ),
     builder: (_) => const _ManagePlayersSheet(),
   );
@@ -70,7 +71,7 @@ class _ManagePlayersSheetState extends ConsumerState<_ManagePlayersSheet> {
                     width: 36,
                     height: 4,
                     margin: const EdgeInsets.only(bottom: MabarSpacing.x4),
-                    decoration: BoxDecoration(color: MabarColors.border, borderRadius: BorderRadius.circular(2)),
+                    decoration: BoxDecoration(color: MabarColors.line, borderRadius: BorderRadius.circular(2)),
                   ),
                 ),
                 Row(
@@ -79,10 +80,10 @@ class _ManagePlayersSheetState extends ConsumerState<_ManagePlayersSheet> {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: MabarColors.brandTint,
-                        borderRadius: BorderRadius.circular(MabarRadius.md),
+                        color: MabarColors.paper,
+                        borderRadius: BorderRadius.circular(MabarRadius.chip),
                       ),
-                      child: const Icon(Icons.group_outlined, size: 18, color: MabarColors.brand),
+                      child: const Icon(MabarIcons.users, size: 18, color: MabarColors.ink),
                     ),
                     const SizedBox(width: 10),
                     Column(
@@ -93,13 +94,13 @@ class _ManagePlayersSheetState extends ConsumerState<_ManagePlayersSheet> {
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w800,
-                            color: MabarColors.text1,
+                            color: MabarColors.ink,
                             letterSpacing: -0.3,
                           ),
                         ),
                         Text(
                           '$activeCount pemain aktif · berlaku mulai R${active.roundCount + 1}',
-                          style: const TextStyle(fontSize: 11, color: MabarColors.text4),
+                          style: const TextStyle(fontSize: 11, color: MabarColors.faint),
                         ),
                       ],
                     ),
@@ -130,7 +131,7 @@ class _ManagePlayersSheetState extends ConsumerState<_ManagePlayersSheet> {
                 const SizedBox(height: MabarSpacing.x3),
                 const MabarInfoBox(
                   variant: MabarInfoVariant.neutral,
-                  icon: Icons.info_outline,
+                  icon: MabarIcons.info,
                   title: 'Pemain baru langsung ikut main',
                   caption:
                       'Jumlah match mengikuti pemain yang paling jarang main. '
@@ -156,7 +157,7 @@ class _ManagePlayersSheetState extends ConsumerState<_ManagePlayersSheet> {
                 if (!canWithdraw)
                   const Padding(
                     padding: EdgeInsets.only(top: MabarSpacing.x2),
-                    child: Text('Butuh minimal 4 pemain', style: TextStyle(fontSize: 11, color: MabarColors.text4)),
+                    child: Text('Butuh minimal 4 pemain', style: TextStyle(fontSize: 11, color: MabarColors.faint)),
                   ),
               ],
             ),
@@ -187,7 +188,7 @@ class _PlayerRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 2),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: MabarColors.borderSubtle)),
+        border: Border(bottom: BorderSide(color: MabarColors.line)),
       ),
       child: Row(
         children: [
@@ -200,14 +201,14 @@ class _PlayerRow extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: withdrawn ? MabarColors.text4 : MabarColors.text1,
+                    color: withdrawn ? MabarColors.faint : MabarColors.ink,
                     decoration: withdrawn ? TextDecoration.lineThrough : null,
                   ),
                 ),
                 if (withdrawn)
                   const Text(
                     'Keluar · skornya tetap dihitung',
-                    style: TextStyle(fontSize: 11, color: MabarColors.text4),
+                    style: TextStyle(fontSize: 11, color: MabarColors.faint),
                   ),
               ],
             ),
@@ -217,7 +218,7 @@ class _PlayerRow extends StatelessWidget {
           else
             TextButton(
               onPressed: canWithdraw ? onWithdraw : null,
-              style: TextButton.styleFrom(foregroundColor: MabarColors.danger),
+              style: TextButton.styleFrom(foregroundColor: MabarColors.clay),
               child: const Text('Keluarkan'),
             ),
         ],

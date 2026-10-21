@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
@@ -161,7 +162,7 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
                         child: Text(
                           'Isi salah satu, skor lawan terisi otomatis',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 11, color: MabarColors.text4),
+                          style: TextStyle(fontSize: 11, color: MabarColors.faint),
                         ),
                       )
                     else
@@ -173,7 +174,7 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
                             : const Text(
                                 'Maks. $_maxSets set',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 11, color: MabarColors.text4),
+                                style: TextStyle(fontSize: 11, color: MabarColors.faint),
                               ),
                       ),
                   ],
@@ -189,8 +190,8 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
                       onPressed: () => _walkover(active, match),
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.zero,
-                        foregroundColor: MabarColors.danger,
-                        side: const BorderSide(color: MabarColors.danger, width: 1.5),
+                        foregroundColor: MabarColors.clay,
+                        side: const BorderSide(color: MabarColors.clay, width: 1.5),
                       ),
                       child: const Text('WO'),
                     ),
@@ -199,7 +200,7 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
                   Expanded(
                     child: MabarPrimaryButton(
                       label: match.status == MatchStatus.pending ? 'Simpan Skor' : 'Perbarui Skor',
-                      icon: Icons.check,
+                      icon: MabarIcons.check,
                       onPressed: sets == null ? null : () => _save(active, match),
                     ),
                   ),
@@ -226,7 +227,7 @@ class _MatchSummary extends StatelessWidget {
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: MabarSpacing.x5),
       padding: const EdgeInsets.symmetric(horizontal: MabarSpacing.x4, vertical: 14),
-      decoration: BoxDecoration(color: MabarColors.raised, borderRadius: BorderRadius.circular(MabarRadius.xl)),
+      decoration: BoxDecoration(color: MabarColors.paper, borderRadius: BorderRadius.circular(MabarRadius.group)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -238,7 +239,7 @@ class _MatchSummary extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: MabarColors.text4,
+                  color: MabarColors.faint,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -257,7 +258,7 @@ class _MatchSummary extends StatelessWidget {
               Flexible(child: _PairTitle(text: active.pairLabel(match.pair1))),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: MabarSpacing.x2),
-                child: Text('vs', style: TextStyle(fontSize: 11, color: MabarColors.text5)),
+                child: Text('vs', style: TextStyle(fontSize: 11, color: MabarColors.line)),
               ),
               Flexible(child: _PairTitle(text: active.pairLabel(match.pair2))),
             ],
@@ -281,21 +282,21 @@ class _ScoringChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(color: MabarColors.brandTint, borderRadius: BorderRadius.circular(MabarRadius.full)),
+      decoration: BoxDecoration(color: MabarColors.paper, borderRadius: BorderRadius.circular(MabarRadius.chip)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.scoreboard_outlined, size: 14, color: MabarColors.brand),
+          const Icon(MabarIcons.info, size: 14, color: MabarColors.ink),
           const SizedBox(width: 6),
           Flexible(
             child: Text.rich(
               TextSpan(
                 text: config.scoring.label,
-                style: const TextStyle(fontWeight: FontWeight.w700, color: MabarColors.brandDark),
+                style: const TextStyle(fontWeight: FontWeight.w700, color: MabarColors.ink),
                 children: [
                   TextSpan(
                     text: ' · ${config.scoringDescription}',
-                    style: const TextStyle(fontWeight: FontWeight.w500, color: MabarColors.text3),
+                    style: const TextStyle(fontWeight: FontWeight.w500, color: MabarColors.ink3),
                   ),
                 ],
               ),
@@ -316,7 +317,7 @@ class _PairTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: MabarColors.text1, height: 1.2),
+      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: MabarColors.ink, height: 1.2),
     );
   }
 }
@@ -332,7 +333,7 @@ class _SetLabel extends StatelessWidget {
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: MabarColors.text4, letterSpacing: 1),
+        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: MabarColors.faint, letterSpacing: 1),
       ),
     );
   }
@@ -378,7 +379,7 @@ class _SetRow extends StatelessWidget {
             padding: EdgeInsets.only(bottom: 26, left: MabarSpacing.x3, right: MabarSpacing.x3),
             child: Text(
               '–',
-              style: TextStyle(fontSize: 36, fontWeight: FontWeight.w300, color: MabarColors.text5),
+              style: TextStyle(fontSize: 36, fontWeight: FontWeight.w300, color: MabarColors.line),
             ),
           ),
           Expanded(
@@ -414,9 +415,9 @@ class _ScoreCell extends StatelessWidget {
           height: 88,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: winner ? MabarColors.brandTint : MabarColors.card,
-            borderRadius: BorderRadius.circular(MabarRadius.xxxl),
-            border: Border.all(color: winner ? MabarColors.brand : MabarColors.border, width: 2),
+            color: winner ? MabarColors.paper : MabarColors.card,
+            borderRadius: BorderRadius.circular(MabarRadius.scoreBoard),
+            border: Border.all(color: winner ? MabarColors.ink : MabarColors.line, width: 2),
           ),
           child: TextField(
             controller: controller,
@@ -428,7 +429,7 @@ class _ScoreCell extends StatelessWidget {
             style: const TextStyle(
               fontSize: 40,
               fontWeight: FontWeight.w800,
-              color: MabarColors.text1,
+              color: MabarColors.ink,
               letterSpacing: -1,
             ),
             decoration: const InputDecoration(
@@ -450,7 +451,7 @@ class _ScoreCell extends StatelessWidget {
           style: const TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: MabarColors.text4,
+            color: MabarColors.faint,
             letterSpacing: 0.5,
           ),
         ),
@@ -482,7 +483,7 @@ class _SetSummary extends StatelessWidget {
     child: Text(
       text,
       textAlign: TextAlign.center,
-      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.danger),
+      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.clay),
     ),
   );
 
@@ -503,7 +504,7 @@ class _SetSummary extends StatelessWidget {
         child: Text(
           'Seri',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.text3),
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.ink3),
         ),
       );
     }
@@ -517,7 +518,7 @@ class _SetSummary extends StatelessWidget {
             ? '+$diff poin · ${active.pairLabel(winnerPair)} menang'
             : '+$diff game · ${active.pairLabel(winnerPair)} menang set $setNumber',
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.brand),
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.ink),
       ),
     );
   }
@@ -536,15 +537,15 @@ class _AddSetButton extends StatelessWidget {
       child: Container(
         height: 44,
         alignment: Alignment.center,
-        foregroundDecoration: const MabarDashedBorder(color: MabarColors.border, radius: 14, width: 1.5),
+        foregroundDecoration: const MabarDashedBorder(color: MabarColors.line, radius: 14, width: 1.5),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.add, size: 14, color: MabarColors.text3),
+            const Icon(MabarIcons.plus, size: 14, color: MabarColors.ink3),
             const SizedBox(width: MabarSpacing.x2),
             Text(
               label,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: MabarColors.text3),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: MabarColors.ink3),
             ),
           ],
         ),

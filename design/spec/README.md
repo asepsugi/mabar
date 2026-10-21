@@ -19,7 +19,9 @@ Kalau hi-fi berubah: jalankan `python3 tool/hifi_extract.py` (butuh Google Chrom
 ## Urutan kerja
 
 1. **Fondasi** — `tokens.json` → `MabarColors`/`MabarTheme` baru; font `assets/fonts/Archivo[wdth,wght].ttf`
-   (daftarkan di `pubspec.yaml`, hapus Inter setelah tidak dipakai); ikon `phosphor_flutter` (Bold) menggantikan `Icons.*`.
+   (daftarkan di `pubspec.yaml`, hapus Inter setelah tidak dipakai); ikon Phosphor Bold menggantikan `Icons.*`.
+   **Selesai** (2026-10-21): `lib/core/theme/mabar_theme.dart` + `mabar_icons.dart`. Ikon memakai cadangan di hi-fi —
+   font Phosphor Bold resmi sebagai `MabarIcons`, karena `phosphor_flutter` gagal dikompilasi di Flutter 3.47.
 2. **Logika** — semua butir `logic.md`, test dulu. Data test di sana = angka di frame.
 3. **Komponen** — semua widget di `components.md`, masing-masing di `lib/core/widgets/` (atau folder fiturnya kalau
    khusus satu layar), dengan golden minimal satu frame yang memakainya.

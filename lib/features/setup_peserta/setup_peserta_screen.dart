@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
@@ -117,11 +118,11 @@ class _NameField extends StatelessWidget {
       maxLines: 8,
       keyboardType: TextInputType.multiline,
       textCapitalization: TextCapitalization.words,
-      style: const TextStyle(fontSize: 14, color: MabarColors.text1, height: 1.6),
+      style: const TextStyle(fontSize: 14, color: MabarColors.ink, height: 1.6),
       decoration: const InputDecoration(
         hintText: '1. Andi P\n2. Budi S\n3) Citra L',
         contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        hintStyle: TextStyle(fontSize: 14, color: MabarColors.text4, height: 1.6),
+        hintStyle: TextStyle(fontSize: 14, color: MabarColors.faint, height: 1.6),
       ),
     );
   }
@@ -132,7 +133,7 @@ class _FormatHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const style = TextStyle(fontSize: 11, color: MabarColors.text4, height: 1.5);
+    const style = TextStyle(fontSize: 11, color: MabarColors.faint, height: 1.5);
     return const Wrap(
       spacing: 4,
       runSpacing: 4,
@@ -159,7 +160,7 @@ class _ActionChips extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        MabarChip(label: 'Tempel', icon: Icons.content_paste_outlined, onTap: onPaste),
+        MabarChip(label: 'Tempel', icon: MabarIcons.clipboardText, onTap: onPaste),
         const SizedBox(width: 6),
         MabarChip(label: 'Contoh', onTap: onSample),
         const Spacer(),
@@ -177,13 +178,13 @@ class _PlayerPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final valid = result.isValid;
-    final accent = valid ? MabarColors.brand : MabarColors.danger;
+    final accent = valid ? MabarColors.ink : MabarColors.clay;
 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: valid ? MabarColors.brandTint : MabarColors.dangerTint,
-        border: Border.all(color: valid ? MabarColors.brandBorder : MabarColors.dangerBorder),
+        color: valid ? MabarColors.paper : MabarColors.paper,
+        border: Border.all(color: valid ? MabarColors.line : MabarColors.line),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -191,14 +192,14 @@ class _PlayerPreview extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(valid ? Icons.check : Icons.error_outline, size: 14, color: accent),
+              Icon(valid ? MabarIcons.check : MabarIcons.info, size: 14, color: accent),
               const SizedBox(width: 6),
               Text(
                 '${result.count} pemain',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: valid ? MabarColors.brandDark : MabarColors.danger,
+                  color: valid ? MabarColors.ink : MabarColors.clay,
                 ),
               ),
               const Spacer(),
@@ -210,13 +211,13 @@ class _PlayerPreview extends StatelessWidget {
           ),
           if (!valid) ...[
             const SizedBox(height: 4),
-            Text(result.validationError!, style: const TextStyle(fontSize: 11, color: MabarColors.danger, height: 1.5)),
+            Text(result.validationError!, style: const TextStyle(fontSize: 11, color: MabarColors.clay, height: 1.5)),
           ],
           if (result.duplicates.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
               'Nama duplikat dibuang: ${result.duplicates.join(', ')}',
-              style: const TextStyle(fontSize: 11, color: MabarColors.text3, height: 1.5),
+              style: const TextStyle(fontSize: 11, color: MabarColors.ink3, height: 1.5),
             ),
           ],
           const SizedBox(height: 10),
@@ -229,11 +230,11 @@ class _PlayerPreview extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: MabarColors.card,
-                    borderRadius: BorderRadius.circular(MabarRadius.sm),
+                    borderRadius: BorderRadius.circular(MabarRadius.chip),
                   ),
                   child: Text(
                     name,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: MabarColors.text2),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: MabarColors.ink2),
                   ),
                 ),
             ],

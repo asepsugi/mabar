@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
@@ -76,7 +77,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
     final picked = await showModalBottomSheet<int>(
       context: context,
       backgroundColor: MabarColors.card,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(MabarRadius.xxxl))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(MabarRadius.sheet))),
       builder: (_) => _ColorPickerSheet(selected: court.colorIndex),
     );
     if (picked != null) setState(() => court.colorIndex = picked);
@@ -151,7 +152,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
                             : 'Total poin ${ScoringMethodX.minAmericanoPoints}–${ScoringMethodX.maxAmericanoPoints}',
                         style: TextStyle(
                           fontSize: 11,
-                          color: config.hasValidScoring ? MabarColors.text4 : MabarColors.danger,
+                          color: config.hasValidScoring ? MabarColors.faint : MabarColors.clay,
                           height: 1.5,
                         ),
                       ),
@@ -176,7 +177,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
                         padding: EdgeInsets.only(top: 6),
                         child: Text(
                           'Ketuk warna untuk ganti',
-                          style: TextStyle(fontSize: 11, color: MabarColors.text4),
+                          style: TextStyle(fontSize: 11, color: MabarColors.faint),
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -285,8 +286,8 @@ class _ModeCard extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: MabarSpacing.x4, horizontal: MabarSpacing.x3),
         decoration: BoxDecoration(
-          color: active ? MabarColors.brandTint : MabarColors.card,
-          border: Border.all(color: active ? MabarColors.brand : MabarColors.border, width: 2),
+          color: active ? MabarColors.paper : MabarColors.card,
+          border: Border.all(color: active ? MabarColors.ink : MabarColors.line, width: 2),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Stack(
@@ -302,7 +303,7 @@ class _ModeCard extends StatelessWidget {
                     height: 70,
                     child: Center(
                       child: ColorFiltered(
-                        colorFilter: ColorFilter.mode(active ? MabarColors.brand : MabarColors.text3, BlendMode.srcIn),
+                        colorFilter: ColorFilter.mode(active ? MabarColors.ink : MabarColors.ink3, BlendMode.srcIn),
                         child: Image.asset(mode.assetPath, width: 72),
                       ),
                     ),
@@ -310,13 +311,13 @@ class _ModeCard extends StatelessWidget {
                   const SizedBox(height: MabarSpacing.x2),
                   Text(
                     title,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: MabarColors.text1),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: MabarColors.ink),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     desc,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 11, color: MabarColors.text3, height: 1.4),
+                    style: const TextStyle(fontSize: 11, color: MabarColors.ink3, height: 1.4),
                   ),
                 ],
               ),
@@ -328,8 +329,8 @@ class _ModeCard extends StatelessWidget {
                 child: Container(
                   width: 16,
                   height: 16,
-                  decoration: const BoxDecoration(color: MabarColors.brand, shape: BoxShape.circle),
-                  child: const Icon(Icons.check, size: 10, color: MabarColors.textInverse),
+                  decoration: const BoxDecoration(color: MabarColors.ink, shape: BoxShape.circle),
+                  child: const Icon(MabarIcons.check, size: 10, color: Colors.white),
                 ),
               ),
           ],
@@ -351,10 +352,10 @@ class _NumberField extends StatelessWidget {
       controller: controller,
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: MabarColors.text1),
+      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: MabarColors.ink),
       decoration: InputDecoration(
         suffixText: suffix,
-        suffixStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: MabarColors.text3),
+        suffixStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: MabarColors.ink3),
       ),
     );
   }
@@ -373,7 +374,7 @@ class _CourtCountRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text('Jumlah court', style: TextStyle(fontSize: 12, color: MabarColors.text3)),
+        const Text('Jumlah court', style: TextStyle(fontSize: 12, color: MabarColors.ink3)),
         MabarStepper(value: count, min: min, max: max, onChanged: onChanged),
       ],
     );
@@ -398,7 +399,7 @@ class _CourtRow extends StatelessWidget {
             height: 32,
             decoration: BoxDecoration(
               color: MabarColors.courtPalette[court.colorIndex],
-              borderRadius: BorderRadius.circular(MabarRadius.md),
+              borderRadius: BorderRadius.circular(MabarRadius.chip),
               // Ring putih tipis di dalam — penanda bahwa kotak ini bisa ditekan.
               border: Border.all(color: Colors.white.withValues(alpha: 0.6), width: 1.5),
             ),
@@ -416,7 +417,7 @@ class _CourtRow extends StatelessWidget {
                 const Positioned(
                   right: -2,
                   bottom: -3,
-                  child: Icon(Icons.arrow_drop_down, size: 12, color: Colors.white),
+                  child: Icon(MabarIcons.caretRight, size: 12, color: Colors.white),
                 ),
               ],
             ),
@@ -428,7 +429,7 @@ class _CourtRow extends StatelessWidget {
             height: 42,
             child: TextField(
               controller: court.name,
-              style: const TextStyle(fontSize: 14, color: MabarColors.text1),
+              style: const TextStyle(fontSize: 14, color: MabarColors.ink),
               decoration: InputDecoration(
                 hintText: 'Court $number',
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14),
@@ -452,7 +453,7 @@ class _BookingDurationField extends StatelessWidget {
     return Container(
       height: 42,
       padding: const EdgeInsets.only(left: 10, right: 8),
-      decoration: BoxDecoration(color: MabarColors.raised, borderRadius: BorderRadius.circular(MabarRadius.lg)),
+      decoration: BoxDecoration(color: MabarColors.paper, borderRadius: BorderRadius.circular(MabarRadius.group)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -463,7 +464,7 @@ class _BookingDurationField extends StatelessWidget {
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: MabarColors.text1),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: MabarColors.ink),
               decoration: const InputDecoration(
                 filled: false,
                 isDense: true,
@@ -477,7 +478,7 @@ class _BookingDurationField extends StatelessWidget {
           const SizedBox(width: 6),
           const Text(
             'jam',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: MabarColors.text3),
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: MabarColors.ink3),
           ),
         ],
       ),
@@ -496,14 +497,14 @@ class _EstimateInfo extends StatelessWidget {
     if (rounds <= 0) {
       return const MabarInfoBox(
         variant: MabarInfoVariant.warning,
-        icon: Icons.error_outline,
+        icon: MabarIcons.info,
         title: 'Durasi belum diisi',
         caption: 'Isi durasi match dan waktu booking.',
       );
     }
     return MabarInfoBox(
       variant: MabarInfoVariant.success,
-      icon: Icons.check,
+      icon: MabarIcons.check,
       title: '±$rounds round · muat ${rounds * config.courtCount} match',
       caption: '${config.courtCount} court × ${config.matchDurationMinutes} mnt × $rounds slot',
     );
@@ -537,10 +538,10 @@ class _ColorPickerSheet extends StatelessWidget {
                       height: 44,
                       decoration: BoxDecoration(
                         color: MabarColors.courtPalette[i],
-                        borderRadius: BorderRadius.circular(MabarRadius.lg),
-                        border: i == selected ? Border.all(color: MabarColors.text1, width: 2.5) : null,
+                        borderRadius: BorderRadius.circular(MabarRadius.group),
+                        border: i == selected ? Border.all(color: MabarColors.ink, width: 2.5) : null,
                       ),
-                      child: i == selected ? const Icon(Icons.check, size: 18, color: Colors.white) : null,
+                      child: i == selected ? const Icon(MabarIcons.check, size: 18, color: Colors.white) : null,
                     ),
                   ),
               ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../models/models.dart';
 import '../../services/ranking/ranking_calculator.dart';
@@ -73,8 +74,8 @@ enum ShareTheme {
 
   Color get divider => inkAlpha(isLight ? 0.22 : 0.15);
 
-  /// Amber brand terlalu pucat di atas tema lembut, jadi dituakan.
-  Color get trophy => isLight ? const Color(0xFFB45309) : MabarColors.warning;
+  /// Piala: bola di tema gelap, tinta tema di tema lembut (bola hilang di latar terang).
+  Color get trophy => isLight ? ink : MabarColors.ball;
   Color get watermark => inkAlpha(isLight ? 0.22 : 0.18);
 }
 
@@ -173,7 +174,7 @@ class ShareResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(MabarRadius.xxxl),
+      borderRadius: BorderRadius.circular(MabarRadius.poster),
       child: _ShareCardBackground(
         sport: active.config.sport,
         theme: theme,
@@ -416,7 +417,7 @@ class _ShareTitle extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.emoji_events_outlined, size: 22 * scale, color: theme.trophy),
+        Icon(MabarIcons.trophy, size: 22 * scale, color: theme.trophy),
         SizedBox(width: MabarSpacing.x2 * scale),
         // Flexible supaya judul tidak pernah meluber di kanvas sempit.
         Flexible(

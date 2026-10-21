@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/mabar_icons.dart';
 import '../../../core/theme/mabar_theme.dart';
 import '../../../core/widgets/mabar_widgets.dart';
 import '../../../models/models.dart';
@@ -17,7 +18,7 @@ Future<bool> showResumeTournamentSheet(BuildContext context, ActiveTournament so
     isScrollControlled: true,
     backgroundColor: MabarColors.card,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(MabarRadius.xxxl + 4)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(MabarRadius.sheet)),
     ),
     builder: (_) => _ResumeTournamentSheet(source: source, archived: archived),
   );
@@ -66,7 +67,7 @@ class _ResumeTournamentSheetState extends ConsumerState<_ResumeTournamentSheet> 
                 width: 36,
                 height: 4,
                 margin: const EdgeInsets.only(bottom: MabarSpacing.x4),
-                decoration: BoxDecoration(color: MabarColors.border, borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(color: MabarColors.line, borderRadius: BorderRadius.circular(2)),
               ),
             ),
             Row(
@@ -75,10 +76,10 @@ class _ResumeTournamentSheetState extends ConsumerState<_ResumeTournamentSheet> 
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: MabarColors.brandTint,
-                    borderRadius: BorderRadius.circular(MabarRadius.md),
+                    color: MabarColors.paper,
+                    borderRadius: BorderRadius.circular(MabarRadius.chip),
                   ),
-                  child: const Icon(Icons.more_time, size: 18, color: MabarColors.brand),
+                  child: const Icon(MabarIcons.clock, size: 18, color: MabarColors.ink),
                 ),
                 const SizedBox(width: 10),
                 Column(
@@ -89,13 +90,13 @@ class _ResumeTournamentSheetState extends ConsumerState<_ResumeTournamentSheet> 
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
-                        color: MabarColors.text1,
+                        color: MabarColors.ink,
                         letterSpacing: -0.3,
                       ),
                     ),
                     Text(
                       'Skor & peringkat ${lastRound == 1 ? 'R1' : 'R1–R$lastRound'} tetap',
-                      style: const TextStyle(fontSize: 11, color: MabarColors.text4),
+                      style: const TextStyle(fontSize: 11, color: MabarColors.faint),
                     ),
                   ],
                 ),
@@ -114,7 +115,7 @@ class _ResumeTournamentSheetState extends ConsumerState<_ResumeTournamentSheet> 
             const SizedBox(height: MabarSpacing.x4),
             MabarInfoBox(
               variant: ahead.matches > 0 ? MabarInfoVariant.success : MabarInfoVariant.warning,
-              icon: ahead.matches > 0 ? Icons.all_inclusive : Icons.timer_off_outlined,
+              icon: ahead.matches > 0 ? MabarIcons.shuffle : MabarIcons.clock,
               title: ahead.matches > 0 ? 'Cukup untuk ${ahead.matches} match lagi' : 'Tambah jam minimal satu court',
               caption: [
                 if (ahead.rounds > 0) '${ahead.rounds} round (R${lastRound + 1}–R${lastRound + ahead.rounds})',
@@ -127,7 +128,7 @@ class _ResumeTournamentSheetState extends ConsumerState<_ResumeTournamentSheet> 
             const SizedBox(height: MabarSpacing.x4),
             MabarPrimaryButton(
               label: 'Lanjutkan',
-              icon: Icons.play_arrow_rounded,
+              icon: MabarIcons.play,
               onPressed: ahead.matches > 0 || unplayed > 0 ? _resume : null,
             ),
           ],
@@ -170,7 +171,7 @@ class _CourtExtensionRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: MabarColors.borderSubtle)),
+        border: Border(bottom: BorderSide(color: MabarColors.line)),
       ),
       // Badge di tengah tinggi blok kanan (stepper + keterangan sisa jam).
       child: Row(
@@ -186,7 +187,7 @@ class _CourtExtensionRow extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 extraHours == 0 ? remaining : '$remaining → ${_duration(remainingMinutes + extraHours * 60)}',
-                style: const TextStyle(fontSize: 11, color: MabarColors.text4),
+                style: const TextStyle(fontSize: 11, color: MabarColors.faint),
               ),
             ],
           ),

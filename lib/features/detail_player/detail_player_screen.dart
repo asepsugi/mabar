@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
@@ -52,7 +53,7 @@ class DetailPlayerScreen extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: MabarColors.text4,
+                    color: MabarColors.faint,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -75,7 +76,7 @@ class DetailPlayerScreen extends ConsumerWidget {
                     if (profile.playedMatches.isEmpty)
                       const MabarInfoBox(
                         variant: MabarInfoVariant.neutral,
-                        icon: Icons.history,
+                        icon: MabarIcons.clockCounterClockwise,
                         title: 'Belum ada match',
                         caption: 'Muncul setelah skor pertama diisi.',
                       )
@@ -118,15 +119,14 @@ class _PlayerHeader extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: const LinearGradient(
-                colors: [MabarColors.brand, MabarColors.brandDark],
+                colors: [MabarColors.ink, MabarColors.ink],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              boxShadow: MabarShadows.brand,
             ),
             child: Text(
               initial,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: MabarColors.textInverse),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.white),
             ),
           ),
           const SizedBox(width: 14),
@@ -141,14 +141,14 @@ class _PlayerHeader extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
-                    color: MabarColors.text1,
+                    color: MabarColors.ink,
                     letterSpacing: -0.5,
                   ),
                 ),
                 Text(
                   'Peringkat #$position · ${standing.totalPoint} poin · '
                   '${standing.winPercent.toStringAsFixed(1)}% win',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: MabarColors.text4),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: MabarColors.faint),
                 ),
               ],
             ),
@@ -172,7 +172,7 @@ class _StatGrid extends StatelessWidget {
         // Total point jadi metrik utama peringkat, jadi ditaruh paling atas.
         SizedBox(
           width: double.infinity,
-          child: MabarStatBox(value: '${standing.totalPoint}', label: 'Total Point', valueColor: MabarColors.brand),
+          child: MabarStatBox(value: '${standing.totalPoint}', label: 'Total Point', valueColor: MabarColors.ink),
         ),
         const SizedBox(height: 10),
         Row(
@@ -181,7 +181,7 @@ class _StatGrid extends StatelessWidget {
               child: MabarStatBox(
                 value: '${standing.winPercent.toStringAsFixed(1)}%',
                 label: 'Win %',
-                valueColor: MabarColors.brand,
+                valueColor: MabarColors.ink,
               ),
             ),
             const SizedBox(width: 10),
@@ -189,7 +189,7 @@ class _StatGrid extends StatelessWidget {
               child: MabarStatBox(
                 value: '${diff >= 0 ? '+' : ''}$diff',
                 label: scoring == ScoringMethod.americano ? 'Selisih Poin' : 'Selisih Game',
-                valueColor: diff >= 0 ? MabarColors.brand : MabarColors.danger,
+                valueColor: diff >= 0 ? MabarColors.ink : MabarColors.clay,
               ),
             ),
           ],
@@ -224,13 +224,13 @@ class _CoverageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: MabarSpacing.x2),
-      decoration: BoxDecoration(color: MabarColors.raised, borderRadius: BorderRadius.circular(MabarRadius.xl)),
+      decoration: BoxDecoration(color: MabarColors.paper, borderRadius: BorderRadius.circular(MabarRadius.group)),
       child: Column(
         children: [
           _CoverageRow(label: 'Beda partner', value: '$partners / $total'),
-          const Divider(height: 1, color: MabarColors.borderSubtle),
+          const Divider(height: 1, color: MabarColors.line),
           _CoverageRow(label: 'Beda lawan', value: '$opponents / $total'),
-          const Divider(height: 1, color: MabarColors.borderSubtle),
+          const Divider(height: 1, color: MabarColors.line),
           _CoverageRow(label: 'Kalah WO', value: '$woLosses'),
         ],
       ),
@@ -251,10 +251,10 @@ class _CoverageRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 13, color: MabarColors.text2)),
+          Text(label, style: const TextStyle(fontSize: 13, color: MabarColors.ink2)),
           Text(
             value,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: MabarColors.text1),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: MabarColors.ink),
           ),
         ],
       ),
@@ -281,10 +281,10 @@ class _HistoryRow extends StatelessWidget {
     final isWo = match.status == MatchStatus.wo;
 
     final (badgeLabel, badgeColor, background) = switch ((isWo, won, drawn)) {
-      (true, _, _) => ('WO', MabarColors.warning, won ? MabarColors.brandTint : MabarColors.dangerTint),
-      (_, _, true) => ('S', MabarColors.text3, MabarColors.muted),
-      (_, true, _) => ('W', MabarColors.brand, MabarColors.brandTint),
-      _ => ('L', MabarColors.danger, MabarColors.dangerTint),
+      (true, _, _) => ('WO', MabarColors.clay, MabarColors.paper),
+      (_, _, true) => ('S', MabarColors.ink3, MabarColors.fill),
+      (_, true, _) => ('W', MabarColors.ink, MabarColors.paper),
+      _ => ('L', MabarColors.clay, MabarColors.paper),
     };
 
     final detail = isWo
@@ -298,7 +298,7 @@ class _HistoryRow extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: MabarSpacing.x3, vertical: MabarSpacing.x2),
-      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(MabarRadius.lg)),
+      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(MabarRadius.group)),
       child: Row(
         children: [
           Container(
@@ -311,7 +311,7 @@ class _HistoryRow extends StatelessWidget {
               style: TextStyle(
                 fontSize: badgeLabel.length > 1 ? 9 : 10,
                 fontWeight: FontWeight.w800,
-                color: MabarColors.textInverse,
+                color: Colors.white,
               ),
             ),
           ),
@@ -322,9 +322,9 @@ class _HistoryRow extends StatelessWidget {
               children: [
                 Text(
                   'R${match.roundNumber} · vs ${active.pairLabel(opponent)}',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.text1),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.ink),
                 ),
-                Text(detail, style: const TextStyle(fontSize: 10, color: MabarColors.text3)),
+                Text(detail, style: const TextStyle(fontSize: 10, color: MabarColors.ink3)),
               ],
             ),
           ),

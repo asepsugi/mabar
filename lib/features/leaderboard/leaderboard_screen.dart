@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
@@ -45,14 +46,14 @@ class LeaderboardScreen extends ConsumerWidget {
               ),
               const Row(
                 children: [
-                  Icon(Icons.emoji_events_outlined, size: 24, color: MabarColors.warning),
+                  Icon(MabarIcons.trophy, size: 24, color: MabarColors.ink2),
                   SizedBox(width: MabarSpacing.x2),
                   Text(
                     'Peringkat',
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.w800,
-                      color: MabarColors.text1,
+                      color: MabarColors.ink,
                       letterSpacing: -0.8,
                     ),
                   ),
@@ -61,16 +62,16 @@ class LeaderboardScreen extends ConsumerWidget {
               const SizedBox(height: 6),
               Text(
                 '${_roundLabel(active)} · $played/$total match selesai',
-                style: const TextStyle(fontSize: 11, color: MabarColors.text4),
+                style: const TextStyle(fontSize: 11, color: MabarColors.faint),
               ),
               const SizedBox(height: 10),
               ClipRRect(
-                borderRadius: BorderRadius.circular(MabarRadius.full),
+                borderRadius: BorderRadius.circular(MabarRadius.chip),
                 child: LinearProgressIndicator(
                   value: total == 0 ? 0 : played / total,
                   minHeight: 4,
-                  backgroundColor: MabarColors.muted,
-                  valueColor: AlwaysStoppedAnimation(isFinal ? MabarColors.brand : MabarColors.warning),
+                  backgroundColor: MabarColors.fill,
+                  valueColor: AlwaysStoppedAnimation(isFinal ? MabarColors.ink : MabarColors.ball),
                 ),
               ),
               const SizedBox(height: MabarSpacing.x4),
@@ -112,11 +113,11 @@ class LeaderboardScreen extends ConsumerWidget {
                     child: Text(
                       '⚠ $woCount match WO',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: MabarColors.danger),
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: MabarColors.clay),
                     ),
                   ),
                 ),
-              MabarPrimaryButton(label: 'Bagikan', icon: Icons.share, onPressed: () => context.push('/share')),
+              MabarPrimaryButton(label: 'Bagikan', icon: MabarIcons.shareNetwork, onPressed: () => context.push('/share')),
             ],
           ),
         ),
@@ -168,13 +169,8 @@ class _StandingRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: MabarSpacing.x3),
         decoration: BoxDecoration(
-          color: position == 1
-              ? MabarColors.brandTint
-              : position <= 3
-              ? MabarColors.raised
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(MabarRadius.xl),
-          boxShadow: position == 1 ? MabarShadows.sm : null,
+          color: position <= 3 ? MabarColors.paper : Colors.transparent,
+          borderRadius: BorderRadius.circular(MabarRadius.group),
         ),
         child: Row(
           children: [
@@ -192,7 +188,7 @@ class _StandingRow extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: MabarColors.text1,
+                      color: MabarColors.ink,
                       letterSpacing: -0.2,
                     ),
                   ),
@@ -200,7 +196,7 @@ class _StandingRow extends StatelessWidget {
                   Text(
                     'Menang ${standing.wins} · Kalah ${standing.losses}'
                     '${standing.draws > 0 ? ' · Seri ${standing.draws}' : ''}',
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: MabarColors.text4),
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: MabarColors.faint),
                   ),
                 ],
               ),
@@ -214,7 +210,7 @@ class _StandingRow extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: MabarColors.text1,
+                    color: MabarColors.ink,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -225,10 +221,10 @@ class _StandingRow extends StatelessWidget {
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: method == RankingMethod.totalGames
-                        ? MabarColors.text4
+                        ? MabarColors.faint
                         : diffPositive
-                        ? MabarColors.brand
-                        : MabarColors.danger,
+                        ? MabarColors.ink
+                        : MabarColors.clay,
                   ),
                 ),
               ],
@@ -240,39 +236,22 @@ class _StandingRow extends StatelessWidget {
   }
 }
 
-/// `.lb-pos` — lingkaran nomor, emas/perak/perunggu untuk tiga besar.
+/// `.lb-pos` — lingkaran nomor; peringkat 1 diberi warna bola (token `ball`).
 class _PositionBadge extends StatelessWidget {
   final int position;
   const _PositionBadge({required this.position});
 
-  static const _medals = {
-    1: [Color(0xFFFCD34D), Color(0xFFF59E0B)],
-    2: [Color(0xFFE5E7EB), Color(0xFF9CA3AF)],
-    3: [Color(0xFFFDBA74), Color(0xFFEA580C)],
-  };
-
   @override
   Widget build(BuildContext context) {
-    final medal = _medals[position];
+    final first = position == 1;
     return Container(
       width: 30,
       height: 30,
       alignment: Alignment.center,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: medal == null ? MabarColors.card : null,
-        gradient: medal == null
-            ? null
-            : LinearGradient(colors: medal, begin: Alignment.topLeft, end: Alignment.bottomRight),
-        boxShadow: MabarShadows.sm,
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: first ? MabarColors.ball : MabarColors.card),
       child: Text(
         '$position',
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w800,
-          color: medal == null ? MabarColors.text3 : Colors.white,
-        ),
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: first ? MabarColors.ink : MabarColors.ink3),
       ),
     );
   }

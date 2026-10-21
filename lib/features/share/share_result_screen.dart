@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
@@ -22,7 +23,7 @@ class ShareResultScreen extends ConsumerStatefulWidget {
 
 class _ShareResultScreenState extends ConsumerState<ShareResultScreen> {
   ShareFormat _format = ShareFormat.ringkas;
-  ShareTheme _theme = ShareTheme.hijau;
+  ShareTheme _theme = ShareTheme.biru;
   bool _sharing = false;
 
   /// Render poster di luar layar. Ukuran logisnya kecil supaya proporsi teks
@@ -134,7 +135,7 @@ class _ShareResultScreenState extends ConsumerState<ShareResultScreen> {
                     Text(
                       '${_format == ShareFormat.ringkas ? '${ShareSelection.previewCount} pemain teratas' : 'Semua ${selection.all.length} pemain'}'
                       ' · gambar untuk IG Feed & Story',
-                      style: TextStyle(fontSize: 11, color: MabarColors.text4, height: 1.5),
+                      style: TextStyle(fontSize: 11, color: MabarColors.faint, height: 1.5),
                     ),
                   ],
                 ),
@@ -143,15 +144,15 @@ class _ShareResultScreenState extends ConsumerState<ShareResultScreen> {
               const SizedBox(height: MabarSpacing.x2),
               OutlinedButton.icon(
                 onPressed: _finish,
-                icon: const Icon(Icons.home_outlined, size: 16),
+                icon: const Icon(MabarIcons.house, size: 16),
                 label: const Text('Selesai'),
-                style: OutlinedButton.styleFrom(foregroundColor: MabarColors.text2),
+                style: OutlinedButton.styleFrom(foregroundColor: MabarColors.ink2),
               ),
               const SizedBox(height: MabarSpacing.x2),
               const Text(
                 'Hasil turnamen tersimpan otomatis',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 11, color: MabarColors.text4, height: 1.5),
+                style: TextStyle(fontSize: 11, color: MabarColors.faint, height: 1.5),
               ),
             ],
           ),
@@ -205,11 +206,11 @@ class _Swatch extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: MabarColors.card,
-            border: Border.all(color: selected ? MabarColors.brand : MabarColors.border, width: selected ? 2 : 1),
+            border: Border.all(color: selected ? MabarColors.ink : MabarColors.line, width: selected ? 2 : 1),
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(shape: BoxShape.circle, gradient: theme.gradient),
-            child: selected ? Icon(Icons.check, size: 14, color: theme.ink) : null,
+            child: selected ? Icon(MabarIcons.check, size: 14, color: theme.ink) : null,
           ),
         ),
       ),
@@ -227,24 +228,15 @@ class _ShareButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(MabarRadius.xxl + 2),
-        boxShadow: [
-          BoxShadow(color: MabarColors.brand.withValues(alpha: 0.25), offset: const Offset(0, 4), blurRadius: 14),
-        ],
-      ),
-      child: ElevatedButton.icon(
-        onPressed: busy ? null : onPressed,
-        icon: busy
-            ? const SizedBox.square(
-                dimension: 18,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              )
-            : const Icon(Icons.share, size: 18),
-        label: Text(busy ? 'Menyiapkan gambar…' : 'Bagikan Hasil'),
-        style: ElevatedButton.styleFrom(backgroundColor: MabarColors.brand),
-      ),
+    return ElevatedButton.icon(
+      onPressed: busy ? null : onPressed,
+      icon: busy
+          ? const SizedBox.square(
+              dimension: 18,
+              child: CircularProgressIndicator(strokeWidth: 2, color: MabarColors.ink3),
+            )
+          : const Icon(MabarIcons.shareNetwork, size: 18),
+      label: Text(busy ? 'Menyiapkan gambar…' : 'Bagikan Hasil'),
     );
   }
 }

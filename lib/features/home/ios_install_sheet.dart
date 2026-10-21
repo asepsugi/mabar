@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 
@@ -11,7 +12,7 @@ Future<void> showIosInstallSheet(BuildContext context) {
     isScrollControlled: true,
     backgroundColor: MabarColors.card,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(MabarRadius.xxxl + 4)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(MabarRadius.sheet)),
     ),
     builder: (_) => const _IosInstallSheet(),
   );
@@ -34,7 +35,7 @@ class _IosInstallSheet extends StatelessWidget {
                 width: 36,
                 height: 4,
                 margin: const EdgeInsets.only(bottom: MabarSpacing.x4),
-                decoration: BoxDecoration(color: MabarColors.border, borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(color: MabarColors.line, borderRadius: BorderRadius.circular(2)),
               ),
             ),
             Row(
@@ -43,10 +44,10 @@ class _IosInstallSheet extends StatelessWidget {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: MabarColors.brandTint,
-                    borderRadius: BorderRadius.circular(MabarRadius.md),
+                    color: MabarColors.paper,
+                    borderRadius: BorderRadius.circular(MabarRadius.chip),
                   ),
-                  child: const Icon(Icons.install_mobile, size: 18, color: MabarColors.brand),
+                  child: const Icon(MabarIcons.deviceMobile, size: 18, color: MabarColors.ink),
                 ),
                 const SizedBox(width: 10),
                 const Column(
@@ -57,11 +58,11 @@ class _IosInstallSheet extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
-                        color: MabarColors.text1,
+                        color: MabarColors.ink,
                         letterSpacing: -0.3,
                       ),
                     ),
-                    Text('Lewat menu Bagikan di Safari', style: TextStyle(fontSize: 11, color: MabarColors.text4)),
+                    Text('Lewat menu Bagikan di Safari', style: TextStyle(fontSize: 11, color: MabarColors.faint)),
                   ],
                 ),
               ],
@@ -71,7 +72,7 @@ class _IosInstallSheet extends StatelessWidget {
             // "···" (bukan "⋯"): glyph itu tidak ada di Inter.
             const _Step(
               number: 1,
-              icon: Icons.ios_share,
+              icon: MabarIcons.export,
               text: [
                 TextSpan(text: 'Ketuk '),
                 TextSpan(text: 'Bagikan', style: _bold),
@@ -81,7 +82,7 @@ class _IosInstallSheet extends StatelessWidget {
             // Label menunya ikut bahasa iPhone, jadi versi Inggrisnya ikut ditulis.
             const _Step(
               number: 2,
-              icon: Icons.add_box_outlined,
+              icon: MabarIcons.plusSquare,
               text: [
                 TextSpan(text: 'Pilih '),
                 TextSpan(text: 'Tambah ke Layar Utama', style: _bold),
@@ -90,7 +91,7 @@ class _IosInstallSheet extends StatelessWidget {
             ),
             const _Step(
               number: 3,
-              icon: Icons.check_circle_outline,
+              icon: MabarIcons.check,
               text: [
                 TextSpan(text: 'Ketuk '),
                 TextSpan(text: 'Tambah', style: _bold),
@@ -103,7 +104,7 @@ class _IosInstallSheet extends StatelessWidget {
             // Browser bawaan Instagram/Facebook dkk. tidak punya menu ini sama sekali.
             const MabarInfoBox(
               variant: MabarInfoVariant.neutral,
-              icon: Icons.info_outline,
+              icon: MabarIcons.info,
               title: 'Buka di Safari dulu',
               caption: 'Kalau link ini dibuka dari dalam app lain, menu Tambah ke Layar Utama tidak ada.',
             ),
@@ -134,7 +135,7 @@ class _Step extends StatelessWidget {
       decoration: last
           ? null
           : const BoxDecoration(
-              border: Border(bottom: BorderSide(color: MabarColors.borderSubtle)),
+              border: Border(bottom: BorderSide(color: MabarColors.line)),
             ),
       child: Row(
         children: [
@@ -142,10 +143,10 @@ class _Step extends StatelessWidget {
             width: 24,
             height: 24,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(color: MabarColors.brandTint, shape: BoxShape.circle),
+            decoration: const BoxDecoration(color: MabarColors.paper, shape: BoxShape.circle),
             child: Text(
               '$number',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.brand),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.ink),
             ),
           ),
           const SizedBox(width: MabarSpacing.x3),
@@ -155,14 +156,14 @@ class _Step extends StatelessWidget {
               children: [
                 Text.rich(
                   TextSpan(children: text),
-                  style: const TextStyle(fontSize: 14, color: MabarColors.text1, height: 1.4),
+                  style: const TextStyle(fontSize: 14, color: MabarColors.ink, height: 1.4),
                 ),
-                Text(caption, style: const TextStyle(fontSize: 11, color: MabarColors.text4, height: 1.4)),
+                Text(caption, style: const TextStyle(fontSize: 11, color: MabarColors.faint, height: 1.4)),
               ],
             ),
           ),
           const SizedBox(width: MabarSpacing.x3),
-          Icon(icon, size: 22, color: MabarColors.text3),
+          Icon(icon, size: 22, color: MabarColors.ink3),
         ],
       ),
     );

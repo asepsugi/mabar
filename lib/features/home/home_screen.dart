@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_brand_mark.dart';
 import '../../core/widgets/mabar_widgets.dart';
@@ -77,7 +78,7 @@ class HomeScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: MabarColors.text4,
+                          color: MabarColors.faint,
                           letterSpacing: 0.3,
                         ),
                       ),
@@ -86,7 +87,7 @@ class HomeScreen extends ConsumerWidget {
                       const SizedBox(height: 14),
                       const Text(
                         'Skor tersimpan otomatis · v1.0',
-                        style: TextStyle(fontSize: 11, color: MabarColors.text4, height: 1.5),
+                        style: TextStyle(fontSize: 11, color: MabarColors.faint, height: 1.5),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -119,7 +120,7 @@ class _BrandHero extends StatelessWidget {
   const _BrandHero();
 
   /// Full-bleed sampai tepi layar, jadi hanya sudut bawah yang dibulatkan.
-  static const _heroRadius = BorderRadius.vertical(bottom: Radius.circular(MabarRadius.xxxl + 4));
+  static const _heroRadius = BorderRadius.vertical(bottom: Radius.circular(MabarRadius.homePanel));
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +151,7 @@ class _BrandHero extends StatelessWidget {
                 const SizedBox(height: MabarSpacing.x1),
                 const Text(
                   'Turnamen Tennis & Padel',
-                  style: TextStyle(fontSize: 13, color: Color(0xD9FFFFFF), fontWeight: FontWeight.w500),
+                  style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -211,7 +212,7 @@ class _ResumeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final config = active.config;
     return _ActionCard(
-      icon: Icons.play_circle_outline,
+      icon: MabarIcons.play,
       title: title,
       subtitle:
           '${config.sport.label} · ${config.mode.label} · ${config.players.length} pemain · '
@@ -236,7 +237,7 @@ class _InstallCard extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.fromLTRB(MabarSpacing.x5, MabarSpacing.x4, MabarSpacing.x5, 0),
           child: _ActionCard(
-            icon: Icons.install_mobile,
+            icon: MabarIcons.deviceMobile,
             title: 'Pasang Mabar di HP',
             subtitle: 'Buka dari layar utama, tanpa browser',
             onTap: mode == AppInstallMode.prompt ? promptAppInstall : () => showIosInstallSheet(context),
@@ -261,13 +262,13 @@ class _ActionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(MabarSpacing.x4),
         decoration: BoxDecoration(
-          color: MabarColors.brandTint,
-          border: Border.all(color: MabarColors.brandBorder),
-          borderRadius: BorderRadius.circular(MabarRadius.xxl),
+          color: MabarColors.paper,
+          border: Border.all(color: MabarColors.line),
+          borderRadius: BorderRadius.circular(MabarRadius.group),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 22, color: MabarColors.brand),
+            Icon(icon, size: 22, color: MabarColors.ink),
             const SizedBox(width: MabarSpacing.x3),
             Expanded(
               child: Column(
@@ -275,14 +276,14 @@ class _ActionCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: MabarColors.brandDark),
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: MabarColors.ink),
                   ),
                   const SizedBox(height: 2),
-                  Text(subtitle, style: const TextStyle(fontSize: 11, color: MabarColors.text3)),
+                  Text(subtitle, style: const TextStyle(fontSize: 11, color: MabarColors.ink3)),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, size: 20, color: MabarColors.brand),
+            const Icon(MabarIcons.caretRight, size: 20, color: MabarColors.ink),
           ],
         ),
       ),
@@ -306,7 +307,7 @@ class _SportSelector extends ConsumerWidget {
             TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Batal')),
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              style: TextButton.styleFrom(foregroundColor: MabarColors.danger),
+              style: TextButton.styleFrom(foregroundColor: MabarColors.clay),
               child: const Text('Hapus & Mulai Baru'),
             ),
           ],
@@ -349,7 +350,7 @@ class _SportButtonState extends State<_SportButton> {
 
   @override
   Widget build(BuildContext context) {
-    final accent = _highlighted ? MabarColors.brand : MabarColors.text3;
+    final accent = _highlighted ? MabarColors.ink : MabarColors.ink3;
     return MouseRegion(
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() => _hovering = false),
@@ -365,9 +366,8 @@ class _SportButtonState extends State<_SportButton> {
           transform: Matrix4.translationValues(0, _highlighted ? -2 : 0, 0),
           decoration: BoxDecoration(
             color: MabarColors.card,
-            border: Border.all(color: _highlighted ? MabarColors.brand : MabarColors.border, width: 2),
-            borderRadius: BorderRadius.circular(MabarRadius.xxl + 2),
-            boxShadow: _highlighted ? MabarShadows.md : null,
+            border: Border.all(color: _highlighted ? MabarColors.ink : MabarColors.line, width: 2),
+            borderRadius: BorderRadius.circular(MabarRadius.group),
           ),
           child: Column(
             children: [

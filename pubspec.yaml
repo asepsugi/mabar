@@ -48,28 +48,25 @@ flutter_launcher_icons:
   ios: true
   # iOS menolak icon ber-alpha; latarnya memang sudah penuh, ini cuma penjaga.
   remove_alpha_ios: true
-  # PWA: ikon + favicon ikut digenerate dari sumber yang sama. Warnanya = MabarColors.background,
+  # PWA: ikon + favicon ikut digenerate dari sumber yang sama. Warnanya = MabarColors.paper,
   # sama dengan latar app supaya splash PWA dan status bar menyatu dengan layar pertama.
   web:
     generate: true
     image_path: assets/icon/app_icon.png
-    background_color: "#FAFAFA"
-    theme_color: "#FAFAFA"
+    background_color: "#EEF2F5"
+    theme_color: "#EEF2F5"
 
 flutter:
   uses-material-design: true
   assets:
     - assets/images/
   fonts:
-    - family: Inter
+    # Satu file variabel (wght 100–900, wdth 62–125): berat lewat fontWeight, lebar lewat
+    # FontVariation('wdth', n). Lihat MabarType.
+    - family: Archivo
       fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Inter-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Inter-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Inter-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Inter-ExtraBold.ttf
-          weight: 800
+        - asset: "assets/fonts/Archivo[wdth,wght].ttf"
+    # Ikon Phosphor Bold, dipakai lewat MabarIcons.
+    - family: PhosphorBold
+      fonts:
+        - asset: assets/fonts/Phosphor-Bold.ttf

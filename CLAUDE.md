@@ -8,13 +8,11 @@ App Flutter untuk host turnamen mabar tennis/padel (klub, 4–20 pemain, 1 devic
   catatan perilaku, Cakupan. Acuan visual dan perilaku untuk semua pekerjaan UI berikutnya.
 - `design/spec/` — paket implementasi v2. **Mulai dari `design/spec/README.md`** (urutan kerja, aturan golden), lalu
   `tokens.json`, `components.md`, `logic.md` (aturan logika yang berubah + data test), `screens/*.md` (per alur).
-- `design-tokens.json` — token desain **lama** yang menjadi `lib/core/theme/mabar_theme.dart` sekarang; diganti
-  `design/spec/tokens.json` saat fondasi v2.
-
-Kode di `lib/` masih desain lama. Hi-fi lama (11 layar, Inter, hijau) ada di git: `git show dae32c9:hifi.html`.
+Fondasi v2 (token, Archivo, ikon) sudah terpasang di `lib/`; komponen dan tata letak layar masih desain lama yang
+warnanya dipetakan ke token baru. Hi-fi lama (11 layar, Inter, hijau) ada di git: `git show dae32c9:hifi.html`.
 Bagian "Status" di bawah menggambarkan app yang berjalan sekarang, bukan desain v2.
 
-## Redesain v2 (final, belum diimplementasi)
+## Redesain v2 (final, implementasi bertahap)
 
 Tujuannya tampilan yang tidak terkesan AI-generated: arah "papan skor pinggir lapangan" — biru court + tinta +
 kuning bola, Archivo variabel (`assets/fonts/Archivo[wdth,wght].ttf`, sumbu `wdth` untuk angka condensed), ikon
@@ -27,6 +25,20 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
 - Verifikasi visual: `expectMatchesHifi(tester, layar, '<id frame>')` di `test/hifi/hifi_golden.dart` membandingkan
   render Flutter dengan `design/frames/<id>.png` (2x, Archivo dimuat; gagal → `build/hifi_diff/`). Jangan klaim
   layar sudah sesuai tanpa golden lolos.
+- **Fondasi selesai** (langkah 1 di `design/spec/README.md`), semuanya di `lib/core/theme/`:
+  - `mabar_theme.dart` — `MabarColors` (token v2 saja; token lama sudah dipetakan lewat tabel "Token lama → baru"
+    di hi-fi dan dihapus), `MabarSpacing`, `MabarRadius`, `MabarSize` (tinggi sentuh, ukuran ikon), `MabarShadows`
+    (hanya panel Beranda & menu ⋯; blur CSS dikonversi ke sigma Flutter), `MabarType` (skala huruf; angka besar =
+    `numVariations` wdth 72 + `tabular`), dan `MabarTheme.light()`. Setiap `MabarType` membawa `fontFamily` sendiri:
+    `ButtonStyle.textStyle`, judul dialog, dan isi snackbar **mengganti** gaya tema (tidak di-merge), jadi `TextStyle`
+    tanpa keluarga di situ jatuh ke Roboto/SF. Semua slot `TextTheme` menulis `letterSpacing: 0` + `height`, kalau
+    tidak geometri Material 3 ikut masuk.
+  - `mabar_icons.dart` — `MabarIcons`, 31 ikon Phosphor Bold hi-fi sebagai `IconData` konstan dari
+    `assets/fonts/Phosphor-Bold.ttf` (`@phosphor-icons/web@2.1.1`, MIT; codepoint dari `style.css`-nya). Paket
+    `phosphor_flutter` **tidak** dipakai: tidak dirawat sejak 2024 dan gagal dikompilasi karena `IconData` sekarang
+    `final class`. Jangan menambah `Icons.*` Material; ikon baru = konstanta baru di sini.
+  - Inter dan `design-tokens.json` lama sudah dihapus. Warna PWA (`web/manifest.json`, `flutter_launcher_icons`) =
+    `paper`; ikon app-nya baru diganti di langkah painter.
 - Kalau hi-fi diubah: `python3 tool/hifi_extract.py` me-render ulang `design/frames/` dan menulis ulang
   `design/spec/screens/` + `components.md` (butuh Google Chrome + internet untuk font). Jangan edit hasilnya dengan tangan.
 - Membaca hi-fi: file ±320 KB tanpa base64 besar, aman dibaca per bagian (`<section class="flow" id="beranda">`,
@@ -50,7 +62,7 @@ Konvensi: komentar seperlunya dan dalam bahasa Indonesia, menjelaskan *kenapa*. 
 
 Alur penuh jalan: Home → Peserta → Konfigurasi → Pasangan (Fixed) / Mode Endless (Mixed) → Jadwal 6a/6b → Input Skor + sheet WO → Peringkat → Detail Pemain → Share.
 
-Mesin domain yang sudah ada + ter-test (81 test lulus — 78 domain/widget + 3 alat pembanding hi-fi di `test/hifi/`; `flutter analyze` bersih kecuali 2 info lint lama di `models.dart`):
+Mesin domain yang sudah ada + ter-test (82 test lulus — 78 domain/widget + 4 alat pembanding hi-fi di `test/hifi/`; `flutter analyze` bersih kecuali 2 info lint lama di `models.dart`):
 - `pairing/player_name_parser.dart` — parser textarea nama.
 - `pairing/pair_generator.dart` — pasangan Fixed (acak/manual), sisa pemain ganjil.
 - `schedule/round_robin_generator.dart` — circle method. **Invariant:** satu putaran circle dipotong jadi beberapa round sebesar jumlah court, tidak pernah menggabungkan dua putaran (kalau digabung, satu pair bisa main di dua lapangan bersamaan).
@@ -84,7 +96,7 @@ Tombol kirim di layar Share memakai share sheet sistem (`Icons.share`, label "Ba
 
 Share (`features/share/share_card.dart`) mengirim **gambar**, bukan cuma teks: poster 1080×1080 (IG Feed) dan 1080×1920 (IG Story) di-render lewat `screenshot` lalu dibagikan dengan `Share.shareXFiles`, teks hasil jadi caption. `ShareSelection` menentukan isi kartu/poster: Ringkas = 5 teratas + "+n pemain lainnya", Lengkap = semua pemain. Judul kartunya memakai `Icons.emoji_events_outlined` (piala yang sama dengan header layar Peringkat), bukan emoji 🏆 — emoji ikut font tiap device dan tidak ikut ter-render saat poster dibuat. Warna latarnya dipilih host lewat selector di bawah banner dan dipakai kartu preview sekaligus kedua gambar. `ShareTheme` punya 10 gradien: 6 gelap (tinta putih) + 4 lembut/nude (peach, nude, sage, lilac) yang tintanya gelap. Semua warna teks, garis pemisah, kilau, watermark, dan ikon piala diturunkan dari `theme.ink` — jangan menaruh `Colors.white` langsung di kartu, nanti hilang di tema terang. Catatan layout: tema memberi `height: 1.5` ke body text — baris poster memakai `height: 1.1` supaya `FittedBox` tidak mengecilkannya tanpa perlu. Tiap ukuran punya `typeScale` sendiri (Feed 1.15, Story 1.5) karena kanvas 1:1 jauh lebih pendek; margin tepinya di `SharePosterSize.padding`.
 
-Cara melihat hasil poster tanpa build web: test sekali pakai yang me-render `ShareResultPoster` di `RepaintBoundary` lalu `toImage(pixelRatio: 3)` di dalam `tester.runAsync`, dan simpan PNG-nya. Wajib `FontLoader('Inter')` + `DefaultTextStyle(fontFamily: 'Inter')` — tanpa itu `flutter test` memakai font Ahem dan proporsinya menyesatkan. `Image.asset` dan font ikon memang tidak ikut ter-render di test.
+Cara melihat hasil poster tanpa build web: test sekali pakai yang me-render `ShareResultPoster` di `RepaintBoundary` lalu `toImage(pixelRatio: 3)` di dalam `tester.runAsync`, dan simpan PNG-nya. Wajib `loadHifiFonts()` (`test/hifi/hifi_golden.dart`, memuat Archivo + font ikon `PhosphorBold`) dan tema `MabarTheme.light()` — tanpa itu `flutter test` memakai font Ahem dan proporsinya menyesatkan. `Image.asset` memang tidak ikut ter-render di test.
 
 ## Persistensi lokal
 
@@ -133,7 +145,7 @@ tidak dipakai lagi: semua orang disebut "pemain" (layar Pemain, Kelola pemain, U
 
 ## Aset ilustrasi
 
-`assets/images/` — raket tennis/padel (`SportTypeX.assetPath`) dan ilustrasi mode Fixed/Mixed (`PartnerModeX.assetPath`). Semuanya PNG transparan dengan garis berwarna **satu token yang sama, `MabarColors.text3` (#6B7280)**; kalau menambah aset baru, samakan warnanya — beberapa tempat menampilkan aset apa adanya (kartu Home, chip Jadwal) sehingga beda warna langsung kelihatan. Tempat lain mewarnai ulang lewat `ColorFiltered(BlendMode.srcIn)` (watermark share ikut tema, ilustrasi mode ikut status terpilih), dan itu hanya bekerja kalau latar aset benar-benar transparan.
+`assets/images/` — raket tennis/padel (`SportTypeX.assetPath`) dan ilustrasi mode Fixed/Mixed (`PartnerModeX.assetPath`). Semuanya PNG transparan dengan garis berwarna **satu abu yang sama, #6B7280** (token `text3` desain lama; hi-fi v2 memakai raket apa adanya dan menggelapkannya saat terpilih, ilustrasi mode diganti ikon); kalau menambah aset baru, samakan warnanya — beberapa tempat menampilkan aset apa adanya (kartu Home, chip Jadwal) sehingga beda warna langsung kelihatan. Tempat lain mewarnai ulang lewat `ColorFiltered(BlendMode.srcIn)` (watermark share ikut tema, ilustrasi mode ikut status terpilih), dan itu hanya bekerja kalau latar aset benar-benar transparan.
 
 Sumber aslinya JPEG berlatar putih; konversinya: potong bingkai tipis 1-2px di tepi file, putih → transparan dengan alpha bertingkat (biar tepi anti-alias tidak bergerigi), pangkas ke isi, lalu beri padding mengikuti rasio isi:kanvas aset lama supaya ukuran tampilnya tidak bergeser.
 
@@ -200,7 +212,9 @@ PWA/offline: **jangan** `flutter build web` langsung. Di Flutter 3.47 `flutter_s
 meng-unregister dirinya, jadi offline ditangani `web/sw.js` sendiri (cache-first, didaftarkan di `index.html`).
 `tool/build_web.sh` membangun dengan `--no-web-resources-cdn` (CanvasKit dari server sendiri, bukan gstatic) lalu
 mengisi daftar precache + versi di `sw.js`; `canvaskit/` sengaja tidak di-precache (beberapa varian ~5MB) dan
-ter-cache saat dipakai. `web/flutter_bootstrap.js` memanggil `load()` tanpa `serviceWorkerSettings` — kalau
+ter-cache saat dipakai. Daftar precache berisi URL: nama aset yang di-encode Flutter di disk (`Archivo%5Bwdth,wght%5D.ttf`)
+ditulis dengan `%25`; satu URL 404 saja menggagalkan `cache.addAll` dan service worker tidak pernah ter-install. Setelah
+build, cek semua URL di `PRECACHE` mengembalikan 200. `web/flutter_bootstrap.js` memanggil `load()` tanpa `serviceWorkerSettings` — kalau
 SW Flutter didaftarkan, scope-nya sama dan ia mencopot `sw.js`. Offline sudah diuji: server dimatikan, reload, app tetap jalan.
 Update: `sw.js` baru terunduh di background saat app dibuka; pada pembukaan **berikutnya** `index.html` mengaktifkannya
 (`skipWaiting` via pesan) lalu reload sekali. Jadi setelah rebuild, versi baru baru terlihat di reload ke-2 —
