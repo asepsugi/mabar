@@ -52,6 +52,7 @@ List<StandingEntry> _standings(ActiveTournament active) => standingEntries(
         players: active.config.players,
         matches: active.matches,
         method: RankingMethod.winPercent,
+        format: active.config.format,
       ),
     );
 

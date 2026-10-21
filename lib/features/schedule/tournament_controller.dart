@@ -75,6 +75,7 @@ class TournamentController extends Notifier<ActiveTournament?> {
       courts: current.courtsAvailableForRound(roundNumber),
       history: current.matches,
       roundNumber: roundNumber,
+      seed: current.drawSeed,
       matchCredits: current.matchCredits,
     );
     if (round == null) return;
@@ -193,30 +194,20 @@ class TournamentController extends Notifier<ActiveTournament?> {
     state = current.copyWith(tournament: change(current.tournament));
   }
 
-  void submitScore(String matchId, List<SetScore> sets) {
-    _update(
-      (t) => t.copyWith(
-        matches: [
-          for (final m in t.matches)
-            if (m.id == matchId) m.copyWith(sets: sets, status: MatchStatus.done) else m,
-        ],
-      ),
-    );
-  }
+  void submitScore(String matchId, List<SetScore> sets) => _updateMatch(matchId, (m) => m.withScore(sets));
 
-  void markWalkover(String matchId, {required String loserPairId, WoReason? reason}) {
-    _update(
-      (t) => t.copyWith(
-        matches: [
-          for (final m in t.matches)
-            if (m.id == matchId)
-              m.copyWith(status: MatchStatus.wo, woLoserPairId: loserPairId, woReason: reason)
-            else
-              m,
-        ],
-      ),
-    );
-  }
+  /// [reason] null menghapus alasan lama (alasan yang dilepas di sheet WO benar-benar hilang).
+  void markWalkover(String matchId, {required String loserPairId, WoReason? reason}) =>
+      _updateMatch(matchId, (m) => m.asWalkover(loserPairId: loserPairId, reason: reason));
+
+  void _updateMatch(String matchId, MatchGame Function(MatchGame) change) => _update(
+    (t) => t.copyWith(
+      matches: [
+        for (final m in t.matches)
+          if (m.id == matchId) change(m) else m,
+      ],
+    ),
+  );
 
   /// Tutup turnamen aktif dan kembali ke keadaan awal. Hasilnya tidak dihapus,
   /// hanya pindah ke slot "turnamen terakhir selesai".
@@ -314,5 +305,6 @@ final standingsProvider = Provider<List<PlayerStanding>>((ref) {
     players: active.config.players,
     matches: active.matches,
     method: ref.watch(rankingMethodProvider),
+    format: active.config.format,
   );
 });

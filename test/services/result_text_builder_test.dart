@@ -56,34 +56,41 @@ void main() {
       _match(status: MatchStatus.pending, round: 3),
     ];
     final tournament = _tournament(matches);
+    final active = ActiveTournament(tournament: tournament);
     final standings = standingEntries(
       standings: RankingCalculator.rank(
         players: _players,
         matches: matches,
         method: RankingMethod.winPercent,
+        format: tournament.config.format,
       ),
     );
 
     test('ringkas lists every player once, without per-round detail', () {
       final text = ResultTextBuilder.build(
-        tournament: tournament,
+        active: active,
         standings: standings,
         format: ShareFormat.ringkas,
       );
 
       expect(text, contains('Mabar Turnamen · Padel'));
-      expect(text, contains('Peringkat Akhir'));
+      // R3 belum dimainkan dan turnamen belum diakhiri.
+      expect(text, contains('Peringkat Sementara'));
       for (final p in _players) {
         expect(text, contains(p.name));
       }
       expect(text, isNot(contains('Hasil per Round')));
       // Total point ikut dibagikan, bukan cuma win%.
-      expect(text, contains('${standings.first.standing.totalPoint} poin'));
+      // Race to 6: satuannya game. Pemenang WO dapat 6 game (PRD 4.4): 6 + 6 = 12. Statistik Andi dan
+      // Budi identik, jadi nomornya sama.
+      expect(text, contains('1. Andi P — 12 game'));
+      expect(text, contains('1. Budi S — 12 game'));
+      expect(text, contains('3. Citra L — 4 game'));
     });
 
     test('lengkap adds per-round results and skips unplayed matches', () {
       final text = ResultTextBuilder.build(
-        tournament: tournament,
+        active: active,
         standings: standings,
         format: ShareFormat.lengkap,
       );
@@ -95,18 +102,24 @@ void main() {
       expect(text, isNot(contains('· Round 3')));
     });
 
-    test('summary line counts rounds, played matches and WO', () {
+    test('summary line counts played rounds, played matches and WO', () {
       expect(
-        ResultTextBuilder.summaryLine(tournament),
-        '3 round · 2 match · 1 WO · 14 Sep 2026',
+        ResultTextBuilder.summaryLine(active),
+        '2 round · 2 match · 1 WO · 14 Sep 2026',
       );
+    });
+
+    test('peringkat akhir kalau turnamen sudah diakhiri', () {
+      final finished = ActiveTournament(tournament: tournament.copyWith(isFinished: true));
+      final text = ResultTextBuilder.build(active: finished, standings: standings, format: ShareFormat.ringkas);
+      expect(text, contains('Peringkat Akhir'));
     });
 
     test('summary line omits WO when there is none', () {
       final clean = _tournament([
         _match(status: MatchStatus.done, sets: const [SetScore(side1: 6, side2: 0)]),
       ]);
-      expect(ResultTextBuilder.summaryLine(clean), '1 round · 1 match · 14 Sep 2026');
+      expect(ResultTextBuilder.summaryLine(ActiveTournament(tournament: clean)), '1 round · 1 match · 14 Sep 2026');
     });
   });
 }

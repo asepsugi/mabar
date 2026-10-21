@@ -64,8 +64,8 @@ class TournamentCodec {
     'sport': c.sport.name,
     'mode': c.mode.name,
     'matchDurationMinutes': c.matchDurationMinutes,
-    'scoring': c.scoring.name,
-    'americanoPoints': c.americanoPoints,
+    'scoring': c.format.method.name,
+    'target': c.format.target,
     'courts': [
       for (final court in c.courts)
         {
@@ -112,9 +112,7 @@ class TournamentCodec {
     sport: SportType.values.byName(j['sport'] as String),
     mode: PartnerMode.values.byName(j['mode'] as String),
     matchDurationMinutes: j['matchDurationMinutes'] as int,
-    // Simpanan dari sebelum ada pilihan metode skor selalu skor tennis.
-    scoring: ScoringMethod.values.byName((j['scoring'] as String?) ?? ScoringMethod.tennis.name),
-    americanoPoints: (j['americanoPoints'] as int?) ?? ScoringMethodX.defaultAmericanoPoints,
+    format: _readFormat(j),
     courts: [
       for (final c in j['courts'] as List)
         Court(
@@ -129,6 +127,17 @@ class TournamentCodec {
         ? null
         : [for (final p in j['fixedPairs'] as List) _readPair(p as Map<String, dynamic>)],
   );
+
+  /// Format skor. Kunci lama tetap sah tanpa menaikkan [schemaVersion]: tanpa `scoring` (sebelum ada
+  /// pilihan metode) dan `tennis` adalah skor per set best of 3; Americano dulu menyimpan totalnya di
+  /// `americanoPoints`, bukan `target`.
+  static ScoreFormat _readFormat(Map<String, dynamic> j) {
+    final scoring = j['scoring'] as String?;
+    if (scoring == null || scoring == 'tennis') return ScoreFormat.legacySets;
+    final method = ScoringMethod.values.byName(scoring);
+    final target = (j['target'] as int?) ?? (j['americanoPoints'] as int?) ?? method.defaultTarget;
+    return ScoreFormat(method, target);
+  }
 
   static Pair _readPair(Map<String, dynamic> j) =>
       Pair(id: j['id'] as String, player1Id: j['player1Id'] as String, player2Id: j['player2Id'] as String);

@@ -23,6 +23,8 @@ Kalau hi-fi berubah: jalankan `python3 tool/hifi_extract.py` (butuh Google Chrom
    **Selesai** (2026-10-21): `lib/core/theme/mabar_theme.dart` + `mabar_icons.dart`. Ikon memakai cadangan di hi-fi —
    font Phosphor Bold resmi sebagai `MabarIcons`, karena `phosphor_flutter` gagal dikompilasi di Flutter 3.47.
 2. **Logika** — semua butir `logic.md`, test dulu. Data test di sana = angka di frame.
+   **Selesai** (2026-10-21) untuk model/service; label round (§8) dan tampilan Bagikan (§9) dikerjakan di layarnya.
+   Satu keputusan host masih terbuka: skor per set turnamen lama (`legacySets`) di layar Input Skor/Jadwal v2.
 3. **Komponen** — semua widget di `components.md`, masing-masing di `lib/core/widgets/` (atau folder fiturnya kalau
    khusus satu layar), dengan golden minimal satu frame yang memakainya.
 4. **Painter lapangan** — satu `CustomPainter` dengan parameter olahraga/transisi `t` (01g) untuk banner Beranda

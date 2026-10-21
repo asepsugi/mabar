@@ -255,7 +255,6 @@ class ShareResultPoster extends StatelessWidget {
                     for (var i = 0; i < standings.length; i++)
                       Expanded(
                         child: _PosterRow(
-                          position: i + 1,
                           entry: standings[i],
                           showDivider: i != standings.length - 1,
                           method: method,
@@ -282,7 +281,7 @@ class ShareResultPoster extends StatelessWidget {
                   border: Border(top: BorderSide(color: theme.divider)),
                 ),
                 child: Text(
-                  ResultTextBuilder.summaryLine(active.tournament),
+                  ResultTextBuilder.summaryLine(active),
                   style: TextStyle(fontSize: 11 * scale, color: theme.inkAlpha(0.7), letterSpacing: 0.3),
                 ),
               ),
@@ -297,7 +296,6 @@ class ShareResultPoster extends StatelessWidget {
 /// Baris peringkat di poster: tingginya dibagi rata oleh [Expanded] induknya,
 /// teksnya mengecil sendiri kalau pemainnya banyak.
 class _PosterRow extends StatelessWidget {
-  final int position;
   final StandingEntry entry;
   final bool showDivider;
   final RankingMethod method;
@@ -306,7 +304,6 @@ class _PosterRow extends StatelessWidget {
   final double scale;
 
   const _PosterRow({
-    required this.position,
     required this.entry,
     required this.showDivider,
     required this.method,
@@ -328,7 +325,7 @@ class _PosterRow extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: SizedBox(
           width: width,
-          child: _ShareRowContent(position: position, entry: entry, method: method, theme: theme, scale: scale),
+          child: _ShareRowContent(entry: entry, method: method, theme: theme, scale: scale),
         ),
       ),
     );
@@ -374,7 +371,6 @@ class ShareCardContent extends StatelessWidget {
         SizedBox(height: MabarSpacing.x4 * scale),
         for (var i = 0; i < standings.length; i++)
           _ShareRow(
-            position: i + 1,
             entry: standings[i],
             showDivider: i != standings.length - 1,
             method: method,
@@ -396,7 +392,7 @@ class ShareCardContent extends StatelessWidget {
             border: Border(top: BorderSide(color: theme.divider)),
           ),
           child: Text(
-            ResultTextBuilder.summaryLine(active.tournament),
+            ResultTextBuilder.summaryLine(active),
             style: TextStyle(fontSize: 11 * scale, color: theme.inkAlpha(0.7), letterSpacing: 0.3),
           ),
         ),
@@ -440,7 +436,6 @@ class _ShareTitle extends StatelessWidget {
 }
 
 class _ShareRow extends StatelessWidget {
-  final int position;
   final StandingEntry entry;
   final bool showDivider;
   final RankingMethod method;
@@ -448,7 +443,6 @@ class _ShareRow extends StatelessWidget {
   final double scale;
 
   const _ShareRow({
-    required this.position,
     required this.entry,
     required this.showDivider,
     required this.method,
@@ -463,21 +457,19 @@ class _ShareRow extends StatelessWidget {
       decoration: BoxDecoration(
         border: showDivider ? Border(bottom: BorderSide(color: theme.divider)) : null,
       ),
-      child: _ShareRowContent(position: position, entry: entry, method: method, theme: theme, scale: scale),
+      child: _ShareRowContent(entry: entry, method: method, theme: theme, scale: scale),
     );
   }
 }
 
 /// Isi satu baris: nomor, nama, dan angka sesuai metode peringkat.
 class _ShareRowContent extends StatelessWidget {
-  final int position;
   final StandingEntry entry;
   final RankingMethod method;
   final ShareTheme theme;
   final double scale;
 
   const _ShareRowContent({
-    required this.position,
     required this.entry,
     required this.method,
     required this.theme,
@@ -501,7 +493,8 @@ class _ShareRowContent extends StatelessWidget {
         SizedBox(
           width: 24 * scale,
           child: Text(
-            '$position.',
+            // Nomor bersama dengan Peringkat: statistik identik → nomor sama, belum main → "–".
+            '${entry.position ?? '–'}.',
             style: TextStyle(
               fontSize: 13 * scale,
               height: 1.1,

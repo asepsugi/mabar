@@ -6,9 +6,14 @@ class PlayerStanding {
   final int wins;
   final int losses;
   final int draws;
+  /// Game/poin dari match yang benar-benar dimainkan.
   final int gamesWon;
   final int gamesLost;
   final int woLosses;
+
+  /// Game/poin yang didapat dari menang WO ([ScoreFormat.woWinnerScore]). Masuk [totalPoint], tidak
+  /// masuk [gameDiff] — selisih kedua tim tidak berubah oleh WO.
+  final int woPoints;
 
   const PlayerStanding({
     required this.player,
@@ -18,6 +23,7 @@ class PlayerStanding {
     this.gamesWon = 0,
     this.gamesLost = 0,
     this.woLosses = 0,
+    this.woPoints = 0,
   });
 
   /// Hanya match yang benar-benar dihitung (selesai + WO).
@@ -27,12 +33,20 @@ class PlayerStanding {
   double get matchPoints => wins + draws * 0.5;
 
   /// "Total point" — seluruh game yang dimenangkan, dijumlah lintas match
-  /// (mis. 6-5, 4-6, 3-6 → 6+4+3 = 13).
-  int get totalPoint => gamesWon;
+  /// (mis. 6-5, 4-6, 3-6 → 6+4+3 = 13), ditambah nilai menang WO.
+  int get totalPoint => gamesWon + woPoints;
 
   double get winPercent => matchesPlayed == 0 ? 0 : matchPoints / matchesPlayed * 100;
 
   int get gameDiff => gamesWon - gamesLost;
+
+  /// Statistik yang tampil sama persis (poin, selisih, M–K–S) → nomor peringkat sama (09a).
+  bool hasSameStatsAs(PlayerStanding other) =>
+      totalPoint == other.totalPoint &&
+      gameDiff == other.gameDiff &&
+      wins == other.wins &&
+      losses == other.losses &&
+      draws == other.draws;
 
   PlayerStanding _add({
     int wins = 0,
@@ -41,6 +55,7 @@ class PlayerStanding {
     int gamesWon = 0,
     int gamesLost = 0,
     int woLosses = 0,
+    int woPoints = 0,
   }) => PlayerStanding(
     player: player,
     wins: this.wins + wins,
@@ -49,6 +64,7 @@ class PlayerStanding {
     gamesWon: this.gamesWon + gamesWon,
     gamesLost: this.gamesLost + gamesLost,
     woLosses: this.woLosses + woLosses,
+    woPoints: this.woPoints + woPoints,
   );
 }
 
@@ -60,8 +76,9 @@ class RankingCalculator {
     required List<Player> players,
     required List<MatchGame> matches,
     required RankingMethod method,
+    required ScoreFormat format,
   }) {
-    final standings = _standings(players, matches);
+    final standings = _standings(players, matches, format);
     final sorted = [...standings];
 
     sorted.sort((a, b) {
@@ -121,24 +138,16 @@ class RankingCalculator {
     for (final p in players) p.id: PlayerStanding(player: p),
   };
 
-  static List<PlayerStanding> _standings(List<Player> players, List<MatchGame> matches) {
+  static List<PlayerStanding> _standings(List<Player> players, List<MatchGame> matches, ScoreFormat format) {
     final table = _byId(players);
 
     for (final m in matches) {
-      if (!_counts(m)) continue;
-
+      if (m.status != MatchStatus.done) continue;
       final winnerId = m.winnerPairId;
-      final isWo = m.status == MatchStatus.wo;
-
       for (final pair in [m.pair1, m.pair2]) {
         final isPair1 = pair.id == m.pair1.id;
-        // WO tidak menyumbang game sama sekali (PRD 4.4).
-        final gamesFor = isWo ? 0 : (isPair1 ? m.pair1TotalGames : m.pair2TotalGames);
-        final gamesAgainst = isWo ? 0 : (isPair1 ? m.pair2TotalGames : m.pair1TotalGames);
-
         final won = winnerId == pair.id;
         final drawn = winnerId == null;
-
         for (final id in pair.playerIds) {
           final current = table[id];
           if (current == null) continue;
@@ -146,9 +155,30 @@ class RankingCalculator {
             wins: won ? 1 : 0,
             losses: !won && !drawn ? 1 : 0,
             draws: drawn ? 1 : 0,
-            gamesWon: gamesFor,
-            gamesLost: gamesAgainst,
-            woLosses: isWo && !won ? 1 : 0,
+            gamesWon: isPair1 ? m.pair1TotalGames : m.pair2TotalGames,
+            gamesLost: isPair1 ? m.pair2TotalGames : m.pair1TotalGames,
+          );
+        }
+      }
+    }
+
+    // WO sesudah semua match yang dimainkan: nilai menang WO memakai rata-rata skor pemain itu sendiri,
+    // jadi ikut berubah setiap kali dia main lagi (PRD 4.4).
+    final played = {for (final e in table.entries) e.key: (games: e.value.gamesWon, count: e.value.matchesPlayed)};
+    for (final m in matches) {
+      if (m.status != MatchStatus.wo) continue;
+      final winnerId = m.winnerPairId;
+      for (final pair in [m.pair1, m.pair2]) {
+        final won = winnerId == pair.id;
+        for (final id in pair.playerIds) {
+          final current = table[id];
+          if (current == null) continue;
+          final own = played[id]!;
+          table[id] = current._add(
+            wins: won ? 1 : 0,
+            losses: won ? 0 : 1,
+            woLosses: won ? 0 : 1,
+            woPoints: won ? format.woWinnerScore(own.count == 0 ? null : own.games / own.count) : 0,
           );
         }
       }
@@ -215,7 +245,11 @@ class StandingEntry {
   /// Statistik barisnya. Untuk pasangan, ini statistik yang dimiliki bersama.
   final PlayerStanding standing;
 
-  const StandingEntry({required this.players, required this.standing});
+  /// Nomor peringkat; sama untuk baris yang statistiknya identik (1, 1, 3). Null = belum main (grup
+  /// "Belum main" di Peringkat, tanpa nomor).
+  final int? position;
+
+  const StandingEntry({required this.players, required this.standing, required this.position});
 
   /// "Andi Pratama + Budi Santoso" — nama lengkap, bukan nama depan seperti di
   /// kartu jadwal, karena di klasemen ruangnya cukup dan homonim harus terbaca.
@@ -224,42 +258,56 @@ class StandingEntry {
   bool hasPlayer(String playerId) => players.any((p) => p.id == playerId);
 }
 
-/// Mengubah klasemen per pemain jadi baris peringkat.
+/// Mengubah klasemen per pemain jadi baris peringkat bernomor.
 ///
 /// [fixedPairs] kosong/null (mode Mixed) → satu baris per pemain. Urutan hasil
 /// [RankingCalculator.rank] tidak pernah diubah di sini: pasangan mengambil
-/// posisi anggota yang peringkatnya lebih tinggi.
+/// posisi anggota yang peringkatnya lebih tinggi. Baris tanpa match selesai/WO
+/// dipindah ke belakang tanpa nomor — 0 poin belum main bisa terurut di atas
+/// pemain yang kalah 0–21, padahal yang belum main memang tidak diperingkat.
 List<StandingEntry> standingEntries({required List<PlayerStanding> standings, List<Pair>? fixedPairs}) {
+  final rows = <(List<Player>, PlayerStanding)>[];
   if (fixedPairs == null || fixedPairs.isEmpty) {
-    return [
-      for (final s in standings) StandingEntry(players: [s.player], standing: s),
-    ];
-  }
+    for (final s in standings) {
+      rows.add(([s.player], s));
+    }
+  } else {
+    final pairOfPlayer = <String, Pair>{
+      for (final pair in fixedPairs)
+        for (final id in pair.playerIds) id: pair,
+    };
+    final standingOfPlayer = {for (final s in standings) s.player.id: s};
+    final taken = <String>{};
+    for (final s in standings) {
+      if (!taken.add(s.player.id)) continue;
 
-  final pairOfPlayer = <String, Pair>{
-    for (final pair in fixedPairs)
-      for (final id in pair.playerIds) id: pair,
-  };
-  final standingOfPlayer = {for (final s in standings) s.player.id: s};
+      final pair = pairOfPlayer[s.player.id];
+      // Pemain sisa (jumlah ganjil) tidak punya pasangan → tetap satu nama.
+      if (pair == null) {
+        rows.add(([s.player], s));
+        continue;
+      }
+
+      final members = [
+        for (final id in pair.playerIds)
+          if (standingOfPlayer[id] != null) standingOfPlayer[id]!.player,
+      ];
+      taken.addAll(members.map((p) => p.id));
+      rows.add((members, s));
+    }
+  }
 
   final entries = <StandingEntry>[];
-  final taken = <String>{};
-  for (final s in standings) {
-    if (!taken.add(s.player.id)) continue;
-
-    final pair = pairOfPlayer[s.player.id];
-    // Pemain sisa (jumlah ganjil) tidak punya pasangan → tetap satu nama.
-    if (pair == null) {
-      entries.add(StandingEntry(players: [s.player], standing: s));
-      continue;
-    }
-
-    final members = [
-      for (final id in pair.playerIds)
-        if (standingOfPlayer[id] != null) standingOfPlayer[id]!.player,
-    ];
-    taken.addAll(members.map((p) => p.id));
-    entries.add(StandingEntry(players: members, standing: s));
+  PlayerStanding? previous;
+  for (final (players, s) in rows) {
+    if (s.matchesPlayed == 0) continue;
+    final position = previous != null && s.hasSameStatsAs(previous) ? entries.last.position : entries.length + 1;
+    entries.add(StandingEntry(players: players, standing: s, position: position));
+    previous = s;
   }
-  return entries;
+  return [
+    ...entries,
+    for (final (players, s) in rows)
+      if (s.matchesPlayed == 0) StandingEntry(players: players, standing: s, position: null),
+  ];
 }

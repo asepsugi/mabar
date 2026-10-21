@@ -50,7 +50,7 @@ class _ShareResultScreenState extends ConsumerState<ShareResultScreen> {
     if (_sharing) return;
     setState(() => _sharing = true);
 
-    final text = ResultTextBuilder.build(tournament: active.tournament, standings: selection.all, format: _format);
+    final text = ResultTextBuilder.build(active: active, standings: selection.all, format: _format);
 
     try {
       // Watermark raket harus sudah ter-decode sebelum render off-screen,
@@ -99,7 +99,10 @@ class _ShareResultScreenState extends ConsumerState<ShareResultScreen> {
             children: [
               MabarScreenHeader(
                 leading: MabarBackButton(label: 'Peringkat', onTap: () => context.pop()),
-                trailing: const MabarStatusBadge(label: 'FINAL', variant: MabarStatusVariant.finalized),
+                trailing: MabarStatusBadge(
+                  label: active.isFinal ? 'FINAL' : 'SEMENTARA',
+                  variant: active.isFinal ? MabarStatusVariant.finalized : MabarStatusVariant.live,
+                ),
               ),
               const MabarPageTitle(title: 'Bagikan Hasil'),
               Expanded(

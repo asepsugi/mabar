@@ -119,9 +119,9 @@ class _ResumeTournamentSheetState extends ConsumerState<_ResumeTournamentSheet> 
               title: ahead.matches > 0 ? 'Cukup untuk ${ahead.matches} match lagi' : 'Tambah jam minimal satu court',
               caption: [
                 if (ahead.rounds > 0) '${ahead.rounds} round (R${lastRound + 1}–R${lastRound + ahead.rounds})',
-                // Court yang lebih cepat habis — round sesudahnya main dengan court lebih sedikit.
-                if (ahead.fullRounds < ahead.rounds)
-                  'mulai R${lastRound + ahead.fullRounds + 1} court berkurang',
+                // Court yang main di round pertama lalu habis di tengah — sesudahnya court lebih sedikit.
+                if (ahead.fewerCourtsFrom != null)
+                  'mulai R${lastRound + ahead.fewerCourtsFrom!} court berkurang',
                 if (unplayed > 0) '$unplayed match yang belum dimainkan bisa diisi skornya lagi',
               ].join(' · ').ifNotEmpty,
             ),

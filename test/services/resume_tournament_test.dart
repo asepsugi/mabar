@@ -129,13 +129,20 @@ void main() {
   });
 
   test('estimasi: tambahan di court yang lebih pendek tetap mengubah jumlah match', () {
-    // Setelah R1: Court 1 habis, Court 2 sisa 20 menit (2 round).
-    expect(read().capacityAhead(), (rounds: 2, matches: 2, fullRounds: 0));
+    // Setelah R1: Court 1 habis, Court 2 sisa 20 menit (2 round). Court 1 tidak main sama sekali, jadi
+    // bukan "berkurang" (dulu tertulis "mulai R2 court berkurang").
+    expect(read().capacityAhead(), (rounds: 2, matches: 2, courts: 1, fewerCourtsFrom: null, matchesPerRound: 2));
 
-    // Court 1 +1 jam = 6 round; R2–R3 dua court, R4–R7 satu court.
-    expect(read().capacityAhead({'c1': 60}), (rounds: 6, matches: 8, fullRounds: 2));
+    // Court 1 +1 jam = 6 round; R2–R3 dua court, berkurang mulai round tambahan ke-3 (R4).
+    expect(
+      read().capacityAhead({'c1': 60}),
+      (rounds: 6, matches: 8, courts: 2, fewerCourtsFrom: 3, matchesPerRound: 2),
+    );
     // Court 2 ikut ditambah: jumlah round sama (Court 1 tetap terpanjang), match bertambah.
-    expect(read().capacityAhead({'c1': 60, 'c2': 30}), (rounds: 6, matches: 11, fullRounds: 5));
+    expect(
+      read().capacityAhead({'c1': 60, 'c2': 30}),
+      (rounds: 6, matches: 11, courts: 2, fewerCourtsFrom: 6, matchesPerRound: 2),
+    );
   });
 
   test('estimasi: match per round dibatasi jumlah pemain', () {
@@ -144,6 +151,9 @@ void main() {
     }
     expect(read().activePlayers, hasLength(4));
     // 4 pemain = 1 match per round meski dua court masih ada waktunya.
-    expect(read().capacityAhead({'c1': 60, 'c2': 60}), (rounds: 8, matches: 8, fullRounds: 6));
+    expect(
+      read().capacityAhead({'c1': 60, 'c2': 60}),
+      (rounds: 8, matches: 8, courts: 2, fewerCourtsFrom: 7, matchesPerRound: 1),
+    );
   });
 }

@@ -26,7 +26,7 @@ class LeaderboardScreen extends ConsumerWidget {
 
     final total = active.matches.length;
     final played = active.playedMatchCount;
-    final isFinal = active.tournament.isFinished || (total > 0 && played == total);
+    final isFinal = active.isFinal;
     final woCount = active.matches.where((m) => m.status == MatchStatus.wo).length;
 
     return Scaffold(
@@ -95,10 +95,9 @@ class LeaderboardScreen extends ConsumerWidget {
                   itemCount: entries.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 4),
                   itemBuilder: (_, i) => _StandingRow(
-                    position: i + 1,
                     entry: entries[i],
                     method: method,
-                    scoring: active.config.scoring,
+                    format: active.config.format,
                     // Di mode Fixed statistik kedua anggota pasangan identik,
                     // jadi detail anggota pertama mewakili barisnya.
                     onTap: () => context.push('/detail-player', extra: entries[i].players.first.id),
@@ -132,19 +131,15 @@ class LeaderboardScreen extends ConsumerWidget {
 
 /// `.lb-row` — satu baris peringkat.
 class _StandingRow extends StatelessWidget {
-  final int position;
   final StandingEntry entry;
   final RankingMethod method;
-  final ScoringMethod scoring;
+  final ScoreFormat format;
   final VoidCallback onTap;
 
-  const _StandingRow({
-    required this.position,
-    required this.entry,
-    required this.method,
-    required this.scoring,
-    required this.onTap,
-  });
+  const _StandingRow({required this.entry, required this.method, required this.format, required this.onTap});
+
+  /// Belum main = tanpa nomor, diurutkan di belakang.
+  int? get position => entry.position;
 
   PlayerStanding get standing => entry.standing;
 
@@ -157,7 +152,7 @@ class _StandingRow extends StatelessWidget {
       return '${standing.winPercent.toStringAsFixed(1)}% win';
     }
     final diff = standing.gameDiff;
-    return '${diff >= 0 ? '+' : ''}$diff ${scoring.unit}';
+    return '${diff >= 0 ? '+' : ''}$diff ${format.unit}';
   }
 
   @override
@@ -169,7 +164,7 @@ class _StandingRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: MabarSpacing.x3),
         decoration: BoxDecoration(
-          color: position <= 3 ? MabarColors.paper : Colors.transparent,
+          color: (position ?? 99) <= 3 ? MabarColors.paper : Colors.transparent,
           borderRadius: BorderRadius.circular(MabarRadius.group),
         ),
         child: Row(
@@ -238,7 +233,7 @@ class _StandingRow extends StatelessWidget {
 
 /// `.lb-pos` — lingkaran nomor; peringkat 1 diberi warna bola (token `ball`).
 class _PositionBadge extends StatelessWidget {
-  final int position;
+  final int? position;
   const _PositionBadge({required this.position});
 
   @override
@@ -250,7 +245,7 @@ class _PositionBadge extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(shape: BoxShape.circle, color: first ? MabarColors.ball : MabarColors.card),
       child: Text(
-        '$position',
+        position == null ? '–' : '$position',
         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: first ? MabarColors.ink : MabarColors.ink3),
       ),
     );

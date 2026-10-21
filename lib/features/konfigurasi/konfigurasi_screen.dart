@@ -26,9 +26,9 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
   static const _defaultBookingHours = 2;
 
   PartnerMode _mode = PartnerMode.fixed;
-  ScoringMethod _scoring = ScoringMethod.tennis;
+  ScoringMethod _scoring = ScoreFormat.standard.method;
   late final TextEditingController _matchDuration;
-  final _americanoPoints = TextEditingController(text: '${ScoringMethodX.defaultAmericanoPoints}');
+  final _target = TextEditingController(text: '${ScoreFormat.standard.target}');
   final List<_CourtDraft> _courts = [];
 
   @override
@@ -36,7 +36,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
     super.initState();
     _matchDuration = TextEditingController(text: widget.sport.defaultMatchDurationMinutes.toString())
       ..addListener(_refresh);
-    _americanoPoints.addListener(_refresh);
+    _target.addListener(_refresh);
     for (var i = 0; i < _defaultCourtCount; i++) {
       _courts.add(_createCourt(i));
     }
@@ -45,7 +45,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
   @override
   void dispose() {
     _matchDuration.dispose();
-    _americanoPoints.dispose();
+    _target.dispose();
     for (final c in _courts) {
       c.dispose();
     }
@@ -91,8 +91,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
     matchDurationMinutes: int.tryParse(_matchDuration.text) ?? 0,
     courts: [for (var i = 0; i < _courts.length; i++) _courts[i].toCourt(i)],
     players: widget.players,
-    scoring: _scoring,
-    americanoPoints: int.tryParse(_americanoPoints.text) ?? 0,
+    format: ScoreFormat(_scoring, int.tryParse(_target.text) ?? 0),
   );
 
   void _next() {
@@ -103,7 +102,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
   @override
   Widget build(BuildContext context) {
     final config = _config;
-    final valid = config.maxRounds > 0 && config.hasValidScoring;
+    final valid = config.maxRounds > 0 && config.format.isValid;
 
     return Scaffold(
       backgroundColor: MabarColors.card,
@@ -129,30 +128,31 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
                       const MabarFieldLabel('Metode Skor'),
                       Row(
                         children: [
-                          for (final m in ScoringMethod.values) ...[
+                          for (final m in ScoringMethodX.selectable) ...[
                             Expanded(
                               child: MabarOptionButton(
                                 label: m.label,
                                 selected: _scoring == m,
-                                onTap: () => setState(() => _scoring = m),
+                                onTap: () => setState(() {
+                                  _scoring = m;
+                                  _target.text = '${m.defaultTarget}';
+                                }),
                               ),
                             ),
-                            if (m != ScoringMethod.values.last) const SizedBox(width: MabarSpacing.x2),
+                            if (m != ScoringMethodX.selectable.last) const SizedBox(width: MabarSpacing.x2),
                           ],
                         ],
                       ),
-                      if (_scoring == ScoringMethod.americano) ...[
-                        const SizedBox(height: MabarSpacing.x2),
-                        _NumberField(controller: _americanoPoints, suffix: 'poin'),
-                      ],
+                      const SizedBox(height: MabarSpacing.x2),
+                      _NumberField(controller: _target, suffix: _scoring.unit),
                       const SizedBox(height: MabarSpacing.x2),
                       Text(
-                        config.hasValidScoring
-                            ? config.scoringDescription
-                            : 'Total poin ${ScoringMethodX.minAmericanoPoints}–${ScoringMethodX.maxAmericanoPoints}',
+                        config.format.isValid
+                            ? config.format.label
+                            : '${_scoring.label} ${_scoring.minTarget}–${_scoring.maxTarget} ${_scoring.unit}',
                         style: TextStyle(
                           fontSize: 11,
-                          color: config.hasValidScoring ? MabarColors.faint : MabarColors.clay,
+                          color: config.format.isValid ? MabarColors.faint : MabarColors.clay,
                           height: 1.5,
                         ),
                       ),

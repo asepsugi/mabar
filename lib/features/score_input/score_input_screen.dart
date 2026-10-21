@@ -7,13 +7,14 @@ import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
+import '../../services/scoring/score_entry.dart';
 import '../schedule/schedule_widgets.dart';
 import '../schedule/tournament_controller.dart';
 import 'walkover_sheet.dart';
 
-/// Screen 7 · Input Skor — skor per set, bisa diedit ulang, plus tombol WO.
-/// Mode Americano: satu skor poin, dan sisi lawan terisi otomatis (total poin
-/// dari Konfigurasi). Total genap bisa seri.
+/// Screen 7 · Input Skor — satu skor per match (Race to / Best of / Americano), atau per set untuk
+/// turnamen lama berformat best of 3 set. Best of & Americano: sisi lawan terisi otomatis `N − x`.
+/// Aturan sah/tidaknya dari [ScoreRules].
 class ScoreInputScreen extends ConsumerStatefulWidget {
   final String matchId;
   const ScoreInputScreen({super.key, required this.matchId});
@@ -23,25 +24,23 @@ class ScoreInputScreen extends ConsumerStatefulWidget {
 }
 
 class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
-  /// Tennis & padel dimainkan best-of-3 — lihat contoh format skor di PRD 4.1.
+  /// Format lama: best of 3 set.
   static const _maxSets = 3;
 
   /// Satu baris per set: controller untuk sisi kiri & kanan.
   final List<(TextEditingController, TextEditingController)> _sets = [];
   bool _seeded = false;
 
-  /// Total poin per match kalau Americano; null untuk skor tennis.
-  int? _americanoTotal;
+  ScoreFormat _format = ScoreFormat.standard;
 
-  bool get _americano => _americanoTotal != null;
+  bool get _perSet => _format.method == ScoringMethod.legacySets;
 
   /// Isi field dari skor yang sudah tersimpan supaya host bisa mengoreksi.
   /// Dilakukan saat build pertama, bukan di initState, karena di sinilah
   /// turnamen dijamin sudah terbaca dari provider.
   void _seedFrom(ActiveTournament active, MatchGame match) {
     _seeded = true;
-    final config = active.config;
-    _americanoTotal = config.scoring == ScoringMethod.americano ? config.americanoPoints : null;
+    _format = active.config.format;
     for (final s in match.sets) {
       _addSet(side1: s.side1, side2: s.side2);
     }
@@ -67,25 +66,22 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
 
   int? _value(TextEditingController c) => int.tryParse(c.text.trim());
 
-  /// Americano: yang diketik host di satu sisi menentukan sisi lainnya.
+  /// Best of & Americano: yang diketik host di satu sisi menentukan sisi lainnya.
   /// Dipanggil dari `onChanged` (hanya ketikan host), jadi mengisi sisi lain
   /// lewat controller tidak memicu balik.
   void _fillComplement(TextEditingController typed, TextEditingController other) {
-    if (!_americano) return;
+    if (!_format.fillsOpponent) return;
     final value = _value(typed);
-    final complement = value == null ? null : ScoringMethodX.americanoComplement(value, total: _americanoTotal!);
-    other.text = complement?.toString() ?? '';
+    final inRange = value != null && value <= _format.target;
+    other.text = inRange ? '${_format.target - value}' : '';
   }
 
-  /// Set dianggap sah kalau dua sisinya terisi dan tidak seri. Americano:
-  /// totalnya harus pas, dan seri boleh (hanya mungkin kalau totalnya genap).
   List<SetScore>? get _validSets {
     final result = <SetScore>[];
     for (final (a, b) in _sets) {
       final x = _value(a);
       final y = _value(b);
-      if (x == null || y == null) return null;
-      if (_americano ? x + y != _americanoTotal : x == y) return null;
+      if (x == null || y == null || ScoreRules.judge(_format, x, y) is ScoreInvalid) return null;
       result.add(SetScore(side1: x, side2: y));
     }
     return result.isEmpty ? null : result;
@@ -136,7 +132,7 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
                   padding: const EdgeInsets.only(bottom: MabarSpacing.x4),
                   children: [
                     for (var i = 0; i < _sets.length; i++) ...[
-                      _SetLabel(text: _americano ? 'POIN · TOTAL $_americanoTotal' : 'SET ${i + 1}'),
+                      _SetLabel(text: _perSet ? 'SET ${i + 1}' : _format.label.toUpperCase()),
                       _SetRow(
                         active: active,
                         match: match,
@@ -151,12 +147,11 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
                         match: match,
                         left: _value(_sets[i].$1),
                         right: _value(_sets[i].$2),
-                        setNumber: i + 1,
-                        americanoTotal: _americanoTotal,
+                        setNumber: _perSet ? i + 1 : null,
+                        format: _format,
                       ),
                     ],
-                    // Americano cuma satu "set" poin.
-                    if (_americano)
+                    if (_format.fillsOpponent)
                       const Padding(
                         padding: EdgeInsets.only(top: MabarSpacing.x4),
                         child: Text(
@@ -165,7 +160,7 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
                           style: TextStyle(fontSize: 11, color: MabarColors.faint),
                         ),
                       )
-                    else
+                    else if (_perSet)
                       Padding(
                         padding: const EdgeInsets.only(top: MabarSpacing.x4),
                         child: _sets.length < _maxSets
@@ -273,7 +268,7 @@ class _MatchSummary extends StatelessWidget {
   }
 }
 
-/// Metode skor + aturannya, mis. "Americano · Total 24 poin per match".
+/// Format skor turnamen, mis. "Americano 24".
 class _ScoringChip extends StatelessWidget {
   final TournamentConfig config;
   const _ScoringChip({required this.config});
@@ -289,18 +284,9 @@ class _ScoringChip extends StatelessWidget {
           const Icon(MabarIcons.info, size: 14, color: MabarColors.ink),
           const SizedBox(width: 6),
           Flexible(
-            child: Text.rich(
-              TextSpan(
-                text: config.scoring.label,
-                style: const TextStyle(fontWeight: FontWeight.w700, color: MabarColors.ink),
-                children: [
-                  TextSpan(
-                    text: ' · ${config.scoringDescription}',
-                    style: const TextStyle(fontWeight: FontWeight.w500, color: MabarColors.ink3),
-                  ),
-                ],
-              ),
-              style: const TextStyle(fontSize: 12),
+            child: Text(
+              config.format.label,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.ink),
             ),
           ),
         ],
@@ -460,14 +446,16 @@ class _ScoreCell extends StatelessWidget {
   }
 }
 
-/// Baris bantuan di bawah tiap set: selisih game + siapa yang menang set itu.
+/// Baris bantuan di bawah skor: pemenang + selisih, seri, atau pesan dari [ScoreRules].
 class _SetSummary extends StatelessWidget {
   final ActiveTournament active;
   final MatchGame match;
   final int? left;
   final int? right;
-  final int setNumber;
-  final int? americanoTotal;
+
+  /// Nomor set untuk format lama; null untuk format satu skor.
+  final int? setNumber;
+  final ScoreFormat format;
 
   const _SetSummary({
     required this.active,
@@ -475,52 +463,38 @@ class _SetSummary extends StatelessWidget {
     required this.left,
     required this.right,
     required this.setNumber,
-    required this.americanoTotal,
+    required this.format,
   });
 
-  static Widget _error(String text) => SizedBox(
+  static Widget _line(String text, Color color) => SizedBox(
     height: 18,
     child: Text(
       text,
       textAlign: TextAlign.center,
-      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.clay),
+      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color),
     ),
   );
 
   @override
   Widget build(BuildContext context) {
-    final total = americanoTotal;
-    final americano = total != null;
-    // Angka di atas total membuat sisi lawan kosong — beri tahu kenapa.
-    if (americano && ((left ?? 0) > total || (right ?? 0) > total)) return _error('Maksimal $total poin');
-    if (left == null || right == null) return const SizedBox(height: 18);
-    if (americano && left! + right! != total) return _error('Total poin harus $total');
-
-    if (left == right) {
-      if (!americano) return _error('Skor seri, harus ada pemenang');
-      // Americano total genap: seri sah, dihitung setengah menang di Win %.
-      return const SizedBox(
-        height: 18,
-        child: Text(
-          'Seri',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.ink3),
-        ),
-      );
+    // Angka di atas N membuat sisi lawan kosong — beri tahu kenapa.
+    if (format.fillsOpponent && ((left ?? 0) > format.target || (right ?? 0) > format.target)) {
+      return _line('Maksimal ${format.target} ${format.unit}', MabarColors.clay);
     }
+    final a = left, b = right;
+    if (a == null || b == null) return const SizedBox(height: 18);
 
-    final winnerPair = left! > right! ? match.pair1 : match.pair2;
-    final diff = (left! - right!).abs();
-    return SizedBox(
-      height: 18,
-      child: Text(
-        americano
-            ? '+$diff poin · ${active.pairLabel(winnerPair)} menang'
-            : '+$diff game · ${active.pairLabel(winnerPair)} menang set $setNumber',
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MabarColors.ink),
+    return switch (ScoreRules.judge(format, a, b)) {
+      ScoreInvalid(:final message) => _line(message, MabarColors.clay),
+      // Seri sah di Best of / Americano genap, dihitung setengah menang di Win %.
+      ScoreDraw() => _line('Seri', MabarColors.ink3),
+      ScoreWin(:final winnerSide, :final winnerScore, :final loserScore) => _line(
+        '+${winnerScore - loserScore} ${format.unit} · '
+        '${active.pairLabel(winnerSide == 1 ? match.pair1 : match.pair2)} menang'
+        '${setNumber == null ? '' : ' set $setNumber'}',
+        MabarColors.ink,
       ),
-    );
+    };
   }
 }
 

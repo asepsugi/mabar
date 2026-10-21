@@ -14,28 +14,38 @@ extension ShareFormatX on ShareFormat {
 
 /// Menyusun teks hasil turnamen untuk dibagikan ke WhatsApp/Telegram/clipboard.
 class ResultTextBuilder {
+  /// [standings] = `standingEntriesProvider`, jadi nomornya sama dengan Peringkat (statistik identik →
+  /// nomor sama; yang belum main tanpa nomor).
   static String build({
-    required Tournament tournament,
+    required ActiveTournament active,
     required List<StandingEntry> standings,
     required ShareFormat format,
   }) {
+    final tournament = active.tournament;
     final config = tournament.config;
+    final unit = config.format.unit;
     final buffer = StringBuffer()
       ..writeln('🏆 Mabar Turnamen · ${config.sport.label}')
       ..writeln(DateFormat('d MMMM yyyy', 'id').format(tournament.createdAt))
       ..writeln();
 
-    buffer.writeln('Peringkat Akhir');
-    for (var i = 0; i < standings.length; i++) {
-      final entry = standings[i];
+    buffer.writeln(active.isFinal ? 'Peringkat Akhir' : 'Peringkat Sementara');
+    for (final entry in standings) {
+      final position = entry.position;
+      if (position == null) continue;
       final s = entry.standing;
       final diff = s.gameDiff;
       buffer.writeln(
-        '${i + 1}. ${entry.label} — ${s.totalPoint} poin · '
+        '$position. ${entry.label} — ${s.totalPoint} $unit · '
         '${s.winPercent.toStringAsFixed(1)}% '
-        '(${s.wins}-${s.losses}, ${diff >= 0 ? '+' : ''}$diff game)',
+        '(${s.wins}-${s.losses}${config.format.canDraw ? '-${s.draws}' : ''}, ${diff >= 0 ? '+' : ''}$diff $unit)',
       );
     }
+    final unranked = [
+      for (final entry in standings)
+        if (entry.position == null) entry.label,
+    ];
+    if (unranked.isNotEmpty) buffer.writeln('Belum main: ${unranked.join(', ')}');
 
     if (format == ShareFormat.lengkap) {
       buffer.writeln();
@@ -53,22 +63,18 @@ class ResultTextBuilder {
 
     buffer
       ..writeln()
-      ..writeln(summaryLine(tournament));
+      ..writeln(summaryLine(active));
     return buffer.toString().trimRight();
   }
 
-  /// "7 round · 14 match · 1 WO · 14 September 2026"
-  static String summaryLine(Tournament tournament) {
-    final matches = tournament.matches;
-    final rounds = matches.isEmpty ? 0 : matches.last.roundNumber;
-    final played = matches.where((m) => m.status == MatchStatus.done || m.status == MatchStatus.wo).length;
-    final wo = matches.where((m) => m.status == MatchStatus.wo).length;
-
+  /// "7 round · 14 match · 1 WO · 14 Sep 2026" — round dan match yang benar-benar dimainkan.
+  static String summaryLine(ActiveTournament active) {
+    final wo = active.matches.where((m) => m.status == MatchStatus.wo).length;
     return [
-      '$rounds round',
-      '$played match',
+      '${active.playedRoundCount} round',
+      '${active.playedMatchCount} match',
       if (wo > 0) '$wo WO',
-      DateFormat('d MMM yyyy', 'id').format(tournament.createdAt),
+      DateFormat('d MMM yyyy', 'id').format(active.tournament.createdAt),
     ].join(' · ');
   }
 

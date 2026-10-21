@@ -25,12 +25,12 @@ class DetailPlayerScreen extends ConsumerWidget {
     // penggabungan per pasangan di mode Fixed, supaya nomor peringkat di sini
     // sama dengan yang barusan dilihat host.
     final entries = ref.watch(standingEntriesProvider);
-    final position = entries.indexWhere((e) => e.hasPlayer(playerId));
-    if (position < 0) {
+    final entry = entries.where((e) => e.hasPlayer(playerId)).firstOrNull;
+    if (entry == null) {
       return const Scaffold(body: Center(child: Text('Pemain tidak ditemukan')));
     }
 
-    final standing = entries[position].standing;
+    final standing = entry.standing;
     final player = active.config.players.firstWhere(
       (p) => p.id == playerId,
       orElse: () => const Player(id: '', name: '?'),
@@ -58,12 +58,12 @@ class DetailPlayerScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              _PlayerHeader(player: player, standing: standing, position: position + 1),
+              _PlayerHeader(player: player, standing: standing, position: entry.position, unit: active.config.format.unit),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.only(bottom: MabarSpacing.x3),
                   children: [
-                    _StatGrid(standing: standing, scoring: active.config.scoring),
+                    _StatGrid(standing: standing, format: active.config.format),
                     const SizedBox(height: MabarSpacing.x4),
                     _CoverageCard(
                       partners: profile.partnerIds.length,
@@ -100,9 +100,12 @@ class DetailPlayerScreen extends ConsumerWidget {
 class _PlayerHeader extends StatelessWidget {
   final Player player;
   final PlayerStanding standing;
-  final int position;
 
-  const _PlayerHeader({required this.player, required this.standing, required this.position});
+  /// Null = belum main.
+  final int? position;
+  final String unit;
+
+  const _PlayerHeader({required this.player, required this.standing, required this.position, required this.unit});
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +149,7 @@ class _PlayerHeader extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Peringkat #$position · ${standing.totalPoint} poin · '
+                  '${position == null ? 'Belum main' : 'Peringkat #$position'} · ${standing.totalPoint} $unit · '
                   '${standing.winPercent.toStringAsFixed(1)}% win',
                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: MabarColors.faint),
                 ),
@@ -161,8 +164,8 @@ class _PlayerHeader extends StatelessWidget {
 
 class _StatGrid extends StatelessWidget {
   final PlayerStanding standing;
-  final ScoringMethod scoring;
-  const _StatGrid({required this.standing, required this.scoring});
+  final ScoreFormat format;
+  const _StatGrid({required this.standing, required this.format});
 
   @override
   Widget build(BuildContext context) {
@@ -188,7 +191,7 @@ class _StatGrid extends StatelessWidget {
             Expanded(
               child: MabarStatBox(
                 value: '${diff >= 0 ? '+' : ''}$diff',
-                label: scoring == ScoringMethod.americano ? 'Selisih Poin' : 'Selisih Game',
+                label: format.method == ScoringMethod.americano ? 'Selisih Poin' : 'Selisih Game',
                 valueColor: diff >= 0 ? MabarColors.ink : MabarColors.clay,
               ),
             ),

@@ -17,6 +17,7 @@ List<MatchGame> _play(List<Player> players, List<Court> courts, int rounds) {
   final history = <MatchGame>[];
   for (var r = 1; r <= rounds; r++) {
     final round = EndlessRoundGenerator.generateRound(
+      seed: 7,
       players: players,
       courts: courts,
       history: history,
@@ -33,6 +34,7 @@ void main() {
     test('fills every court and rests the rest', () {
       final players = _players(10);
       final round = EndlessRoundGenerator.generateRound(
+        seed: 7,
         players: players,
         courts: _courts(2),
         history: const [],
@@ -67,6 +69,7 @@ void main() {
     test('players who rested get priority in the next round', () {
       final players = _players(10);
       final first = EndlessRoundGenerator.generateRound(
+        seed: 7,
         players: players,
         courts: _courts(2),
         history: const [],
@@ -74,6 +77,7 @@ void main() {
         random: Random(3),
       )!;
       final second = EndlessRoundGenerator.generateRound(
+        seed: 7,
         players: players,
         courts: _courts(2),
         history: first.matches,
@@ -106,6 +110,7 @@ void main() {
     test('returns null when there are not enough players for one match', () {
       expect(
         EndlessRoundGenerator.generateRound(
+          seed: 7,
           players: _players(3),
           courts: _courts(2),
           history: const [],
@@ -118,6 +123,7 @@ void main() {
 
     test('caps matches at the number of courts', () {
       final round = EndlessRoundGenerator.generateRound(
+        seed: 7,
         players: _players(20),
         courts: _courts(3),
         history: const [],

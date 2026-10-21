@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 
 /// Jenis permainan.
@@ -35,32 +37,122 @@ extension PartnerModeX on PartnerMode {
   };
 }
 
-/// Cara skor satu match dihitung — dipilih host di Konfigurasi.
-enum ScoringMethod { tennis, americano }
+/// Format skor satu match, dipilih host di Konfigurasi (`design/spec/logic.md` §1).
+enum ScoringMethod {
+  /// Siapa duluan menang N game. Sah: N lawan 0..N−1, atau N+1 lawan N−1/N (7–5, 7–6). Tidak pernah seri.
+  raceTo,
+
+  /// Main tepat N game; seri kalau N genap dan skornya sama.
+  bestOf,
+
+  /// Poin reli, total N poin per match; seri kalau N genap.
+  americano,
+
+  /// Skor tennis per set, best of 3 — format sebelum desain v2. Tidak bisa dipilih lagi, tapi turnamen
+  /// yang tersimpan dengan format ini tetap bisa dibuka, diperingkat, dan dibagikan.
+  legacySets,
+}
 
 extension ScoringMethodX on ScoringMethod {
+  /// Yang bisa dipilih untuk turnamen baru, urut seperti segmented control di Konfigurasi.
+  static const selectable = [ScoringMethod.raceTo, ScoringMethod.bestOf, ScoringMethod.americano];
+
   String get label => switch (this) {
-    ScoringMethod.tennis => 'Skor Tennis',
+    ScoringMethod.raceTo => 'Race to',
+    ScoringMethod.bestOf => 'Best of',
     ScoringMethod.americano => 'Americano',
+    ScoringMethod.legacySets => 'Best of 3 set',
   };
 
-  /// Satuan skor di label selisih ("+3 game" / "+3 poin").
-  String get unit => switch (this) {
-    ScoringMethod.tennis => 'game',
-    ScoringMethod.americano => 'poin',
+  /// Satuan skor: "game" atau "poin".
+  String get unit => this == ScoringMethod.americano ? 'poin' : 'game';
+
+  /// Batas N yang boleh dipilih. Americano dibatasi kotak skor 2 digit.
+  int get minTarget => switch (this) {
+    ScoringMethod.raceTo => 2,
+    ScoringMethod.bestOf => 1,
+    ScoringMethod.americano => 2,
+    ScoringMethod.legacySets => 0,
   };
 
-  /// Americano: default total poin kedua tim per match. Ganjil, jadi tidak
-  /// pernah seri; total genap (16/24/32) bisa seri dan dihitung setengah menang.
-  static const defaultAmericanoPoints = 21;
+  int get maxTarget => switch (this) {
+    ScoringMethod.raceTo => 9,
+    ScoringMethod.bestOf => 15,
+    ScoringMethod.americano => 99,
+    ScoringMethod.legacySets => 0,
+  };
 
-  /// Batas total poin Americano yang boleh dipilih — kotak skor cuma 2 digit.
-  static const minAmericanoPoints = 2;
-  static const maxAmericanoPoints = 99;
+  int get defaultTarget => switch (this) {
+    ScoringMethod.raceTo => 6,
+    ScoringMethod.bestOf => 5,
+    ScoringMethod.americano => 21,
+    ScoringMethod.legacySets => 0,
+  };
 
-  /// Americano: poin tim lawan dari poin satu tim, null kalau di luar 0–[total].
-  static int? americanoComplement(int points, {required int total}) =>
-      points < 0 || points > total ? null : total - points;
+  /// N yang diketik dikembalikan ke batas terdekat (stepper memang tidak bisa keluar batas).
+  int clampTarget(int target) => target.clamp(minTarget, maxTarget);
+}
+
+/// Format skor turnamen: metode + N. Semua format kecuali [ScoringMethod.legacySets] disimpan sebagai satu
+/// [SetScore] per match, jadi ranking, share, dan codec tidak perlu bercabang per format.
+@immutable
+class ScoreFormat {
+  final ScoringMethod method;
+
+  /// N: target game (Race to), jumlah game (Best of), atau total poin (Americano). 0 untuk format lama.
+  final int target;
+
+  const ScoreFormat(this.method, this.target);
+
+  /// Default kedua olahraga.
+  static const standard = ScoreFormat(ScoringMethod.raceTo, 6);
+  static const legacySets = ScoreFormat(ScoringMethod.legacySets, 0);
+
+  /// "Race to 6", "Best of 5", "Americano 21".
+  String get label => method == ScoringMethod.legacySets ? method.label : '${method.label} $target';
+
+  String get unit => method.unit;
+
+  bool get isValid => method != ScoringMethod.legacySets && target >= method.minTarget && target <= method.maxTarget;
+
+  /// Bisa berakhir seri — menentukan ada tidaknya kolom S (M–K–S) di Peringkat.
+  bool get canDraw => switch (method) {
+    ScoringMethod.raceTo => false,
+    ScoringMethod.bestOf || ScoringMethod.americano => target.isEven,
+    // Skor lama 1–1 set tercatat seri.
+    ScoringMethod.legacySets => true,
+  };
+
+  /// Best of & Americano: total kedua sisi tetap, jadi sisi lawan terisi otomatis `N − x`.
+  bool get fillsOpponent => method == ScoringMethod.bestOf || method == ScoringMethod.americano;
+
+  /// Isi satu kotak skor paling tinggi segini: Race to N → N+1 (7–5, 7–6), lainnya N.
+  int get maxPerSide => method == ScoringMethod.raceTo ? target + 1 : target;
+
+  /// Skor menang terkecil Best of / Americano: ⌊N ÷ 2⌋ + 1 (Americano 21 → 11, 24 → 13; Best of 5 → 3).
+  int get minWinningScore => target ~/ 2 + 1;
+
+  /// Game/poin untuk pemenang WO (PRD 4.4): Race to N → N; Best of & Americano → rata-rata skor dari
+  /// match yang dia mainkan sendiri ([ownAverage], null kalau belum pernah main), dibulatkan (,5 ke atas),
+  /// tapi tidak pernah di bawah [minWinningScore] — supaya menang WO tidak bernilai skor kalah. Format
+  /// lama tetap memakai aturan lamanya: WO tidak menyumbang game.
+  int woWinnerScore(double? ownAverage) => switch (method) {
+    ScoringMethod.raceTo => target,
+    ScoringMethod.bestOf || ScoringMethod.americano =>
+      ownAverage == null ? minWinningScore : max(ownAverage.round(), minWinningScore),
+    ScoringMethod.legacySets => 0,
+  };
+
+  ScoreFormat withTarget(int target) => ScoreFormat(method, method.clampTarget(target));
+
+  @override
+  bool operator ==(Object other) => other is ScoreFormat && other.method == method && other.target == target;
+
+  @override
+  int get hashCode => Object.hash(method, target);
+
+  @override
+  String toString() => label;
 }
 
 enum RankingMethod { winPercent, totalGames }
@@ -175,6 +267,29 @@ class MatchGame {
         woReason: woReason ?? this.woReason,
       );
 
+  /// Skor disimpan: status selesai, sisa WO lama (pasangan & alasan) dibuang — membuka match WO di Input
+  /// Skor lalu menyimpan skor mengubahnya jadi match biasa.
+  MatchGame withScore(List<SetScore> sets) => _with(sets: sets, status: MatchStatus.done);
+
+  /// WO dengan alasan persis [reason]: null benar-benar menghapus alasan lama (tidak seperti [copyWith]).
+  /// Skor lama tetap disimpan supaya kembali terisi kalau WO-nya dibatalkan lewat Input Skor.
+  MatchGame asWalkover({required String loserPairId, WoReason? reason}) =>
+      _with(sets: sets, status: MatchStatus.wo, woLoserPairId: loserPairId, woReason: reason);
+
+  MatchGame _with({required List<SetScore> sets, required MatchStatus status, String? woLoserPairId, WoReason? woReason}) =>
+      MatchGame(
+        id: id,
+        roundNumber: roundNumber,
+        matchNumberInRound: matchNumberInRound,
+        courtId: courtId,
+        pair1: pair1,
+        pair2: pair2,
+        sets: sets,
+        status: status,
+        woLoserPairId: woLoserPairId,
+        woReason: woReason,
+      );
+
   int get pair1TotalGames => sets.fold(0, (sum, s) => sum + s.side1);
   int get pair2TotalGames => sets.fold(0, (sum, s) => sum + s.side2);
 
@@ -209,10 +324,7 @@ class TournamentConfig {
   final List<Court> courts;
   final List<Player> players;
   final List<Pair>? fixedPairs; // null kalau mode = mixed
-  final ScoringMethod scoring;
-
-  /// Americano: total poin kedua tim per match. Diabaikan untuk skor tennis.
-  final int americanoPoints;
+  final ScoreFormat format;
 
   const TournamentConfig({
     required this.sport,
@@ -221,18 +333,15 @@ class TournamentConfig {
     required this.courts,
     required this.players,
     this.fixedPairs,
-    this.scoring = ScoringMethod.tennis,
-    this.americanoPoints = ScoringMethodX.defaultAmericanoPoints,
+    this.format = ScoreFormat.standard,
   });
 
-  String get scoringDescription => switch (scoring) {
-    ScoringMethod.tennis => 'Per set, best of 3',
-    ScoringMethod.americano => 'Total $americanoPoints poin per match',
-  };
+  /// Langkah stepper durasi; durasi selalu kelipatannya.
+  static const durationStep = 5;
 
-  bool get hasValidScoring =>
-      scoring != ScoringMethod.americano ||
-      (americanoPoints >= ScoringMethodX.minAmericanoPoints && americanoPoints <= ScoringMethodX.maxAmericanoPoints);
+  /// Durasi yang diketik host dibulatkan ke kelipatan 5 terdekat, minimal 5 (22 → 20, 23 → 25, 2 → 5).
+  static int roundDuration(int minutes) =>
+      max(durationStep, ((minutes + durationStep ~/ 2) ~/ durationStep) * durationStep);
 
   /// Max round berdasarkan durasi booking terpendek dari semua court.
   int get maxRounds {
@@ -250,8 +359,7 @@ class TournamentConfig {
     courts: courts ?? this.courts,
     players: players ?? this.players,
     fixedPairs: fixedPairs ?? this.fixedPairs,
-    scoring: scoring,
-    americanoPoints: americanoPoints,
+    format: format,
   );
 }
 
@@ -332,6 +440,38 @@ class ActiveTournament {
 
   int get playedMatchCount => matches.where((m) => m.status == MatchStatus.done || m.status == MatchStatus.wo).length;
 
+  /// Jumlah round yang punya minimal satu match selesai/WO — "5 round · 10 match" di Peringkat final
+  /// dan Bagikan (label p di tabel Label round).
+  int get playedRoundCount => {
+    for (final m in matches)
+      if (m.status == MatchStatus.done || m.status == MatchStatus.wo) m.roundNumber,
+  }.length;
+
+  /// Peringkat "Final" (09c, 09f): sudah diakhiri, atau tidak ada lagi yang bisa dimainkan tanpa tindakan
+  /// host — Fixed semua match terisi; Mixed waktu booking semua court habis dan round terakhir lengkap.
+  /// Kembali "Sementara" setelah Lanjutkan turnamen.
+  bool get isFinal {
+    if (tournament.isFinished) return true;
+    if (matches.isEmpty) return false;
+    return switch (config.mode) {
+      PartnerMode.fixed => matches.every((m) => m.status != MatchStatus.pending),
+      PartnerMode.mixed => courtsAvailableForRound(roundCount + 1).isEmpty && isRoundComplete(roundCount),
+    };
+  }
+
+  /// Seed undian pemain seri di generator Mixed. Diturunkan dari id turnamen (UUID acak yang memang
+  /// tersimpan), jadi tetap sama setelah app ditutup tanpa kunci simpanan baru — dan simpanan lama
+  /// langsung punya seed. FNV-1a 32-bit, bukan `String.hashCode` yang tidak dijamin sama antar platform;
+  /// perkalian dengan prima 2^24 + 0x193 dipecah supaya tidak melewati 2^53 di web (angka JS).
+  int get drawSeed {
+    var hash = 0x811c9dc5;
+    for (final unit in tournament.id.codeUnits) {
+      hash ^= unit;
+      hash = (((hash << 24) & 0xffffffff) + hash * 0x193) & 0xffffffff;
+    }
+    return hash;
+  }
+
   MatchGame? matchById(String id) => matches.where((m) => m.id == id).firstOrNull;
 
   /// "Andi + Budi" — nama depan kedua pemain di satu pair.
@@ -368,25 +508,39 @@ class ActiveTournament {
     return left < 0 ? 0 : left;
   }
 
-  /// Perkiraan round & match yang masih muat kalau tiap court ditambah
-  /// [extraMinutes] (per court id). Round jalan selama masih ada satu court,
-  /// jadi jumlah round cuma mengikuti court terpanjang — jumlah match-lah yang
-  /// mencerminkan tambahan di tiap court. Match per round juga dibatasi pemain.
-  ({int rounds, int matches, int fullRounds}) capacityAhead([Map<String, int> extraMinutes = const {}]) {
+  /// Perkiraan round & match yang masih muat kalau tiap court ditambah [extraMinutes] (per court id),
+  /// untuk sheet Lanjutkan turnamen (08c). Round jalan selama masih ada satu court, jadi jumlah round
+  /// cuma mengikuti court terpanjang — jumlah match-lah yang mencerminkan tambahan di tiap court.
+  ///
+  /// [courts] = court yang main di round pertama sesudah [roundCount]. [fewerCourtsFrom] = round ke-r
+  /// (1 = round pertama tambahan) saat salah satu court itu habis di tengah, null kalau tidak ada; court
+  /// yang sejak awal tidak dapat tambahan tidak dihitung "berkurang". [matchesPerRound] = batas dari
+  /// jumlah pemain aktif (⌊pemain ÷ 4⌋).
+  ({int rounds, int matches, int courts, int? fewerCourtsFrom, int matchesPerRound}) capacityAhead([
+    Map<String, int> extraMinutes = const {},
+  ]) {
     final perCourt = [
       for (final c in config.courts)
         (remainingBookingMinutes(c) + (extraMinutes[c.id] ?? 0)) ~/ config.matchDurationMinutes,
     ];
     final matchesPerRound = activePlayers.length ~/ 4;
-    var rounds = 0, matches = 0, fullRounds = 0;
+    final firstCourts = perCourt.where((n) => n >= 1).length;
+    var rounds = 0, matches = 0;
+    int? fewerFrom;
     for (var r = 1; ; r++) {
       final courts = perCourt.where((n) => n >= r).length;
       if (courts == 0) break;
       rounds = r;
-      matches += courts < matchesPerRound ? courts : matchesPerRound;
-      if (courts == perCourt.length) fullRounds = r;
+      matches += min(courts, matchesPerRound);
+      if (courts < firstCourts) fewerFrom ??= r;
     }
-    return (rounds: rounds, matches: matches, fullRounds: fullRounds);
+    return (
+      rounds: rounds,
+      matches: matches,
+      courts: firstCourts,
+      fewerCourtsFrom: fewerFrom,
+      matchesPerRound: matchesPerRound,
+    );
   }
 
   /// Mode Mixed: turnamen yang sudah diakhiri atau kehabisan waktu booking
