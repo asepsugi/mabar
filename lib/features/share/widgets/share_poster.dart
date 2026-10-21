@@ -90,9 +90,9 @@ class SharePoster extends StatelessWidget {
   bool get _twoColumns => !_story && data.rows.length > 10;
   bool get _stackPairs => _story && data.rows.any((r) => r.names.length > 1);
 
-  /// Tinggi baris yang diwarisi: 1,4 di dalam layar (`.app`); gambar dirancang di luar `.app` sehingga
-  /// mewarisi 1,55 dari dokumen hi-fi — frame 11d/11f/11g memakai itu.
-  double get _lineHeight => target == SharePosterTarget.preview ? 1.4 : 1.55;
+  /// Tinggi baris teks poster, sama di kartu pratinjau dan gambar. Gambar dulu mewarisi 1,55 dari dokumen
+  /// hi-fi dan kaki Feed Ringkas meluber dari padding; disamakan atas keputusan host 2026-10-22.
+  static const _lineHeight = 1.4;
 
   _RowMode get _mode => data.complete
       ? _RowMode.share

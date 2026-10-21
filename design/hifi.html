@@ -433,7 +433,9 @@ table.map { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 
 .themes { display: flex; flex-wrap: wrap; gap: 6px; }
 .theme { width: 30px; height: 30px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); display: grid; place-items: center; }
 .theme.on { box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--ink); }
-.poster-pair { display: flex; gap: 14px; align-items: flex-start; }
+/* Gambar Feed/Story dirender di luar .app: line-height disamakan dengan kartu pratinjau (keputusan host 2026-10-22,
+   dulu mewarisi 1.55 dan kaki Feed Ringkas meluber dari padding). */
+.poster-pair { display: flex; gap: 14px; align-items: flex-start; line-height: 1.4; }
 .install-step { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; align-items: center; font-size: 16px; }
 .install-step .no { width: 36px; height: 36px; border-radius: 10px; background: var(--paper); display: grid; place-items: center; font-size: 18px; color: var(--ink-2); }
 /* Frame 01j: pembanding ikon app */

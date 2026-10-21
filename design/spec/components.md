@@ -571,7 +571,7 @@ Dipakai di frame: 11a, 11b, 11c, 11d, 11e, 11f, 11g, 11h, 11i, 11j
 .themes { display: flex; flex-wrap: wrap; gap: 6px; }
 .theme { width: 30px; height: 30px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); display: grid; place-items: center; }
 .theme.on { box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--ink); }
-.poster-pair { display: flex; gap: 14px; align-items: flex-start; }
+.poster-pair { display: flex; gap: 14px; align-items: flex-start; line-height: 1.4; }
 ```
 
 ## `InstallStep`
