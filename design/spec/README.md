@@ -27,6 +27,8 @@ Kalau hi-fi berubah: jalankan `python3 tool/hifi_extract.py` (butuh Google Chrom
    Satu keputusan host masih terbuka: skor per set turnamen lama (`legacySets`) di layar Input Skor/Jadwal v2.
 3. **Komponen** — semua widget di `components.md`, masing-masing di `lib/core/widgets/` (atau folder fiturnya kalau
    khusus satu layar), dengan golden minimal satu frame yang memakainya.
+   **Selesai** (2026-10-22) kecuali `CourtBanner` (langkah 4). Golden per wilayah: `hifiRect` + `hifiStage` +
+   `expectRegionMatchesHifi` (contoh di `test/hifi/components/`); posisi elemen di `rects.json`.
 4. **Painter lapangan** — satu `CustomPainter` dengan parameter olahraga/transisi `t` (01g) untuk banner Beranda
    dan `tool/generate_app_icon.dart` (ikon opsi A di 01j). Ganti `mabar_brand_mark.dart`.
 5. **Layar** — satu alur per tugas, urut `screens/01-…` sampai `11-…`.

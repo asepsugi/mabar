@@ -41,6 +41,27 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
     `final class`. Jangan menambah `Icons.*` Material; ikon baru = konstanta baru di sini.
   - Inter dan `design-tokens.json` lama sudah dihapus. Warna PWA (`web/manifest.json`, `flutter_launcher_icons`) =
     `paper`; ikon app-nya baru diganti di langkah painter.
+- **Komponen selesai** (langkah 3; 60+ golden per wilayah frame di `test/hifi/components/`). Generik di
+  `lib/core/widgets/`: `mabar_controls` (MabarButton, MabarTextButton, MabarIconButton, MabarRowAction,
+  MabarActionBar, MabarAppBar), `mabar_group` (MabarGroup/MabarRow, MabarSection, MabarGroupLabel/Note/Header),
+  `mabar_inputs` (MabarSegmented, MabarStepper, MabarField, MabarChip/Wrap/Grid), `mabar_layers` (showMabarSheet,
+  MabarOption, showMabarConfirm, showMabarMenu, showMabarToast), `match_score_row`, `numbered_lists` (RosterPreview,
+  PairList), `mabar_ball`. Khusus layar di `features/<layar>/widgets/`: RoundTabs, RestingList, ScoreBoard/ScoreKeypad
+  (di atas `ScoreEntry`), StandingTable, StatLine, NameListField, ModePicker/CourtSwatch/CourtColorGrid,
+  HomePanel/HomeRowIcon/InstallStep, SharePoster (`share/widgets/`, preset pratinjau/Feed/Story, diekspor lewat
+  `SharePosterTarget.exportPixelRatio`). Widget lama yang namanya bentrok jadi `LegacyChip`/`LegacyStepper`.
+- Golden per komponen: `hifiRect(frame, kelas, text:)` membaca `design/spec/rects.json` (posisi elemen yang diukur
+  Chrome, ditulis `tool/hifi_extract.py`), `hifiStage` menaruh widget di posisi itu, `expectRegionMatchesHifi`
+  membandingkan wilayahnya saja. Pembanding menyerap geseran 1 piksel perangkat (Chrome men-snap baseline, Flutter
+  tidak); geseran 2 pt tetap gagal — sudah dibuktikan di `hifi_harness_test`. Gambar aset: `precacheHifiAssets`.
+- Jebakan CSS→Flutter yang sudah makan korban: border CSS memakan tempat (border-box), `inset box-shadow` tidak;
+  `Container` dengan border dekorasi otomatis menambah tebal border ke padding; mesin teks membulatkan tinggi tiap
+  baris ke pt bulat (22,4 → 22, 25,6 → 26), jadi kotak yang tingginya dari jumlah baris perlu dikompensasi
+  (NameListField, baris poster); `OutlineInputBorder` menggeser isi 4 pt kecuali `gapPadding: 0`; `ButtonStyle.textStyle`
+  mengganti gaya tema (makanya `MabarType` membawa `fontFamily`); `ThemeData` mengunci platform saat dibuat.
+- Frame yang tidak konsisten dengan aturannya (aturan yang diikuti): tombol keypad mati hanya digambar di 07h/07k
+  (07a–07g harus mematikan tombol juga); tombol "Tambah" di 08a 52 pt karena `min-height` `.btn`; frame gambar
+  11d/11f/11g dirender di luar `.app` sehingga line-height 1,55 dan kaki Feed Ringkas meluber dari padding.
 - Kalau hi-fi diubah: `python3 tool/hifi_extract.py` me-render ulang `design/frames/` dan menulis ulang
   `design/spec/screens/` + `components.md` (butuh Google Chrome + internet untuk font). Jangan edit hasilnya dengan tangan.
 - Membaca hi-fi: file ±320 KB tanpa base64 besar, aman dibaca per bagian (`<section class="flow" id="beranda">`,
