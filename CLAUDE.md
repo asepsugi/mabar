@@ -3,7 +3,9 @@
 App Flutter untuk host turnamen mabar tennis/padel (klub, 4–20 pemain, 1 device host, offline).
 
 **Sumber kebenaran, baca sebelum mengubah UI/logika:**
-- `PRD.md` — produk, algoritma, aturan skor & ranking. Bagian 4.4 (WO) memakai aturan desain v2, dan kodenya sudah mengikuti.
+- `PRD.md` — produk, algoritma, aturan skor & ranking, **versi 2.0 sejalan dengan hi-fi v2** (diselaraskan 2026-10-22).
+  Kalau keputusan host mengubah perilaku, perbarui PRD + hi-fi (`design/hifi.html` dan artifact online
+  `H9ZVDUfYvEBXsoBqih4iov`, publish file yang sama) dalam perubahan yang sama.
 - `design/hifi.html` — **hi-fi v2 final** (disetujui host 2026-10-21): Fondasi, Komponen, 73 frame 390×844 +
   catatan perilaku, Cakupan. Acuan visual dan perilaku untuk semua pekerjaan UI berikutnya.
 - `design/spec/` — paket implementasi v2. **Mulai dari `design/spec/README.md`** (urutan kerja, aturan golden), lalu
@@ -79,6 +81,16 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   Ringkas meluber dari padding.
 - Membaca hi-fi: file ±320 KB tanpa base64 besar, aman dibaca per bagian (`<section class="flow" id="beranda">`,
   dst.). Untuk satu layar lebih ringkas baca `design/spec/screens/<alur>.md` + PNG frame-nya.
+
+## Versioning app (PRD §12)
+
+Semver `MAJOR.MINOR.PATCH+BUILD` di `pubspec.yaml`; `lib/core/app_version.dart` (`appVersion`) = `MAJOR.MINOR.PATCH`
+(dijaga test) dan ikut tertulis di tiap simpanan turnamen. **Setiap perubahan dikategorikan:** MAJOR = perubahan besar
+logika/desain atau data lama tidak kompatibel (`schemaVersion` naik → selalu MAJOR); MINOR = fitur/perilaku baru yang
+kompatibel; PATCH = perbaikan bug/teks/visual kecil tanpa mengubah perilaku yang disepakati. Versi + `appVersion`
+dinaikkan di commit yang membawa perubahan ke `main` (tiap push = deploy web), kategori tertinggi yang menang, `BUILD`
+naik tiap rilis. Sebut kategorinya di pesan commit/PR (`[minor]`). Branch `redesain-v2-spec` = 2.0.0 (MAJOR: redesain +
+format skor + data app lama tidak dimuat).
 
 ## Arsitektur
 

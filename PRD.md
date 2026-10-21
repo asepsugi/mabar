@@ -1,403 +1,370 @@
 # PRD — Aplikasi Mabar Tennis/Padel (Klub/Komunitas)
 
-**Versi:** 1.0 (MVP)
-**Platform:** Android + iOS (1 codebase — Flutter)
-**Target user:** Klub/komunitas tennis & padel, 4–20 peserta per turnamen
+**Versi dokumen:** 2.0 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21) dan app **2.0.0**
+**Platform:** Android + iOS + Web/PWA (1 codebase — Flutter)
+**Target user:** Host mabar klub/komunitas tennis & padel, 4–20 pemain per turnamen, 1 HP host, offline
+
+Acuan visual dan perilaku per layar ada di hi-fi (frame 01a–11j + catatan perilaku) dan `design/spec/`. PRD ini
+memuat aturan produk dan logika; kalau ada beda dengan hi-fi soal tampilan, hi-fi yang benar. Aturan logika rinci +
+data test: `design/spec/logic.md`.
 
 ---
 
 ## 1. Ringkasan Eksekutif
 
-Aplikasi mobile untuk host turnamen mabar (round-robin) yang:
+Aplikasi untuk host turnamen mabar yang:
 
-- Mengundikan pasangan (mode Fixed & Mixed)
-- Membuat jadwal pertandingan adil (setiap orang main sama banyak, lawan merata)
-- Mencatat skor pertandingan (game score: `6-4, 6-3` dst)
-- Menentukan ranking berdasarkan win% / total skor / kombinasi
-- Handling skip/WO (walkover)
-- Export & share hasil akhir (text / image)
-
----
-
-## 2. Rekomendasi Teknologi
-
-**Flutter** — 1 codebase Android + iOS.
-
-Alasan:
-- Performa UI interaktif (kartu pasangan, tabel jadwal, leaderboard) lebih mudah tanpa native bridge
-- Paket `fl_chart` untuk statistik, `share_plus` + `screenshot` untuk export
-- Dart untuk algoritma pairing cukup matang, tanpa overhead JS bridge
+- Mengundi pasangan (mode Fixed) atau mengacak pasangan tiap round (mode Mixed)
+- Membuat jadwal adil: tiap orang main sama banyak (selisih ≤ 1), partner & lawan merata
+- Mencatat skor satu angka per tim dalam format Race to N, Best of N, atau Americano N
+- Menghitung peringkat Total Point atau Win %, termasuk walkover (WO)
+- Membagikan hasil sebagai gambar (Feed 1:1 & Story 9:16) + teks caption
 
 ---
 
-## 3. Alur Fitur Utama
+## 2. Teknologi
+
+- **Flutter** (Android, iOS, Web/PWA dari satu codebase), state **Riverpod**, routing **go_router**.
+- Penyimpanan lokal **Hive** (JSON lewat codec sendiri, tanpa TypeAdapter). Tanpa server/cloud.
+- Bagikan: `screenshot` (render poster) + `share_plus` (share sheet sistem).
+- Huruf **Archivo** variabel (sumbu `wdth` + `wght`), ikon **Phosphor Bold** (font resmi, `MabarIcons`).
+- PWA: service worker sendiri (`web/sw.js`), di-deploy ke GitHub Pages dari branch `main`.
+
+---
+
+## 3. Alur & Algoritma
+
+### 3.0 Terminologi
+
+- **Match** = 1 laga antar 2 sisi (mis. `Andi · Citra vs Budi · Dewant`).
+- **Round** = 1 batch di mana court dipakai paralel sekali. Fixed: total round = ⌈total match ÷ jumlah court⌉ per
+  putaran circle.
+- **Court** = lapangan fisik; 1 match per court per round. Tiap court punya nama, warna, dan durasi booking sendiri.
+- Istilah UI: istilah olahraga tetap Inggris (court, round, match, set, WO, Win %, Total Point); semua orang disebut
+  **pemain** (bukan peserta); Peringkat / Bagikan / Beranda (bukan Ranking / Share / Home).
 
 ### 3.1 User Flow
 
 ```
-[Home] → [Input Peserta] → [Konfigurasi Turnamen]
-                             (Mode + Court + Target Match)
-    ↓                        ↓
-[Jadwal] ← [Generate]    [Fixed: buat pair / Mixed: langsung generate]
-    ↓
-[Input Skor per pertandingan] ←→ [Skip/WO]
-    ↓
-[Leaderboard Live] → [Share Hasil]
+[Beranda] → [Pemain] → [Konfigurasi] ─ Fixed → [Pasangan] → [Jadwal Fixed]
+   ↑ Lanjutkan            (format skor,  └ Mixed → [Jadwal Mixed] (R1 langsung dibuat, sheet Cara kerja Mixed)
+   │                      court, durasi)
+[Jadwal] ↔ [Input Skor] ↔ [Walkover]
+[Jadwal] → [Peringkat] → [Detail Pemain]
+[Peringkat] → [Bagikan] → Selesai → [Beranda]
 ```
-
-### 3.0 Terminologi
-
-- **Match** = 1 laga antar 2 sisi (misal `Andi+Citra vs Budi+Dewant`).
-- **Round** = 1 batch dimana semua court dipakai sekali paralel. Total round = `ceil(total_match / jumlah_court)`.
-- **Court** = lapangan fisik. Setiap match berjalan di 1 court. Jumlah court = kapasitas paralel per round.
 
 ### 3.2 Mode Partner
 
 #### A. Fixed Partner (Pasangan Tetap)
 
-- User input N peserta, lalu buat pair manual (misal A+B, C+D, dst).
-- Sistem jalankan round-robin antar pair: setiap pair bertemu semua pair lain.
-- Jika jumlah pair ganjil, ada 1 pair *bye* per round.
+- Pasangan dibuat **Acak** (otomatis saat layar dibuka, bisa acak ulang) atau **Manual** (ketuk dua pemain).
+- "Buat jadwal" memunculkan dialog konfirmasi: pasangan tidak bisa diubah setelah jadwal dibuat.
+- Round-robin penuh dibuat sekaligus. Pasangan ganjil → satu pasangan istirahat (bye) per round; pemain ganjil →
+  satu pemain tanpa pasangan (tampil di "Belum main").
+- Round dibuka berurutan: round berikutnya terkunci sampai semua skor round sebelumnya terisi.
+- Fairness Fixed = fairness antar pasangan, bukan individu.
+- Fixed **tidak bisa dilanjutkan** setelah diakhiri.
 
-Keterbatasan: dalam fixed mode, "setiap orang bertemu semua orang" secara individu **tidak tercapai** — A hanya bertemu lawan-lawan yang dipasangkan dengan B. Fairness di sini adalah fairness antar pasangan, bukan individu.
+#### B. Mixed Partner (Pasangan Berganti, "endless")
 
-#### B. Mixed Partner (Pasangan Berganti)
+- Tidak ada target match: R1 dibuat saat Konfigurasi selesai, host menekan **Buat R(n+1)** untuk round berikutnya.
+- Buat R(n+1) aktif kalau round terakhir lengkap (selesai/WO) dan masih ada court yang waktunya cukup.
+- **Batalkan Rn**: round terakhir yang belum ada skor sama sekali boleh dihapus (bukan R1), mis. karena ada pemain
+  datang terlambat; host menambah pemain lalu Buat Rn lagi.
+- **Kelola pemain** di tengah turnamen: tambah, keluarkan (pemain tidak dihapus; nama & statistik tetap), kembalikan.
+  Aktif minimal 4, maksimal 20.
+- **Lanjutkan turnamen** (tambah jam per court 0–6) setelah diakhiri atau waktu booking habis, juga dari Beranda
+  untuk turnamen terakhir.
 
-- Sistem mengacak pasangan setiap round dengan constraint:
-  - (a) Tidak ada pair yang bertemu lagi (dari history)
-  - (b) Tidak ada orang yang bertemu partner yang sama berulang
-  - (c) Distribusi lawan merata
-- Untuk n <= 12: bisa generate dengan backtracking sederhana.
-- Untuk n > 12: pakai greedy + constraint check, reject & retry.
-- User tentukan jumlah round (misal 5, 7, 10) atau pilih "auto-max".
+### 3.3 Algoritma Round-Robin (Fixed)
 
-**Realistis untuk n=16–20:**
-- 5 round → ~5 partner unik per orang (dari 19 kemungkinan)
-- 7 round → ~7 partner unik, ~11 lawan unik
-- 10 round → semakin dekat ke coverage lengkap, tapi total pertandingan = N×round/2 = 100 pertandingan untuk n=20
-
-### 3.3 Algoritma Round-Robin (Fixed Mode)
-
-Standar circle method — total match & round dihitung di awal, tapi host bisa stop kapan saja.
+Circle method; total match & round dihitung di awal.
 
 ```
 function generateRoundRobin(pairs):
     n = pairs.length
-    if n ganjil: tambah dummy "bye" pair
-    fixed = pairs[0]
-    rotate = pairs[1..n-1]
-    
+    if n ganjil: tambah dummy "bye"
+    fixed = pairs[0]; rotate = pairs[1..n-1]
     for round in 0..n-2:
-        matches = []
-        matches.append(fixed vs rotate[last])
-        for i in 0..(n/2 - 2):
-            matches.append(rotate[i] vs rotate[n-2-i])
+        matches = [fixed vs rotate[last]] + [rotate[i] vs rotate[n-2-i] for i in 0..n/2-2]
         rotate = [rotate[last]] + rotate[0..last-1]
         yield matches
 ```
 
-### 3.4 Algoritma Endless Mode (Mixed) — Fair Generation
+**Invariant:** satu putaran circle dipotong menjadi round sebesar jumlah court; dua putaran tidak pernah digabung
+(kalau digabung, satu pasangan bisa main di dua court bersamaan).
 
-Tidak ada target match di setup. Sistem generate 1 round awal, host tekan "Generate Round Berikutnya" untuk lanjut.
-
-**Setiap generate round baru:**
+### 3.4 Algoritma Mixed — Fair Generation
 
 ```
-function generateNextRound(players, history, courts):
-    capacity = courts.length × 4  // doubles = 4 pemain per match
-    
-    // STEP 1: pilih pemain prioritas
-    sorted = players.sortBy(
-        matchCount ASC,        // paling sedikit main = prioritas tertinggi
-        lastRoundPlayed ASC,   // paling lama istirahat = tie-breaker
-        random()               // tie-breaker terakhir
-    )
-    active = sorted.take(capacity)
-    resting = sorted.skip(capacity)  // bye di round ini
-    
-    // STEP 2: generate pairing dari pemain aktif
-    for attempt in 0..maxAttempts:
-        pairs = shuffleAndPair(active)
-        if isValid(pairs, history):
-            break
-    if !valid: relaxConstraint & retry
-    
-    // STEP 3: assign match ke court
-    matches = []
-    for i, matchPair in pairs.chunked(2):
-        matches.append({
-            pair1: matchPair[0],
-            pair2: matchPair[1],
-            court: courts[i % courts.length]
-        })
-    
-    return { matches, resting }
+function generateNextRound(activePlayers, history, courts, round):
+    slots = courtsAvailable(round) × 4
+    order = activePlayers.sortBy(
+        matchCount + catchUpCredit ASC,   // paling sedikit main
+        lastRoundPlayed ASC,              // paling lama istirahat
+        lockedDraw(drawSeed + round),     // undian seri DIKUNCI per round
+        id)
+    playing = order.take(slots); resting = order.skip(slots)
+    pairing terbaik dari 400 percobaan, penalti: ulang match persis 1000, ulang partner 10, ulang lawan 3
 ```
 
-**Properti fairness:**
-- Selisih match count antar pemain **≤ 1 setiap saat**
-- Pemain bye di round ini otomatis prioritas #1 di round berikutnya
-- Rest time seimbang (delta max 1 round juga)
+- `drawSeed` = FNV-1a dari id turnamen. Karena undian dikunci, daftar "Istirahat · Prioritas main di R(n+1)" yang
+  tampil di Jadwal selalu sama dengan hasil Buat R(n+1).
+- **Properti fairness:** selisih jumlah main antar pemain aktif ≤ 1 setiap saat (dihitung dengan kredit); yang
+  istirahat diprioritaskan di round berikutnya.
+- Pemain baru/kembali mendapat **kredit catch-up** = disejajarkan dengan pemain aktif yang paling sedikit main.
+  Kredit hanya untuk prioritas jadwal, tidak ikut peringkat.
+- Court yang waktu booking-nya habis tidak dipakai lagi; kalau semua habis, slot dihitung dari semua court (untuk
+  daftar prioritas) dan tombolnya menjadi "Tambah jam".
 
-**Constraint pairing (relax berurutan kalau tidak ada solusi):**
-1. Hard: pair yang persis sama tidak muncul lagi
-2. Soft: hindari partner yang sudah pernah berpasangan
-3. Soft: hindari lawan yang sudah pernah dihadapi
+### 3.5 Estimasi & Waktu
+
+- Durasi match kelipatan 5 menit (minimal 5). Default Tennis 20 menit, Padel 15 menit; court default 2 × 2 jam.
+- Konfigurasi: ±round = booking terpendek ÷ durasi, match = round × court. Booking terpendek < durasi → error yang
+  menyebut court penyebabnya.
+- Lanjutkan turnamen: waktu tiap court dihitung dari akhir round terakhir, `max(booking, round × durasi) + tambahan`.
+  Estimasi dalam jumlah match (rumus di catatan frame 08c, `ActiveTournament.capacityAhead`).
 
 ---
 
-## 4. Definisi Skor & Sistem Penilaian
+## 4. Skor & Penilaian
 
 ### 4.1 Format Skor
 
-Input: skor per set, dipisahkan koma.
+Satu angka per tim untuk ketiga format (disimpan sebagai satu `SetScore` per match). Dipilih di Konfigurasi, berlaku
+untuk tennis maupun padel.
 
-Contoh:
-- `6-4, 6-3` → 2 set, pemain menang
-- `6-3` → 1 set
-- `6-7, 6-4, 6-3` → 3 set
+| Format | Arti | N | Skor akhir sah | Seri |
+|--------|------|---|----------------|------|
+| **Race to N** (default 6) | Duluan N game | 2–9 | N lawan 0…N−1, atau N+1 lawan N−1 / N (7–5, 7–6 = tie-break) | Tidak |
+| **Best of N** (default 5) | Main tepat N game | 1–15 | Jumlah = N | Kalau N genap |
+| **Americano N** (default 21) | Poin reli, total tetap | 2–99 | Jumlah = N | Kalau N genap |
 
-### 4.2 Metode Ranking
+- Best of & Americano: mengisi satu sisi otomatis mengisi lawan `N − x`.
+- Keypad sendiri: tombol angka yang membuat isi kotak melebihi batas format mati (Race to N: N+1; Best of N: N;
+  Americano: total). Tombol tidak melihat isi kotak lawan. Pesan validasi persis seperti frame 07d/07h.
+- Seri dihitung setengah menang di Win %.
+- Format best of 3 set (app lama) sudah dihapus; turnamen app lama tidak dimuat (lihat 5.10).
 
-| Metode | Cara Hitung | Kapan Cocok |
-|--------|-------------|-------------|
-| **Win%** | Menang = 1, Seri = 0.5, Kalah = 0 | Jumlah pertandingan tidak sama |
-| **Total Games Won** | Total games dimenangkan | Semua main sama banyak |
-| **Kombinasi (rekomendasi)** | Win% utama, total games tie-breaker | Paling adil untuk klub |
+### 4.2 Metode Peringkat
 
-### 4.3 Tie-Breaker Hierarchy
+| Metode | Cara hitung |
+|--------|-------------|
+| **Total Point** (default) | Jumlah game/poin yang dimenangkan lintas match (+ nilai WO, lihat 4.4) |
+| **Win %** | Menang = 1, seri = 0,5, kalah = 0, dibagi jumlah match |
 
-1. Metode utama
-2. Total games won
-3. Head-to-head
-4. Game differential
-5. Random / draw
+Metode dipilih di layar Peringkat (tidak di setup) dan dipakai juga oleh Detail & Bagikan. Tidak disimpan: setelah
+app dibuka ulang kembali ke Total Point.
 
-### 4.4 Skip / Walkover (WO)
+### 4.3 Tie-Breaker & Nomor Peringkat
 
-**Alur:**
-1. Host tap tombol WO di halaman Input Skor
-2. Muncul modal bottom-sheet "Tandai Walkover"
-3. Host pilih pasangan mana yang WO (radio button, salah satu pair)
-4. Pair sebelah otomatis ditandai sebagai pemenang
-5. (Opsional) pilih alasan: Absen / Injury / Waktu habis / Lainnya
-6. Konfirmasi → match tercatat sebagai `WO — {pemenang} menang` di jadwal & leaderboard
+1. Metode utama → 2. Total Point → 3. Head-to-head → 4. Selisih game/poin → 5. Nama (pengganti undian, supaya stabil)
 
-**Impact:**
-- Lawan (pair yang tetap main) → menang, +1 match count, +1 W di record
-- Pair WO → kalah, +1 match count, +1 L di record
-- Total Point pemenang WO ikut format skor (keputusan host 2026-10-21; dulu "games WO tidak dihitung",
-  yang merugikan pemenang WO sejak Total Point jadi metode default):
-  - Race to N → pemenang dapat N game (sama dengan hasil menang biasa, yang selalu N)
-  - Best of N & Americano → rata-rata game/poin dari match yang benar-benar dia mainkan, dibulatkan ke
-    bilangan bulat terdekat (,5 ke atas), tapi tidak pernah di bawah skor menang terkecil = ⌊total ÷ 2⌋ + 1
-    (Americano 21 → 11, Americano 24 → 13, Best of 5 → 3, Best of 6 → 4); belum pernah main → skor menang terkecil.
-    Batas bawah ini supaya "menang" WO tidak bernilai skor yang di Input Skor dianggap kalah.
-    Bukan skor penuh, karena di format bertotal tetap skor penuh = hasil maksimal (menang WO jadi lebih untung daripada main)
-- Pair WO → 0 game/poin
-- Selisih game/poin tidak berubah untuk kedua pair (tidak ada skor yang dimainkan)
-- Alasan WO tersimpan di detail match (opsional, hanya untuk histori)
+- Statistik identik (poin, selisih, M–K–S) mendapat **nomor sama** (1, 1, 3); urutan baris tetap mengikuti tie-break.
+- Pemain yang belum main (pemain baru, sisa ganjil Fixed) dikelompokkan di "Belum main" tanpa nomor.
+- Fixed: satu baris per pasangan (dua nama), posisinya mengikuti anggota terbaik.
 
-### 4.5 Late Entry
+### 4.4 Walkover (WO)
 
-- Peserta baru main dari round berikutnya
-- Jumlah pertandingan lebih sedikit → otomatis fair di win%
+**Alur:** tombol WO di Input Skor → sheet → pilih pasangan yang tidak bisa main → alasan opsional (Absen / Cedera /
+Waktu habis / Lainnya; ketuk lagi untuk melepas) → Simpan. Membuka WO yang sudah ada menampilkan pilihannya; menyimpan
+skor di match WO mengubahnya jadi match selesai.
 
----
+**Dampak:**
+- Pasangan lawan menang, pasangan WO kalah; keduanya +1 match.
+- Total Point pemenang WO ikut format skor (keputusan host 2026-10-21):
+  - Race to N → pemenang dapat N game.
+  - Best of N & Americano → rata-rata game/poin dari match yang benar-benar dia mainkan (bulat ,5 ke atas), tapi tidak
+    pernah di bawah skor menang terkecil ⌊N ÷ 2⌋ + 1 (Americano 21 → 11, 24 → 13; Best of 5 → 3); belum pernah main →
+    skor menang terkecil.
+- Pasangan WO 0 game/poin. Selisih game/poin tidak berubah untuk keduanya.
+- Alasan WO tampil di baris Jadwal.
 
-## 5. Feature List — MVP
+### 4.5 Status Match
 
-### Setup
-- [ ] **Pilih Jenis Permainan** (Home screen): Tennis atau Padel — tidak ada default, wajib pilih untuk lanjut ke setup
-  - Ditampilkan sebagai 2 tombol besar dengan siluet raket masing-masing
-  - Jenis permainan menentukan **default durasi per match**: Tennis 20 menit, Padel 15 menit
-  - Badge jenis permainan tampil di setiap match card di halaman jadwal
-  - Siluet raket ditampilkan sebagai watermark di share card (kanan bawah)
-- [ ] Input nama peserta via textarea (multiline, 1 baris = 1 pemain)
-  - Parser otomatis trim: hapus nomor urut (`1.`, `2)`, `03 -`), bullet (`-`, `*`, `•`), whitespace
-  - Paste dari clipboard langsung
-  - Preview live: jumlah pemain terdeteksi + nama-nama tervalidasi
-  - Validasi: min 4, maks 20, tolak duplikat
-- [ ] Pilih mode Fixed / Mixed
-- [ ] **Konfigurasi court & durasi:**
-  - Durasi per match (menit, wajib, default: **Tennis 20** / **Padel 15** — otomatis mengikuti jenis permainan yang dipilih di Home)
-  - Jumlah court (1–10, default 2)
-  - Per court: nama (placeholder "Court N", bisa diisi bebas) + durasi booking (jam, wajib, default 2) + **warna** (dipilih dari 10 warna preset, default sesuai urutan court)
-  - Warna court dipakai untuk badge di jadwal & input skor supaya mudah dibedakan visual
-- [ ] Sistem hitung otomatis dari input di atas:
-  - Match per round = jumlah court
-  - Max round = `min(durasi_booking_per_court) / durasi_per_match` × 60 (menit)
-  - Estimasi match per pemain (mixed): `max_round × jumlah_court × 4 / total_pemain`
-- [ ] Fixed: 2 opsi buat pair
-  - **Acak Otomatis:** sistem randomize pairing (bisa acak ulang sebelum dikunci)
-  - **Manual:** tap-to-assign (ketuk 2 pemain per slot)
-  - Setelah tombol "Kunci Pasangan" ditekan → pairing tidak bisa diubah
-- [ ] Mixed: konfirmasi mode Endless + estimasi otomatis (tidak ada input tambahan)
-- [ ] Metode ranking **tidak dipilih di setup** — bisa diubah kapan saja di leaderboard (default: Kombinasi)
+| Status | Definisi | Dampak peringkat |
+|--------|----------|------------------|
+| Belum | Belum diisi | — |
+| Selesai | Skor masuk | Dihitung |
+| WO | Satu pasangan tidak bisa main | Menang/kalah dihitung (4.4) |
+| Tidak dimainkan | Turnamen diakhiri sebelum match dimainkan | **Tidak dihitung sama sekali**; kembali "Belum" kalau Mixed dilanjutkan |
 
-### Jadwal — 2 Layout Terpisah (Fixed & Mixed)
+### 4.6 Status Sementara / Final
 
-**Common (kedua mode):**
-- Header: `R X/Max · ⏱ waktu_berjalan/durasi_booking` (misal "R 2/6 · 45m/2j")
-- **Horizontal scroll tab** navigasi round (R1 ✓ / R2 ● / R3 / R4 ...)
-- Match card dengan court badge
-- Status match: kosong / selesai / WO / tidak dimainkan
-- Info bye/resting players di bawah match list
-- Tombol **"Selesaikan Turnamen Sekarang"** — konfirmasi → match belum dimain jadi "Tidak Dimainkan" → langsung ke leaderboard final
-- Warning otomatis kalau realisasi waktu > estimasi
-
-**Jadwal Fixed (Screen 6a):**
-- Semua round di-generate sekaligus di awal (deterministik, circle method)
-- Horizontal tab: semua round terlihat (R1–R7 misal), user bisa lihat preview jadwal kedepan
-- Navigasi **linier/urut** — user tidak bisa main round 3 sebelum round 2 selesai (validasi di UI)
-- Bye pair (kalau jumlah pair ganjil) ditampilkan per round
-- **Tidak ada** tombol "Generate Round Berikutnya"
-
-**Jadwal Mixed / Endless (Screen 6b):**
-- Round digenerate on-demand
-- Horizontal tab: hanya round yang sudah dijalanin (R1 ✓, R2 ●) + placeholder "R3 ?" untuk yang belum
-- Round history readonly (skor bisa diedit)
-- Resting players ditampilkan + info "→ Prioritas main di R berikutnya"
-- Tombol **"Generate Round Berikutnya"** muncul di footer
-  - Disabled kalau skor round berjalan belum lengkap
-  - Disabled kalau semua court sudah habis waktu booking
-- Court yang habis booking-nya di-drop dari round berikutnya
-
-### Status Match
-| Status | Definisi | Impact Ranking |
-|--------|----------|----------------|
-| Belum | Belum dimain, bisa diinput | — |
-| Selesai | Skor sudah masuk | Masuk hitungan normal |
-| WO | Pemain skip / tidak hadir | Lawan menang, pemain kalah. Masuk hitungan. |
-| Tidak Dimainkan | Turnamen dihentikan sebelum match dimainkan | **Tidak dihitung sama sekali** — win% otomatis fair |
-
-### Input Skor
-- [ ] 2 kolom besar (games pemenang, games lawan)
-- [ ] Add set 2, set 3
-- [ ] WO button
-- [ ] Undo/edit skor
-
-### Leaderboard
-- [ ] Ranking live (win%, games, record W-L, diff) — **bisa diakses kapan saja**, termasuk saat pertandingan belum selesai (leaderboard sementara)
-- [ ] Indikator status: "⏱ Sementara" (belum semua match selesai) vs "🏆 Final"
-- [ ] Progress bar: X dari Y pertandingan selesai
-- [ ] Toggle metode ranking (Win % / Total Games / Kombinasi) langsung di halaman — ranking re-sort real-time
-- [ ] Flag WO
-- [ ] Detail per peserta (partner unik, lawan unik, daftar match)
-
-### Share
-- [ ] Preview teks/gambar
-- [ ] Share WA / Telegram / clipboard
-- [ ] Format ringkas / lengkap
-- [ ] Tombol "Selesai · Kembali ke Beranda" — menutup turnamen aktif & kembali ke Home. Hasil turnamen tetap tersimpan di local storage (bisa dilihat di history pada fase mendatang)
-- [ ] Hint di bawah tombol: "Hasil turnamen ini tersimpan otomatis di device"
-
-### Penyimpanan Data
-- [ ] Hasil turnamen (ranking + jadwal + skor + konfigurasi) disimpan di **local storage device** (Hive / SQLite via `sqflite`)
-- [ ] Data **tidak** disinkronisasi ke cloud / server — MVP full offline
-- [ ] Data akan **terhapus** hanya jika:
-  - User clear cache/storage aplikasi via setting device
-  - User uninstall & install ulang aplikasi
-- [ ] Tombol "Selesai · Kembali ke Beranda" di halaman share **tidak** menghapus data — hanya menutup turnamen aktif; hasil tetap tersimpan sebagai turnamen terakhir
-- [ ] Turnamen berjalan auto-save setiap ada perubahan (skor, pairing, round baru) — kalau app di-kill mendadak, resume dari state terakhir saat dibuka lagi
-- [ ] MVP: cukup simpan 1 turnamen aktif + 1 turnamen terakhir yang selesai. History multiple turnamen = Fase 3+
+- **Fixed:** Final setelah diakhiri atau semua match terisi.
+- **Mixed:** Final setelah diakhiri, atau waktu booking semua court habis **dan** round terakhir lengkap. Kembali
+  Sementara kalau dilanjutkan.
+- Final: subjudul "… · Final · 5 round · 10 match"; poster menulis "Peringkat akhir". Sementara: "… · R3 · 6 dari 8 match".
 
 ---
 
-## 6. Screen Breakdown
+## 5. Fitur per Layar (v2)
 
-1. **HomeScreen** — CTA "Buat Turnamen"
-2. **SetupPesertaScreen** — textarea multiline, parser auto-trim, preview live
-3. **KonfigurasiScreen** — mode Fixed/Mixed + durasi per match + jumlah court + nama & durasi booking per court
-4. **PairSetupScreen** (Fixed) — pool + slot pair, opsi Acak/Manual, tombol Kunci
-5. **MixedConfirmScreen** (Mixed) — konfirmasi mode Endless + tabel estimasi
-6a. **ScheduleFixedScreen** — horizontal tab semua round (deterministik), navigasi linier, bye pair
-6b. **ScheduleMixedScreen** — horizontal tab round yang sudah dijalanin + placeholder, tombol Generate Round Berikutnya, resting players
-7. **ScoreInputScreen** — input skor per match
-8. **LeaderboardScreen** — ranking live dengan status "Sementara/Final" + toggle metode
-9. **DetailPlayerScreen** — statistik per peserta
-10. **ShareResultScreen** — preview + share
+Frame di hi-fi adalah kriteria selesai. Ringkasannya:
+
+### 5.1 Beranda (01a–01j)
+- Banner sudut lapangan tampak atas (tennis biru court, padel terracotta) dengan animasi tennis ↔ padel; panel bawah:
+  pilih olahraga (diingat dari turnamen terakhir, default Tennis) + satu tombol "Mulai turnamen …".
+- Turnamen berjalan: info round + "Lanjutkan" di banner; mulai baru → dialog yang menyebut turnamen yang akan dihapus.
+- Turnamen terakhir Mixed → baris riwayat → sheet Lanjutkan turnamen. Fixed tidak tampil.
+- Web/PWA: baris "Pasang Mabar di HP" (dialog bawaan browser, atau panduan iPhone/iPad).
+
+### 5.2 Pemain (02a–02d)
+- Satu kotak teks (tempel dari WhatsApp); parser membuang nomor/bullet, spasi ganda, baris kosong, dan duplikat
+  (tidak peka huruf besar, yang pertama dipertahankan).
+- Toolbar: Tempel, Contoh (hanya saat kosong), Hapus semua. Hasil = daftar bernomor dua kolom.
+- Lanjut aktif untuk 4–20 pemain.
+
+### 5.3 Konfigurasi (03a–03e)
+- Mode Fixed/Mixed, format skor (4.1), durasi match (stepper ±5), jumlah court 1–10, per court nama/warna (10 warna
+  preset)/booking. Estimasi di tombol. Fixed → Pasangan; Mixed → langsung Jadwal + R1.
+
+### 5.4 Pasangan — Fixed (04a–04e)
+- Acak / Manual (pilih, lepas pilihan, Urungkan), pemain ganjil + "Ubah pemain", dialog kunci pasangan.
+
+### 5.5 Jadwal Fixed (06a–06e) & Mixed (06f–06o)
+- Tab round yang bisa digeser (tepi dipudarkan), label kanan "x/y match" atau "Waktu habis"; ganti round hanya lewat tab.
+- Baris match bergaya scorebug dengan strip court berwarna; ketuk → Input Skor (juga untuk mengubah).
+- Istirahat: Fixed paling banyak satu pasangan; Mixed di round terakhir dibagi "Istirahat · Prioritas main di R(n+1)"
+  dan "Istirahat lagi di R(n+1)".
+- Menu ⋯: Cara kerja Mixed (sheet; muncul otomatis sekali saat R1 dibuat) dan Akhiri turnamen (dialog).
+- Mixed: Buat R(n+1) / Batalkan Rn / Pemain (n) / Tambah jam / Lanjutkan turnamen.
+
+### 5.6 Input Skor & Walkover (07a–07k)
+- Papan skor gelap: satu angka besar per tim, keypad sendiri, pesan validasi, "Perbarui skor" saat mengubah.
+- WO lewat sheet (4.4).
+
+### 5.7 Peringkat (09a–09f)
+- Tabel: # · nama · M–K–S (M–K kalau format tidak bisa seri) · nilai metode; peringkat 1 diberi bola.
+- Toggle Total Point / Win %, status di subjudul, catatan WO / tidak dimainkan, ketuk baris → Detail. Tombol Bagikan.
+
+### 5.8 Detail Pemain (10a–10c)
+- Satu baris statistik (label mengikuti format skor: Poin/Game), beda partner/lawan, kalah WO, riwayat match terbaru
+  di atas (Mixed menampilkan partner; menang WO menulis "+N").
+
+### 5.9 Bagikan (11a–11j)
+- Kartu pratinjau + 10 tema (default biru) + Ringkas (5 teratas + "+n lainnya") / Lengkap (semua; Feed > 10 baris
+  dibagi dua kolom rata). Nomor "#n"; peringkat 1 lencana emas.
+- Dua gambar 1080×1080 dan 1080×1920 dibagikan lewat share sheet sistem dengan caption teks hasil; gagal → caption
+  disalin + toast "Hasil disalin".
+- "Selesai" memindahkan turnamen ke slot terakhir lalu kembali ke Beranda.
+
+### 5.10 Penyimpanan Data
+- Lokal di HP (Hive), tanpa sinkronisasi. Satu turnamen aktif + satu turnamen terakhir.
+- Auto-save setiap perubahan; app di-kill → lanjut dari state terakhir.
+- Data terhapus hanya kalau storage app dibersihkan / app di-uninstall.
+- Format simpanan: `schemaVersion` 2 + **`appVersion`** (versi app yang menulisnya). Data rusak, dari skema lain,
+  atau tanpa `appVersion` diabaikan (app tetap terbuka). **Turnamen dari app lama (1.x, skor per set) tidak dimuat di
+  app v2** — keputusan host 2026-10-22.
 
 ---
 
-## 7. Design System
+## 6. Daftar Layar
 
-### Palet
-```
-Primary:      #16A34A  (hijau lapangan)
-Primary Dark: #14532D
-Surface:      #FAFAFA
-Card:         #FFFFFF
-Text Primary: #111827
-Text Secondary: #6B7280
-Border:       #E5E7EB
-Danger (WO):  #EF4444
-```
+| Layar | Frame |
+|-------|-------|
+| Beranda (+ dialog mulai baru, sheet pasang di iPhone, ikon app) | 01a–01j |
+| Pemain | 02a–02d |
+| Konfigurasi (+ sheet warna court) | 03a–03e |
+| Pasangan (Fixed) | 04a–04e |
+| Jadwal Fixed | 06a–06e |
+| Jadwal Mixed (+ sheet Cara kerja Mixed) | 06f–06o |
+| Sheet Kelola pemain, sheet Lanjutkan turnamen | 08a–08d |
+| Input Skor + sheet Walkover | 07a–07k |
+| Peringkat | 09a–09f |
+| Detail Pemain | 10a–10c |
+| Bagikan | 11a–11j |
 
-### Typography
-- Sans-serif modern (SF Pro / Roboto)
-- Heading bold, body regular
+State teks sederhana tanpa frame: "Halaman tidak ditemukan", "Belum ada turnamen berjalan", "Match tidak ditemukan",
+"Pemain tidak ditemukan", spinner saat Jadwal membuat round pertama.
 
-### Komponen
-- **Card:** radius 12px, shadow soft, padding 16px
-- **Primary Button:** #16A34A, radius 10px, height 48px
-- **Secondary:** border 1.5px #E5E7EB
-- **Player Chip:** #F3F4F6, radius 8px. Selected: #16A34A 15%
-- **Status indicator match:**
-  - Kosong: border dashed
-  - Selesai: fill hijau 10%
-  - WO: fill merah 10%
+---
+
+## 7. Design System (ringkas; sumber: hi-fi → Fondasi, `design/spec/tokens.json`)
+
+- Arah: "papan skor pinggir lapangan" — tidak terkesan AI-generated.
+- Warna: court `#1E6BB8`, court-deep `#164E8C`, ink `#0F1E2C`, ball `#CDE84A`, paper `#EEF2F5`, card `#FFFFFF`,
+  line `#DCE3E9`, clay `#B9482A` (error/hapus/WO), padel `#BC5A33` (permukaan lapangan padel di Beranda saja),
+  emas `#E3B341` (lencana #1 di Bagikan saja), 10 warna court.
+- Huruf Archivo: angka besar condensed (`wdth` 72, tabular), wordmark lebar (`wdth` 125).
+- Ikon Phosphor Bold 24 pt (20 di dalam tombol). Tinggi sentuh minimal 44 pt; tombol utama 52 pt.
+- Ikon app: sudut lapangan tennis + bola (opsi A), dari painter yang sama dengan banner Beranda.
 
 ### Prinsip "Tanpa Petunjuk"
-- No tooltip, no help icon
-- Label jelas, action button self-explanatory
-- State visual berbicara sendiri
-- Contoh kontekstual muncul sesuai kebutuhan
+- Tanpa tooltip/ikon bantuan; label dan tombol menjelaskan dirinya sendiri; status terbaca dari tampilan.
+- Teks bantuan hanya kalau mencegah salah langkah (mis. pesan validasi skor, error konfigurasi).
 
 ---
 
 ## 8. Skala & Batasan
 
-| Jumlah Orang | Fixed Single RR | Fixed Double RR | Mixed 7 round | Mixed 10 round |
-|--------------|-----------------|-----------------|---------------|----------------|
-| 4            | 1               | 2               | 2             | 2              |
-| 8            | 6               | 12              | 8             | 12             |
-| 12           | 15              | 30              | 12            | 18             |
-| 16           | 28              | 56              | 16            | 24             |
-| 20           | 45              | 90              | 20            | 30             |
+- 4–20 pemain (aktif, untuk Mixed). Court 1–10. Booking per court dalam jam.
+- Fixed: 10 pasangan → 45 match; dengan 1 court sampai 45 round. Mixed bisa lebih dari 20 round.
 
-Batas atas: 20 orang.
+| Pemain | Fixed (pasangan) RR | Mixed 7 round (2 court) |
+|--------|--------------------|--------------------------|
+| 8 | 6 match | 14 match |
+| 12 | 15 match | 14 match |
+| 16 | 28 match | 14 match |
+| 20 | 45 match | 14 match |
 
 ---
 
 ## 9. Fase Development
 
-| Fase | Fitur |
-|------|-------|
-| MVP  | Setup + pairing + RR generation + input skor + leaderboard + share text |
-| 2    | Share image + undo/edit + detail statistik |
-| 3    | Save tournament + history klub |
-| 4    | Double RR + tiebreak parse + late entry |
+| Fase | Fitur | Status |
+|------|-------|--------|
+| MVP (1.x) | Setup, pairing, RR & Mixed, input skor, peringkat, share teks+gambar, simpan lokal, PWA | Selesai, live di web |
+| 2.0 | Redesain v2 + format skor Race to/Best of/Americano + WO per format + perbaikan logika (`logic.md`) | Sedang dikerjakan |
+| Berikutnya | Rilis Play Store (keystore sendiri), history banyak turnamen, multi-device | Belum |
 
 ---
 
-## 10. Keputusan Terbuka
+## 10. Keputusan yang Sudah Diambil
 
-1. Fixed: pairing sekali di awal (asumsi) atau bisa diganti per round?
-2. Mixed: constraint "no repeat opponent" on/off?
-3. Double round-robin untuk fixed?
-4. Format share default: text (MVP) → image (Fase 2)
-5. Timer per match? Skip untuk MVP.
+1. Fixed: pasangan dikunci sekali di awal (dialog konfirmasi).
+2. Mixed: ulang lawan dihindari lewat penalti (soft), bukan larangan.
+3. Double round-robin Fixed: tidak.
+4. Share: gambar Feed & Story + caption teks.
+5. Timer per match: tidak.
+6. Metode "Kombinasi" dihapus (isinya identik dengan Win %).
+7. Data turnamen app lama tidak dimuat di v2; simpanan membawa versi app (2026-10-22).
 
 ---
 
 ## 11. Jawaban User (Dasar Keputusan)
 
-1. Jumlah peserta maks: **16–20 orang**
+1. Jumlah pemain maks: **16–20 orang**
 2. Mode: **Fixed & Mixed sama-sama sering**
-3. Skor besar = **skor pertandingan (`6-4, 6-3`)**
+3. Skor = **skor pertandingan**; sejak v2 satu angka per tim (Race to / Best of / Americano), bukan per set
 4. **Skip = WO** (lawan menang)
-5. Device: **1 device host** (multi-device Fase 3+)
-6. Save: **fitur share saja** (persistensi Fase 3)
-7. Pairing berbasis skill: **tidak sekarang**, catat untuk pengembangan
+5. Device: **1 HP host** (multi-device nanti)
+6. Simpan: 1 turnamen aktif + 1 terakhir, lokal
+7. Pairing berbasis skill: **tidak sekarang**, dicatat untuk pengembangan
 8. Target user: **klub/komunitas**
+
+---
+
+## 12. Versioning Aplikasi
+
+Versi app mengikuti **semver `MAJOR.MINOR.PATCH+BUILD`** di `pubspec.yaml`, dan konstanta `appVersion`
+(`lib/core/app_version.dart`) harus sama dengan `MAJOR.MINOR.PATCH`-nya (dijaga test). `appVersion` ikut tertulis di
+setiap simpanan turnamen.
+
+Setiap perubahan kode/logika/desain **wajib dikategorikan** sebelum dirilis:
+
+| Kategori | Kapan | Contoh |
+|----------|-------|--------|
+| **MAJOR** (x.0.0) | Perubahan besar logika atau desain; data/perilaku lama tidak lagi kompatibel; `schemaVersion` naik | Redesain v2; format skor per set dihapus; aturan ranking/WO berubah sehingga peringkat lama berbeda |
+| **MINOR** (2.x.0) | Fitur atau perilaku baru yang kompatibel dengan data & alur yang ada | Layar/sheet baru, format skor baru yang menambah pilihan, history banyak turnamen, kolom simpanan baru yang opsional |
+| **PATCH** (2.0.x) | Perbaikan bug, teks, atau visual kecil tanpa mengubah perilaku yang disepakati | Salah hitung estimasi, typo, spacing/warna yang menyimpang dari hi-fi, crash |
+
+Aturan:
+- Satu rilis = kategori tertinggi dari perubahan di dalamnya (ada satu MAJOR → naik MAJOR, MINOR & PATCH kembali 0).
+- Versi dinaikkan di commit yang membawa perubahan ke `main` (setiap push ke `main` = deploy web), bersama `appVersion`.
+  Branch kerja boleh menumpuk perubahan; kategorinya ditentukan saat digabung.
+- `BUILD` (`+N`) naik setiap rilis apa pun (Android `versionCode` / iOS build), tidak pernah turun.
+- `schemaVersion` simpanan naik hanya kalau bentuk JSON tidak kompatibel, dan itu selalu MAJOR. Kolom baru yang
+  opsional (data lama tetap terbaca) cukup MINOR tanpa menaikkan `schemaVersion`.
+- Pesan commit/PR menyebut kategorinya (mis. `[minor]`), dan perubahan MAJOR mencatat keputusan host di PRD.
