@@ -186,7 +186,16 @@ Contoh:
 **Impact:**
 - Lawan (pair yang tetap main) → menang, +1 match count, +1 W di record
 - Pair WO → kalah, +1 match count, +1 L di record
-- Total games tidak masuk hitungan (tidak ada skor game untuk WO)
+- Total Point pemenang WO ikut format skor (keputusan host 2026-10-21; dulu "games WO tidak dihitung",
+  yang merugikan pemenang WO sejak Total Point jadi metode default):
+  - Race to N → pemenang dapat N game (sama dengan hasil menang biasa, yang selalu N)
+  - Best of N & Americano → rata-rata game/poin dari match yang benar-benar dia mainkan, dibulatkan ke
+    bilangan bulat terdekat (,5 ke atas), tapi tidak pernah di bawah skor menang terkecil = ⌊total ÷ 2⌋ + 1
+    (Americano 21 → 11, Americano 24 → 13, Best of 5 → 3, Best of 6 → 4); belum pernah main → skor menang terkecil.
+    Batas bawah ini supaya "menang" WO tidak bernilai skor yang di Input Skor dianggap kalah.
+    Bukan skor penuh, karena di format bertotal tetap skor penuh = hasil maksimal (menang WO jadi lebih untung daripada main)
+- Pair WO → 0 game/poin
+- Selisih game/poin tidak berubah untuk kedua pair (tidak ada skor yang dimainkan)
 - Alasan WO tersimpan di detail match (opsional, hanya untuk histori)
 
 ### 4.5 Late Entry

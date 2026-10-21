@@ -3,21 +3,34 @@
 App Flutter untuk host turnamen mabar tennis/padel (klub, 4–20 pemain, 1 device host, offline).
 
 **Sumber kebenaran, baca sebelum mengubah UI/logika:**
-- `PRD.md` — produk, algoritma, aturan skor & ranking.
-- `hifi.html` — mockup hi-fi 11 layar + seluruh CSS design system. Ini acuan visual final.
-- `design-tokens.json` — token yang sudah dikonversi ke `lib/core/theme/mabar_theme.dart`.
+- `PRD.md` — produk, algoritma, aturan skor & ranking. Bagian 4.4 (WO) sudah memakai aturan desain v2; kodenya belum.
+- `design/hifi.html` — **hi-fi v2 final** (disetujui host 2026-10-21): Fondasi, Komponen, 73 frame 390×844 +
+  catatan perilaku, Cakupan. Acuan visual dan perilaku untuk semua pekerjaan UI berikutnya.
+- `design/spec/` — paket implementasi v2. **Mulai dari `design/spec/README.md`** (urutan kerja, aturan golden), lalu
+  `tokens.json`, `components.md`, `logic.md` (aturan logika yang berubah + data test), `screens/*.md` (per alur).
+- `design-tokens.json` — token desain **lama** yang menjadi `lib/core/theme/mabar_theme.dart` sekarang; diganti
+  `design/spec/tokens.json` saat fondasi v2.
 
-## Cara membaca hifi.html
+Kode di `lib/` masih desain lama. Hi-fi lama (11 layar, Inter, hijau) ada di git: `git show dae32c9:hifi.html`.
+Bagian "Status" di bawah menggambarkan app yang berjalan sekarang, bukan desain v2.
 
-File 326KB berisi base64 besar dan HTML yang sering dipangkas tool. Yang terbukti jalan:
+## Redesain v2 (final, belum diimplementasi)
 
-```bash
-sed -n 'AWAL,AKHIRp' hifi.html | sed -E 's/base64,[A-Za-z0-9+/=]{20,}/base64,IMG/g' | tr '<>' '[]'
-```
+Tujuannya tampilan yang tidak terkesan AI-generated: arah "papan skor pinggir lapangan" — biru court + tinta +
+kuning bola, Archivo variabel (`assets/fonts/Archivo[wdth,wght].ttf`, sumbu `wdth` untuk angka condensed), ikon
+Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracotta), ikon app dari painter yang sama.
 
-`tr '<>' '[]'` wajib — tanpa itu markup-nya dibuang. **Jangan strip tag `<svg>`**: ikon (mis. piala di judul "Peringkat") ada di dalamnya dan pernah hilang gara-gara itu.
-
-Baris per layar: 01 Home 1186, 02 Peserta 1251, 03 Konfigurasi 1317, 04 Pasangan 1410, 05 Mixed Confirm 1475, 06a Jadwal Fixed 1534, 06b Jadwal Mixed 1634, 07 Input Skor 1738, 07b WO 1801, 08 Leaderboard 1894, 09 Detail 1997, 10 Share 2100. CSS di baris 1–1185.
+- Semua keputusan sudah disetujui host; daftar lengkapnya di hi-fi → Cakupan. Jangan buka ulang keputusan itu.
+- Perubahan logika (format skor Race to / Best of / Americano dengan data lama tetap terbaca, batas keypad, WO per
+  format, status Final Mixed, undian seri dikunci per round, daftar prioritas istirahat, bug estimasi Lanjutkan)
+  ada di `design/spec/logic.md`, lengkap dengan data test yang sama dengan angka di frame.
+- Verifikasi visual: `expectMatchesHifi(tester, layar, '<id frame>')` di `test/hifi/hifi_golden.dart` membandingkan
+  render Flutter dengan `design/frames/<id>.png` (2x, Archivo dimuat; gagal → `build/hifi_diff/`). Jangan klaim
+  layar sudah sesuai tanpa golden lolos.
+- Kalau hi-fi diubah: `python3 tool/hifi_extract.py` me-render ulang `design/frames/` dan menulis ulang
+  `design/spec/screens/` + `components.md` (butuh Google Chrome + internet untuk font). Jangan edit hasilnya dengan tangan.
+- Membaca hi-fi: file ±320 KB tanpa base64 besar, aman dibaca per bagian (`<section class="flow" id="beranda">`,
+  dst.). Untuk satu layar lebih ringkas baca `design/spec/screens/<alur>.md` + PNG frame-nya.
 
 ## Arsitektur
 
@@ -31,13 +44,13 @@ Baris per layar: 01 Home 1186, 02 Peserta 1251, 03 Konfigurasi 1317, 04 Pasangan
 - `lib/features/schedule/schedule_widgets.dart` — komponen khusus jadwal, dipakai bareng 6a/6b/7.
 - State turnamen: Riverpod `tournamentProvider` (`features/schedule/tournament_controller.dart`) — satu-satunya sumber kebenaran sejak layar jadwal. Sebelum itu data dioper lewat `extra` router.
 
-Konvensi: komentar seperlunya dan dalam bahasa Indonesia, menjelaskan *kenapa*. Nama komponen merujuk kelas CSS mockup (mis. `// .info` / `.share-card`) supaya mudah dicocokkan.
+Konvensi: komentar seperlunya dan dalam bahasa Indonesia, menjelaskan *kenapa*. Nama komponen merujuk kelas CSS mockup (mis. `// .info` / `.share-card`) supaya mudah dicocokkan; untuk kode desain v2 pakai kelas di `design/hifi.html` (mis. `// .bug`, `.rest`) dan nama widget di `design/spec/components.md`.
 
 ## Status: 11 layar selesai + persistensi lokal
 
 Alur penuh jalan: Home → Peserta → Konfigurasi → Pasangan (Fixed) / Mode Endless (Mixed) → Jadwal 6a/6b → Input Skor + sheet WO → Peringkat → Detail Pemain → Share.
 
-Mesin domain yang sudah ada + ter-test (78 test lulus, `flutter analyze` bersih kecuali 2 info lint lama di `models.dart`):
+Mesin domain yang sudah ada + ter-test (81 test lulus — 78 domain/widget + 3 alat pembanding hi-fi di `test/hifi/`; `flutter analyze` bersih kecuali 2 info lint lama di `models.dart`):
 - `pairing/player_name_parser.dart` — parser textarea nama.
 - `pairing/pair_generator.dart` — pasangan Fixed (acak/manual), sisa pemain ganjil.
 - `schedule/round_robin_generator.dart` — circle method. **Invariant:** satu putaran circle dipotong jadi beberapa round sebesar jumlah court, tidak pernah menggabungkan dua putaran (kalau digabung, satu pair bisa main di dua lapangan bersamaan).
@@ -51,7 +64,7 @@ Mesin domain yang sudah ada + ter-test (78 test lulus, `flutter analyze` bersih 
   setelah round dibuat) dihitung ulang dari history tanpa round tersebut — match pending ikut dihitung di
   `catchUpCredit`, jadi tanpa itu kreditnya kelebihan satu dan dia istirahat di round berikutnya (paling kelihatan di
   12 pemain/2 court, lihat test).
-- `ranking/ranking_calculator.dart` — dua metode: Win % dan **Total Point** (`gamesWon`, yaitu jumlah game yang dimenangkan lintas match: 6-5, 4-6, 3-6 → 13). Default app = Total Point, sesuai keputusan host bahwa total point dihitung lebih dulu; metode "Kombinasi" sudah dihapus karena isinya identik dengan Win %. Tie-break: metode → total point → head-to-head → selisih game → nama (PRD bilang undian; dipakai nama supaya stabil). WO: menang/kalah dihitung, games tidak. `cancelled` & `pending` diabaikan total.
+- `ranking/ranking_calculator.dart` — dua metode: Win % dan **Total Point** (`gamesWon`, yaitu jumlah game yang dimenangkan lintas match: 6-5, 4-6, 3-6 → 13). Default app = Total Point, sesuai keputusan host bahwa total point dihitung lebih dulu; metode "Kombinasi" sudah dihapus karena isinya identik dengan Win %. Tie-break: metode → total point → head-to-head → selisih game → nama (PRD bilang undian; dipakai nama supaya stabil). WO: menang/kalah dihitung, games tidak (kode sekarang; desain v2 menggantinya — pemenang WO dapat N di Race to, rata-rata sendiri minimal ⌊total÷2⌋+1 di Best of/Americano, lihat `design/spec/logic.md` §3 dan PRD 4.4). `cancelled` & `pending` diabaikan total.
 - `ranking/ranking_calculator.dart` → `standingEntries()` — mengubah klasemen per pemain jadi baris tampilan. Mode Fixed: pasangan tidak pernah berganti sehingga statistik kedua anggotanya identik, jadi dua baris kembar digabung jadi satu baris "Andi + Budi" yang mengambil posisi anggota terbaiknya. Mode Mixed: satu baris per pemain, urutan `rank()` tidak diubah. Pemain sisa (jumlah ganjil) tetap tampil sendiri.
 - **Metode skor** (`TournamentConfig.scoring`, dipilih di Konfigurasi; tes `test/services/scoring_method_test.dart`):
   Skor Tennis (per set, best of 3) atau **Americano** (total poin per match diatur host, `TournamentConfig.americanoPoints`,
@@ -115,6 +128,8 @@ device → HP, Ranking/Share/Home → Peringkat/Bagikan/Beranda, "Endless" tidak
 dipertahankan atas permintaan host: "Aturan Fairness", "Selisih match antar pemain ≤ 1", label Estimasi
 (Max Round · Match/Pemain · Court Aktif · Total Match), "→ Prioritas main di R…". Pakai "duplikat" (bukan
 "dobel") dan "diprioritaskan" (bukan "didahulukan").
+Di desain v2 (keputusan host 2026-10-21) frasa itu menjadi judul "Istirahat · Prioritas main di R…", dan "peserta"
+tidak dipakai lagi: semua orang disebut "pemain" (layar Pemain, Kelola pemain, Ubah pemain).
 
 ## Aset ilustrasi
 
@@ -195,4 +210,5 @@ Catatan penting:
 - Setelah rebuild, **restart server**-nya — `flutter build web` mengganti direktori, server lama menyajikan isi lama.
 - Di browser harus **hard reload** (⇧⌘R); Chrome meng-cache `main.dart.js`.
 - `flutter run -d web-server` sempat dipakai tapi koneksi debug-nya putus tiap reload; build statis lebih stabil.
-- Bandingkan dengan mockup: `python3 -m http.server 8898` di root proyek lalu buka `hifi.html`.
+- Bandingkan dengan hi-fi v2: `python3 -m http.server 8898` di root proyek lalu buka `design/hifi.html`
+  (atau lihat PNG di `design/frames/`).
