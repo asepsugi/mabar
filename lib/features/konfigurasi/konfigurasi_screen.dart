@@ -375,7 +375,7 @@ class _CourtCountRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const Text('Jumlah court', style: TextStyle(fontSize: 12, color: MabarColors.ink3)),
-        MabarStepper(value: count, min: min, max: max, onChanged: onChanged),
+        LegacyStepper(value: count, min: min, max: max, onChanged: onChanged),
       ],
     );
   }

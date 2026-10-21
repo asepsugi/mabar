@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import '../theme/mabar_icons.dart';
 import '../theme/mabar_theme.dart';
 
+// Komponen desain lama, dipakai layar yang belum dibangun ulang. Komponen v2 ada di mabar_controls,
+// mabar_group, mabar_inputs, dan mabar_layers; nama yang bentrok di sini diberi awalan Legacy. Hapus
+// berkas ini setelah layar terakhir pindah.
+
 /// Header atas setiap screen (`.screen-header` di hifi.html):
 /// tinggi konstan dengan padding 12px atas, 20px bawah.
 class MabarScreenHeader extends StatelessWidget {
@@ -138,24 +142,24 @@ class MabarFieldLabel extends StatelessWidget {
   }
 }
 
-enum MabarChipVariant { filled, outlined, active, danger }
+enum LegacyChipVariant { filled, outlined, active, danger }
 
 /// `.chip` beserta varian `.outlined` / `.active` / `.danger`.
-class MabarChip extends StatelessWidget {
+class LegacyChip extends StatelessWidget {
   final String label;
   final IconData? icon;
   final VoidCallback? onTap;
-  final MabarChipVariant variant;
+  final LegacyChipVariant variant;
 
-  const MabarChip({super.key, required this.label, this.icon, this.onTap, this.variant = MabarChipVariant.filled});
+  const LegacyChip({super.key, required this.label, this.icon, this.onTap, this.variant = LegacyChipVariant.filled});
 
   @override
   Widget build(BuildContext context) {
     final (bg, fg, border) = switch (variant) {
-      MabarChipVariant.filled => (MabarColors.fill, MabarColors.ink2, null),
-      MabarChipVariant.outlined => (Colors.transparent, MabarColors.ink2, MabarColors.line),
-      MabarChipVariant.active => (MabarColors.ink, Colors.white, null),
-      MabarChipVariant.danger => (MabarColors.paper, MabarColors.clay, null),
+      LegacyChipVariant.filled => (MabarColors.fill, MabarColors.ink2, null),
+      LegacyChipVariant.outlined => (Colors.transparent, MabarColors.ink2, MabarColors.line),
+      LegacyChipVariant.active => (MabarColors.ink, Colors.white, null),
+      LegacyChipVariant.danger => (MabarColors.paper, MabarColors.clay, null),
     };
 
     final content = Container(
@@ -411,14 +415,14 @@ class MabarStatusBadge extends StatelessWidget {
 
 /// Stepper − n + (mis. "Jumlah court" di Konfigurasi, tambahan jam court).
 /// [unit] ditulis kecil di sebelah angka, mis. "2 jam".
-class MabarStepper extends StatelessWidget {
+class LegacyStepper extends StatelessWidget {
   final int value;
   final int min;
   final int max;
   final String? unit;
   final ValueChanged<int> onChanged;
 
-  const MabarStepper({
+  const LegacyStepper({
     super.key,
     required this.value,
     required this.min,

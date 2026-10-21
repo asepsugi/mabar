@@ -46,6 +46,10 @@ class MabarColors {
   /// Track segmented, tombol stepper, tombol mati.
   static const fill = Color(0xFFE3E9EE);
 
+  /// Ikon/angka yang mati di atas latar terang: tombol stepper di batas, tombol keypad mati, item menu
+  /// mati, strip court match yang tidak dimainkan. `#C3CCD4` di CSS hi-fi (tidak ada di tokens.json).
+  static const off = Color(0xFFC3CCD4);
+
   /// [ink] 46% di belakang sheet dan dialog — keduanya tanpa bayangan, scrim inilah pemisahnya.
   static const scrim = Color(0x750F1E2C);
 
@@ -137,8 +141,14 @@ class MabarShadows {
 /// Skala huruf Archivo variabel. Lebar (`wdth`) dipakai sebagai alat: condensed untuk angka, normal
 /// untuk teks, lebar untuk wordmark. Berat cukup lewat `fontWeight` (diteruskan ke sumbu `wght`).
 /// Tinggi baris yang tidak ditulis hi-fi mewarisi 1,4 dari `.app`.
+///
+/// Tiap gaya membawa [family] sendiri: `ButtonStyle.textStyle`, judul dialog, dan isi snackbar
+/// *mengganti* gaya teks tema, bukan menggabungkannya, jadi tanpa itu font jatuh ke Roboto/SF. Semua
+/// memakai `leadingDistribution: even` — cara CSS membagi line-height (setengah di atas, setengah di
+/// bawah); default Flutter (`proportional`) menggeser teks di tombol `16px/1` dan sejenisnya.
 class MabarType {
   static const family = 'Archivo';
+  static const _even = TextLeadingDistribution.even;
 
   /// `font-stretch: 72%` + tabular — kelas `.n` di hi-fi, dipakai semua angka besar.
   static const numVariations = [FontVariation('wdth', 72)];
@@ -147,6 +157,7 @@ class MabarType {
 
   static const wordmark = TextStyle(
     fontFamily: family,
+    leadingDistribution: _even,
     fontSize: 28,
     fontWeight: FontWeight.w800,
     fontVariations: [FontVariation('wdth', 125)],
@@ -155,6 +166,7 @@ class MabarType {
   );
   static const scoreXl = TextStyle(
     fontFamily: family,
+    leadingDistribution: _even,
     fontSize: 76,
     fontWeight: FontWeight.w800,
     fontVariations: numVariations,
@@ -163,6 +175,7 @@ class MabarType {
   );
   static const scoreL = TextStyle(
     fontFamily: family,
+    leadingDistribution: _even,
     fontSize: 54,
     fontWeight: FontWeight.w800,
     fontVariations: numVariations,
@@ -171,25 +184,26 @@ class MabarType {
   );
   static const numM = TextStyle(
     fontFamily: family,
+    leadingDistribution: _even,
     fontSize: 22,
     fontWeight: FontWeight.w800,
     fontVariations: numVariations,
     fontFeatures: tabular,
     height: 1.4,
   );
-  static const titleL = TextStyle(fontFamily: family, fontSize: 30, fontWeight: FontWeight.w800, fontVariations: _titleWidth, height: 1.1);
-  static const title = TextStyle(fontFamily: family, fontSize: 22, fontWeight: FontWeight.w800, fontVariations: _titleWidth, height: 1.15);
-  static const sheetTitle = TextStyle(fontFamily: family, fontSize: 21, fontWeight: FontWeight.w800, fontVariations: _titleWidth, height: 1.4);
-  static const dialogTitle = TextStyle(fontFamily: family, fontSize: 19, fontWeight: FontWeight.w800, height: 1.4);
-  static const body = TextStyle(fontFamily: family, fontSize: 16, fontWeight: FontWeight.w400, height: 1.4);
-  static const label = TextStyle(fontFamily: family, fontSize: 13, fontWeight: FontWeight.w700, height: 1.4, color: MabarColors.ink3);
-  static const caption = TextStyle(fontFamily: family, fontSize: 13, fontWeight: FontWeight.w400, height: 1.4, color: MabarColors.ink3);
+  static const titleL = TextStyle(fontFamily: family, leadingDistribution: _even, fontSize: 30, fontWeight: FontWeight.w800, fontVariations: _titleWidth, height: 1.1);
+  static const title = TextStyle(fontFamily: family, leadingDistribution: _even, fontSize: 22, fontWeight: FontWeight.w800, fontVariations: _titleWidth, height: 1.15);
+  static const sheetTitle = TextStyle(fontFamily: family, leadingDistribution: _even, fontSize: 21, fontWeight: FontWeight.w800, fontVariations: _titleWidth, height: 1.4);
+  static const dialogTitle = TextStyle(fontFamily: family, leadingDistribution: _even, fontSize: 19, fontWeight: FontWeight.w800, height: 1.4);
+  static const body = TextStyle(fontFamily: family, leadingDistribution: _even, fontSize: 16, fontWeight: FontWeight.w400, height: 1.4);
+  static const label = TextStyle(fontFamily: family, leadingDistribution: _even, fontSize: 13, fontWeight: FontWeight.w700, height: 1.4, color: MabarColors.ink3);
+  static const caption = TextStyle(fontFamily: family, leadingDistribution: _even, fontSize: 13, fontWeight: FontWeight.w400, height: 1.4, color: MabarColors.ink3);
 
   /// Label tombol `.btn` (700 16/1).
-  static const button = TextStyle(fontFamily: family, fontSize: 16, fontWeight: FontWeight.w700, height: 1);
+  static const button = TextStyle(fontFamily: family, leadingDistribution: _even, fontSize: 16, fontWeight: FontWeight.w700, height: 1);
 
   /// `.txtbtn` (700 15/1).
-  static const textButton = TextStyle(fontFamily: family, fontSize: 15, fontWeight: FontWeight.w700, height: 1);
+  static const textButton = TextStyle(fontFamily: family, leadingDistribution: _even, fontSize: 15, fontWeight: FontWeight.w700, height: 1);
 }
 
 class MabarTheme {

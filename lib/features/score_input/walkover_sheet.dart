@@ -139,9 +139,9 @@ class _WalkoverSheetState extends State<_WalkoverSheet> {
               runSpacing: 6,
               children: [
                 for (final reason in WoReason.values)
-                  MabarChip(
+                  LegacyChip(
                     label: reason.label,
-                    variant: _reason == reason ? MabarChipVariant.active : MabarChipVariant.filled,
+                    variant: _reason == reason ? LegacyChipVariant.active : LegacyChipVariant.filled,
                     onTap: () => setState(() => _reason = _reason == reason ? null : reason),
                   ),
               ],

@@ -160,11 +160,11 @@ class _ActionChips extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        MabarChip(label: 'Tempel', icon: MabarIcons.clipboardText, onTap: onPaste),
+        LegacyChip(label: 'Tempel', icon: MabarIcons.clipboardText, onTap: onPaste),
         const SizedBox(width: 6),
-        MabarChip(label: 'Contoh', onTap: onSample),
+        LegacyChip(label: 'Contoh', onTap: onSample),
         const Spacer(),
-        MabarChip(label: 'Hapus Semua', variant: MabarChipVariant.danger, onTap: onClear),
+        LegacyChip(label: 'Hapus Semua', variant: LegacyChipVariant.danger, onTap: onClear),
       ],
     );
   }

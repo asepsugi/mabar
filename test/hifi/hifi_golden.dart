@@ -1,9 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Pembanding layar Flutter dengan frame hi-fi (`design/frames/<id>.png`).
@@ -13,8 +14,9 @@ import 'package:flutter_test/flutter_test.dart';
 /// disamakan; tanpa [loadHifiFonts] `flutter test` memakai Ahem dan hasilnya pasti beda total.
 ///
 /// Anti-alias teks Chrome dan Skia tidak pernah identik, jadi piksel dihitung "beda" hanya kalau salah
-/// satu kanalnya selisih lebih dari [HifiDiff.channelTolerance], dan layar lolos kalau rasio piksel beda
-/// tidak melebihi `maxDiffRatio`. Kalau gagal, `build/hifi_diff/<id>.png` (merah = beda) dan
+/// satu kanalnya selisih lebih dari [HifiDiff.channelTolerance] terhadap piksel frame di posisi itu dan di
+/// tetangganya sejauh [HifiDiff.shiftTolerance], dan layar lolos kalau rasio piksel beda tidak melebihi
+/// `maxDiffRatio`. Kalau gagal, `build/hifi_diff/<id>.png` (merah = beda) dan
 /// `build/hifi_diff/<id>_flutter.png` ditulis untuk dilihat.
 const hifiScreenSize = Size(390, 844);
 const hifiPixelRatio = 2.0;
@@ -38,17 +40,26 @@ class HifiDiff {
   /// Selisih kanal (0–255) yang masih dianggap sama.
   static const channelTolerance = 32;
 
+  /// Geseran (piksel perangkat) yang diserap. Chrome membulatkan ascent, descent, dan half-leading ke
+  /// piksel perangkat (`baseline = floor((L − (A+D)) / 2) + A`, cocok dengan semua ukuran yang diukur),
+  /// Flutter tidak dan membulatkan tinggi baris ke pt bulat; glyph yang sama bisa bergeser 1–2 piksel
+  /// tergantung ukuran huruf. Tanpa toleransi ini, frame yang sama digeser 1 piksel pun gagal (2,08%);
+  /// dengan 2 piksel vertikal, geseran 2 pt seluruh layar malah lolos. 1 piksel: dua-duanya benar
+  /// (lihat `hifi_harness_test`).
+  static const shiftTolerance = (x: 1, y: 1);
+
   final String frameId;
-  final int width;
-  final int height;
+
+  /// Piksel yang dibandingkan: seluruh layar, atau hanya wilayah komponen.
+  final int comparedPixels;
   final int differentPixels;
 
-  const HifiDiff(this.frameId, this.width, this.height, this.differentPixels);
+  const HifiDiff(this.frameId, this.comparedPixels, this.differentPixels);
 
-  double get ratio => differentPixels / (width * height);
+  double get ratio => differentPixels / comparedPixels;
 
   @override
-  String toString() => '$frameId: ${(ratio * 100).toStringAsFixed(2)}% piksel beda ($differentPixels dari ${width * height})';
+  String toString() => '$frameId: ${(ratio * 100).toStringAsFixed(2)}% piksel beda ($differentPixels dari $comparedPixels)';
 }
 
 Future<ui.Image> _decode(Uint8List png) async {
@@ -63,9 +74,29 @@ Future<Uint8List> _rgba(ui.Image image) async =>
 Future<ui.Image> hifiFrame(WidgetTester tester, String frameId) async =>
     (await tester.runAsync(() => _decode(File('design/frames/$frameId.png').readAsBytesSync())))!;
 
+Map<String, dynamic>? _rects;
+
+/// Posisi satu elemen di frame hi-fi (pt, relatif ke layar), dari `design/spec/rects.json` yang ditulis
+/// `tool/hifi_extract.py`. [cssClass] tanpa titik; elemen dipilih dengan [index] di antara yang teksnya
+/// memuat [text] (atau semua elemen berkelas itu), urut dokumen.
+Rect hifiRect(String frameId, String cssClass, {String? text, int index = 0}) {
+  _rects ??= jsonDecode(File('design/spec/rects.json').readAsStringSync()) as Map<String, dynamic>;
+  final all = ((_rects![frameId] as Map<String, dynamic>?)?[cssClass] as List?) ?? const [];
+  final matches = [
+    for (final r in all.cast<List>())
+      if (text == null || (r[4] as String).contains(text)) r,
+  ];
+  if (index >= matches.length) {
+    throw StateError('$frameId: .$cssClass${text == null ? '' : ' "$text"'} #$index tidak ada (${matches.length} cocok)');
+  }
+  final r = matches[index];
+  return Rect.fromLTWH((r[0] as num).toDouble(), (r[1] as num).toDouble(), (r[2] as num).toDouble(), (r[3] as num).toDouble());
+}
+
 /// Me-render [screen] seukuran layar hi-fi lalu membandingkannya dengan `design/frames/<frameId>.png`.
 /// [screen] harus sudah lengkap (MaterialApp, tema, data); helper ini hanya mengatur ukuran layar.
-Future<HifiDiff> compareWithHifi(WidgetTester tester, Widget screen, String frameId) async {
+/// Dengan [region] (pt), hanya piksel di dalamnya yang dihitung — dipakai golden per komponen.
+Future<HifiDiff> compareWithHifi(WidgetTester tester, Widget screen, String frameId, {Rect? region}) async {
   await loadHifiFonts();
   tester.view.physicalSize = hifiScreenSize * hifiPixelRatio;
   tester.view.devicePixelRatio = hifiPixelRatio;
@@ -84,14 +115,27 @@ Future<HifiDiff> compareWithHifi(WidgetTester tester, Widget screen, String fram
     }
     final a = await _rgba(actual), e = await _rgba(expected);
     final diff = Uint8List(a.length);
-    var different = 0;
+    var different = 0, counted = 0;
+    // Wilayah dalam piksel; tepi dibulatkan ke dalam supaya piksel separuh-latar di tepi tidak ikut.
+    final px = region == null
+        ? null
+        : Rect.fromLTRB(
+            (region.left * hifiPixelRatio).ceilToDouble(),
+            (region.top * hifiPixelRatio).ceilToDouble(),
+            (region.right * hifiPixelRatio).floorToDouble(),
+            (region.bottom * hifiPixelRatio).floorToDouble(),
+          );
     for (var i = 0; i < a.length; i += 4) {
-      var worst = 0;
-      for (var c = 0; c < 3; c++) {
-        final d = (a[i + c] - e[i + c]).abs();
-        if (d > worst) worst = d;
+      final p = i ~/ 4;
+      final inside = px == null || px.contains(Offset((p % actual.width).toDouble(), (p ~/ actual.width).toDouble()));
+      if (!inside) {
+        final grey = ((e[i] + e[i + 1] + e[i + 2]) ~/ 3) ~/ 4 + 190;
+        diff[i] = diff[i + 1] = diff[i + 2] = grey;
+        diff[i + 3] = 255;
+        continue;
       }
-      final isDifferent = worst > HifiDiff.channelTolerance;
+      counted++;
+      final isDifferent = !_matchesNear(a, e, i, actual.width, actual.height);
       if (isDifferent) different++;
       // Gambar selisih: piksel beda merah, sisanya hi-fi dipudarkan supaya posisinya tetap terbaca.
       final grey = ((e[i] + e[i + 1] + e[i + 2]) ~/ 3) ~/ 3 + 170;
@@ -100,7 +144,7 @@ Future<HifiDiff> compareWithHifi(WidgetTester tester, Widget screen, String fram
       diff[i + 2] = isDifferent ? 40 : grey;
       diff[i + 3] = 255;
     }
-    final result = HifiDiff(frameId, actual.width, actual.height, different);
+    final result = HifiDiff(frameId, counted, different);
     if (different > 0) await _writeDiff(frameId, actual, diff);
     return result;
   }))!;
@@ -112,6 +156,76 @@ Future<void> expectMatchesHifi(WidgetTester tester, Widget screen, String frameI
   final diff = await compareWithHifi(tester, screen, frameId);
   expect(diff.ratio, lessThanOrEqualTo(maxDiffRatio),
       reason: '$diff — lihat build/hifi_diff/$frameId.png (merah = beda) dan ${frameId}_flutter.png');
+}
+
+/// Golden per komponen: [stage] (biasanya [hifiStage]) dibandingkan dengan frame hanya di [region].
+/// Toleransinya sama dengan layar penuh. Wilayah kecil berisi teks memang lebih peka anti-alias daripada
+/// layar yang sebagian besar latar polos; kalau satu komponen butuh lebih, tulis alasannya di test.
+Future<void> expectRegionMatchesHifi(
+  WidgetTester tester,
+  Widget stage,
+  String frameId,
+  Rect region, {
+  required String label,
+  double maxDiffRatio = 0.02,
+}) async {
+  final diff = await compareWithHifi(tester, stage, frameId, region: region);
+  final name = '${frameId}_$label';
+  if (diff.differentPixels > 0) await _renameDiff(frameId, name);
+  expect(diff.ratio, lessThanOrEqualTo(maxDiffRatio),
+      reason: '$label di $diff — lihat build/hifi_diff/$name.png (merah = beda) dan ${name}_flutter.png');
+}
+
+/// Safe area frame: status bar 47 di atas (app bar mulai 7 pt di bawahnya), home indicator 34 di bawah.
+const hifiSafeArea = EdgeInsets.only(top: 47, bottom: 34);
+
+/// Satu komponen diletakkan di posisi [at] (pt) di atas latar [background], seukuran layar hi-fi dengan
+/// safe area [hifiSafeArea]. Lebar dikunci ke wilayah frame, tinggi dibiarkan alami supaya selisih tinggi
+/// ikut terlihat di diff.
+Widget hifiStage({required Widget child, required Rect at, required ThemeData theme, Color? background, double? height}) =>
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: theme,
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(padding: hifiSafeArea, viewPadding: hifiSafeArea),
+        child: child!,
+      ),
+      home: Material(
+        color: background ?? theme.scaffoldBackgroundColor,
+        child: Stack(
+          children: [Positioned(left: at.left, top: at.top, width: at.width, height: height, child: child)],
+        ),
+      ),
+    );
+
+Future<void> _renameDiff(String frameId, String name) async {
+  for (final suffix in ['', '_flutter']) {
+    final f = File('build/hifi_diff/$frameId$suffix.png');
+    if (f.existsSync()) f.renameSync('build/hifi_diff/$name$suffix.png');
+  }
+}
+
+/// Piksel frame di indeks [i] cocok dengan piksel render di posisi sama atau tetangganya (lihat
+/// [HifiDiff.shiftTolerance]).
+bool _matchesNear(Uint8List a, Uint8List e, int i, int width, int height) {
+  bool same(int j) {
+    for (var c = 0; c < 3; c++) {
+      if ((a[j + c] - e[i + c]).abs() > HifiDiff.channelTolerance) return false;
+    }
+    return true;
+  }
+
+  if (same(i)) return true;
+  final p = i ~/ 4, x = p % width, y = p ~/ width;
+  const t = HifiDiff.shiftTolerance;
+  for (var dy = -t.y; dy <= t.y; dy++) {
+    for (var dx = -t.x; dx <= t.x; dx++) {
+      final nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+      if (same((ny * width + nx) * 4)) return true;
+    }
+  }
+  return false;
 }
 
 Future<void> _writeDiff(String frameId, ui.Image actual, Uint8List diffRgba) async {

@@ -79,9 +79,9 @@ class LeaderboardScreen extends ConsumerWidget {
               Row(
                 children: [
                   for (final m in RankingMethod.values) ...[
-                    MabarChip(
+                    LegacyChip(
                       label: m.label,
-                      variant: method == m ? MabarChipVariant.active : MabarChipVariant.filled,
+                      variant: method == m ? LegacyChipVariant.active : LegacyChipVariant.filled,
                       onTap: () => ref.read(rankingMethodProvider.notifier).state = m,
                     ),
                     const SizedBox(width: 5),

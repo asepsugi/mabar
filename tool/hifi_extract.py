@@ -9,11 +9,14 @@ Hasil:
   sudut 0 dan tanpa bayangan supaya bisa dibandingkan dengan golden Flutter).
 - design/spec/screens/*.md — satu file per alur: catatan perilaku tiap frame + komponen yang dipakai.
 - design/spec/components.md — tiap komponen: nama widget, frame pemakainya, aturan CSS apa adanya.
+- design/spec/rects.json — posisi tiap elemen berkelas komponen di tiap frame layar (pt, relatif ke layar),
+  diukur Chrome setelah font termuat. Dipakai golden per komponen (`expectRegionMatchesHifi`).
 
 Ditulis ulang setiap dijalankan; jangan edit hasilnya dengan tangan, edit hifi.html lalu jalankan lagi.
 Butuh Google Chrome dan internet (font Archivo dimuat dari Google Fonts).
 """
 import html as H
+import json
 import os
 import re
 import shutil
@@ -152,6 +155,38 @@ def render_pngs(s, flows):
     os.remove(tmp)
 
 
+def write_rects(s, flows):
+    """Satu halaman berisi semua frame layar; skrip mengukur setiap elemen yang kelasnya dipakai komponen.
+
+    Format: {frame: {kelas: [[x, y, lebar, tinggi, teks], ...]}} urut dokumen, teks dipotong 40 huruf supaya
+    test bisa memilih elemen yang dimaksud tanpa bergantung urutan saja.
+    """
+    head = s.split('<div class="doc">')[0].replace('<html>', '<html data-theme="light">', 1)
+    reset = ('<style>html,body{margin:0!important;padding:0!important;background:transparent}'
+             '.app{border-radius:0!important;box-shadow:none!important}</style>')
+    classes = sorted({p[1:] for _, prefixes, _ in COMPONENTS for p in prefixes})
+    apps = ''.join(f'<div class="fr" data-id="{f["id"]}">{f["root"]}</div>'
+                   for flow in flows for f in flow['frames'] if f['root'].startswith('<div class="app">'))
+    script = ('<pre id="rects"></pre><script>document.fonts.ready.then(()=>{const C=' + json.dumps(classes) + ';'
+              'const q=v=>Math.round(v*100)/100,out={};'
+              'for(const fr of document.querySelectorAll(".fr")){const app=fr.querySelector(".app"),a=app.getBoundingClientRect(),m={};'
+              'for(const c of C){const els=app.querySelectorAll("."+c);if(!els.length)continue;'
+              'm[c]=[...els].map(e=>{const r=e.getBoundingClientRect();'
+              'return[q(r.left-a.left),q(r.top-a.top),q(r.width),q(r.height),e.textContent.replace(/\\s+/g," ").trim().slice(0,40)]})}'
+              'out[fr.dataset.id]=m}document.getElementById("rects").textContent=JSON.stringify(out)})</script>')
+    tmp = os.path.join(DESIGN, '_rects.html')
+    open(tmp, 'w', encoding='utf-8').write(head + reset + apps + script + '</body></html>')
+    try:
+        dom = chrome(['--window-size=1400,1200', '--dump-dom', 'file://' + tmp]).stdout
+    finally:
+        os.remove(tmp)
+    rects = json.loads(H.unescape(re.search(r'<pre id="rects">(.*?)</pre>', dom, re.S).group(1)))
+    out = os.path.join(DESIGN, 'spec', 'rects.json')
+    with open(out, 'w', encoding='utf-8') as f:
+        f.write('{\n' + ',\n'.join(f'  {json.dumps(k)}: {json.dumps(v, ensure_ascii=False)}' for k, v in rects.items()) + '\n}\n')
+    print(f'  {len(rects)} frame → {os.path.relpath(out, ROOT)}')
+
+
 def write_specs(flows, rules):
     used = {}
     for flow in flows:
@@ -189,6 +224,7 @@ def main():
     flows = frames(s)
     write_specs(flows, css_rules())
     print(sum(len(f['frames']) for f in flows), 'frame,', len(flows), 'alur → design/spec/')
+    write_rects(s, flows)
     if '--no-png' not in sys.argv:
         render_pngs(s, flows)
 

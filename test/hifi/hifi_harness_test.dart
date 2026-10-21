@@ -45,6 +45,32 @@ void main() {
     expect(diff.differentPixels, 0, reason: '$diff');
   });
 
+  // Toleransi geseran (HifiDiff.shiftTolerance) hanya menyerap pembulatan piksel renderer: frame yang
+  // digeser 0,5 pt lolos, digeser 2 pt gagal — baik satu layar maupun satu wilayah komponen.
+  for (final (shift, region, passes) in [
+    (0.5, null, true),
+    (2.0, null, false),
+    (0.5, 'group', true),
+    (2.0, 'group', false),
+  ]) {
+    testWidgets('frame digeser $shift pt${region == null ? '' : ' (wilayah .$region)'} → ${passes ? 'lolos' : 'gagal'}', (tester) async {
+      final frame = await hifiFrame(tester, '03a');
+      final diff = await compareWithHifi(
+        tester,
+        ColoredBox(
+          color: const Color(0xFFEEF2F5),
+          child: Transform.translate(
+            offset: Offset(0, shift),
+            child: RawImage(image: frame, width: hifiScreenSize.width, height: hifiScreenSize.height, fit: BoxFit.fill),
+          ),
+        ),
+        '03a',
+        region: region == null ? null : hifiRect('03a', region, text: 'Race to'),
+      );
+      expect(diff.ratio <= 0.02, passes, reason: '$diff');
+    });
+  }
+
   testWidgets('layar yang salah terdeteksi', (tester) async {
     final diff = await compareWithHifi(tester, const ColoredBox(color: Color(0xFFEEF2F5)), '03a');
     expect(diff.ratio, greaterThan(0.05), reason: '$diff');

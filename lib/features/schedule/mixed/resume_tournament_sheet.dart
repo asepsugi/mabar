@@ -183,7 +183,7 @@ class _CourtExtensionRow extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              MabarStepper(value: extraHours, min: 0, max: maxHours, unit: 'jam', onChanged: onChanged),
+              LegacyStepper(value: extraHours, min: 0, max: maxHours, unit: 'jam', onChanged: onChanged),
               const SizedBox(height: 4),
               Text(
                 extraHours == 0 ? remaining : '$remaining → ${_duration(remainingMinutes + extraHours * 60)}',
