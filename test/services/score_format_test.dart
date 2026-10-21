@@ -157,7 +157,24 @@ void main() {
       expect((e.score?.side1, e.score?.side2), (2, 19), reason: 'satu sisi diketik sudah sah');
       final e21 = e.type(1);
       expect((e21.side1, e21.side2), (21, 0));
-      expect(_keys(e21), isEmpty);
+      expect(_keys(e21), [for (var d = 0; d <= 9; d++) d], reason: 'kotak penuh: angka berikutnya mengganti isi');
+    });
+
+    test('kotak penuh: ketikan berikutnya mengganti isi, yang mati hanya angka di atas batas (07b, 07e, 07g)', () {
+      final race = _typeAll(ScoreEntry.start(race6), [6, 4]);
+      expect(race.active, 2);
+      expect(_keys(race), [0, 1, 2, 3, 4, 5, 6, 7]);
+      expect(race.type(5).side2, 5);
+
+      final best = ScoreEntry.start(bestOf5).type(3);
+      expect(best.active, 1);
+      expect(_keys(best), [0, 1, 2, 3, 4, 5]);
+
+      final americano = _typeAll(ScoreEntry.start(americano21), [1, 3]);
+      expect(americano.active, 1);
+      expect(_keys(americano), [for (var d = 0; d <= 9; d++) d]);
+      final replaced = americano.type(9);
+      expect((replaced.side1, replaced.side2), (9, 12));
     });
 
     test('Race to: digit penuh → kursor pindah ke kotak lawan yang kosong; 0 tidak diberi digit kedua', () {
@@ -207,7 +224,7 @@ void main() {
       expect((e.side1, e.side2, e.autoSide), (null, null, null));
     });
 
-    test('skor tersimpan dibuka: terisi, belum ada kotak aktif (07i)', () {
+    test('skor tersimpan dibuka: terisi, belum ada kotak aktif, angka mati sampai kotak diketuk (07i)', () {
       final e = ScoreEntry.edit(race6, const SetScore(side1: 6, side2: 4));
       expect(e.active, isNull);
       expect(_keys(e), isEmpty);

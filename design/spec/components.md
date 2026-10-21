@@ -40,7 +40,7 @@ Dipakai di frame: 01a, 01b, 01c, 01d, 01e, 01f, 01h, 01i, 02a, 02b, 02c, 02d, 03
 .btn-off { background: var(--fill); color: var(--faint); }
 .btn-sm { height: 40px; min-height: 40px; font-size: 14px; padding: 0 14px; border-radius: 10px; flex: none; }
 .actionbar.col > .btn { flex: none; }
-.liveblock .btn { flex: none; height: 46px; }
+.liveblock .btn { flex: none; height: 46px; min-height: 46px; }
 ```
 
 ## `MabarTextButton`
@@ -478,7 +478,7 @@ Dipakai di frame: 01a, 01b, 01c, 01d, 01e, 01f, 01g, 01h, 01i
 .prog { height: 5px; border-radius: 3px; background: rgba(255,255,255,.2); overflow: hidden; }
 .prog i { display: block; height: 100%; background: var(--ball); }
 .liveblock .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; }
-.liveblock .btn { flex: none; height: 46px; }
+.liveblock .btn { flex: none; height: 46px; min-height: 46px; }
 .court-band.fill { flex: 1; min-height: 0; }
 .sportname { position: absolute; left: 16px; top: 140px; font-size: 76px; line-height: .9; color: #fff; }
 ```

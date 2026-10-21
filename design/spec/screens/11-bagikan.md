@@ -43,9 +43,9 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 Komponen: `SharePoster`
 
-- Baris membagi tinggi yang tersisa sama rata, jadi daftar selalu mengisi poster; baris mengecil kalau banyak (format Lengkap). `typeScale` Feed 1.15, Story 1.5; margin di `SharePosterSize.padding`.
+- Baris membagi tinggi yang tersisa sama rata, jadi daftar selalu mengisi poster; baris mengecil kalau banyak (format Lengkap). Ukuran huruf dan margin per gambar ada di preset komponen `SharePoster` (`SharePosterTarget` pratinjau / Feed / Story).
 - File: `mabar-feed-1080x1080.png`, `mabar-story-1080x1920.png`, dibagikan bersamaan lewat `Share.shareXFiles`.
-- Render poster di test wajib `FontLoader('Archivo')` (pengganti Inter), jangan percaya font Ahem.
+- Render poster di test wajib memuat font Archivo (`loadHifiFonts()`), jangan percaya font Ahem.
 
 ## 11e · Lengkap · Mixed 20 pemain · tema biru
 

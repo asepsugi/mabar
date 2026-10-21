@@ -1,12 +1,16 @@
 # Logika yang berubah di desain v2
 
 Ditulis tangan (bukan hasil `tool/hifi_extract.py`). Setiap butir mengubah `lib/services/**` atau model, jadi
-**wajib test** sesuai aturan `CLAUDE.md`, dan sebaiknya dikerjakan sebelum layar. Angka di "data test" sama
-dengan angka di frame hi-fi, jadi test dan golden saling menguatkan.
+**wajib test** sesuai aturan `CLAUDE.md`. Angka di "data test" sama dengan angka di frame hi-fi, jadi test dan golden
+saling menguatkan.
+
+**Status: semua butir sudah diimplementasi di model/service dan ter-test** (langkah 2). Layar tinggal memakainya;
+jangan menulis ulang aturannya di widget. Lokasi implementasi ditulis di tiap bagian.
 
 ## 1. Format skor
 
-Sekarang `ScoringMethod { tennis, americano }` (`lib/models/models.dart:39`). Baru:
+Implementasi: `ScoringMethod` + `ScoreFormat` (`lib/models/models.dart`), aturan sah `ScoreRules.judge`
+(`lib/services/scoring/score_entry.dart`); test `test/services/score_format_test.dart`.
 
 | Format | Parameter | Default | Skor sah | Seri |
 |---|---|---|---|---|
@@ -14,7 +18,7 @@ Sekarang `ScoringMethod { tennis, americano }` (`lib/models/models.dart:39`). Ba
 | Best of N game | N = 1–15 | 5 | a + b = N | kalau N genap dan a = b |
 | Americano N poin | N = 2–99 | 21 | a + b = N | kalau N genap dan a = b |
 
-- Disimpan tetap sebagai satu `SetScore` per match (seperti Americano sekarang), jadi ranking/share/codec tidak bercabang.
+- Disimpan sebagai satu `SetScore` per match, jadi ranking/share/codec tidak bercabang.
 - **Data lama tidak dimuat** (keputusan host 2026-10-22, menggantikan "data lama harus tetap terbaca"): turnamen dari
   app lama (skor per set, `schemaVersion` 1) diabaikan saat app v2 dibuka. Simpanan v2 = `schemaVersion` 2 + `appVersion`
   (versi app yang menulisnya).
@@ -22,18 +26,28 @@ Sekarang `ScoringMethod { tennis, americano }` (`lib/models/models.dart:39`). Ba
 
 ## 2. Batas angka di keypad Input Skor
 
+Implementasi: `ScoreEntry` (`score_entry.dart`).
+
 - Isi satu kotak tidak bisa melebihi: Race to N → N+1 · Best of N → N · Americano → total. Tombol angka yang
-  akan melewatinya mati. Kalau tidak ada angka lagi yang mungkin, kursor pindah ke kotak lawan yang kosong.
+  akan melewatinya mati.
+- Digit ditambahkan di belakang isi kotak selama masih ada digit yang muat. **Kotak yang sudah penuh** (tidak ada digit
+  lagi yang bisa ditambahkan; 0 selalu penuh) **atau baru dipilih** (ketuk kotak, →, pindah otomatis) menerima ketikan
+  berikutnya sebagai **pengganti** isinya. Jadi yang mati hanya angka di atas batas (keputusan host 2026-10-22).
+  Setelah digit membuat kotak penuh, kursor pindah ke kotak lawan kalau kotak itu kosong.
+- Belum ada kotak aktif (skor tersimpan dibuka, 07i): semua angka mati sampai salah satu kotak diketuk (atau →).
 - Kombinasi dicek setelah dua kotak terisi (pesan di frame 07d/07e/07h). **Tombol tidak dimatikan berdasarkan
   isi kotak lawan** (koreksi 6–4 → 7–5 harus bisa tanpa mengubah lawan dulu).
 - Best of dan Americano: mengisi satu sisi mengisi sisi lain dengan N − x.
 
-Data test: Race to 6 → kosong: 8 dan 9 mati; "1" di Race to 9 → hanya 0 aktif; Americano 21 → setelah "2" hanya 0 dan 1.
+Data test: Race to 6 → kosong: 8 dan 9 mati; "1" di Race to 9 → hanya 0 aktif; Americano 21 → setelah "2" hanya 0 dan 1;
+Race to 6 berisi "4" (07b) → 8 dan 9 mati; Best of 5 berisi "3" (07e) → 6–9 mati; Americano 21 berisi "13" (07g) → semua
+aktif; 07i → semua mati.
 Diterima: 6–0, 6–5, 7–5, 7–6. Ditolak: 6–6 ("belum selesai"), 5–3 ("belum ada yang sampai 6"), 7–3, 7–4.
 
 ## 3. Walkover (menggantikan "games WO tidak dihitung", PRD 4.4)
 
-Lokasi sekarang: `lib/services/ranking/ranking_calculator.dart:134` (`gamesFor = isWo ? 0 : …`).
+Implementasi: `ScoreFormat.woWinnerScore` + `RankingCalculator.rank` (nilai WO masuk `woPoints` → `totalPoint`, tidak
+ke selisih); test `test/services/ranking_v2_test.dart`.
 
 | Format | Pemenang WO dapat | Yang kalah |
 |---|---|---|
@@ -96,12 +110,11 @@ Win %: 1 Eko 100 · 2 Budi 83 · 3 Indra 75 · 4 Andi 67 · 5 Fajar 67 · 6 Joko
 
 ## 5. Generator Mixed: undian seri dikunci per round
 
-Sekarang `endless_round_generator.dart:47` mengacak (`shuffle`) lalu `sort` — hasil seri ditentukan saat tombol
-ditekan, dan `List.sort` Dart tidak stabil. Baru: urutan pemilihan = (jumlah main + kredit, round terakhir main,
-kunci undian), dengan kunci undian dari `Random(seedTurnamen + nomorRound)` per pemain. Seed disimpan di
-`ActiveTournament` (codec + kompatibilitas: simpanan lama tanpa seed dapat seed baru saat dibuka).
-Test: urutan dua kali hitung untuk round yang sama identik; round berbeda memberi undian berbeda; hasil
-`generateRound` = daftar prioritas yang ditampilkan.
+Implementasi: `EndlessRoundGenerator.priorityOrder` / `generateRound(seed:)`. Urutan pemilihan = (jumlah main + kredit,
+round terakhir main, kunci undian, id). Kunci undian: `Random(drawSeed + nomorRound)` dibagikan ke pemain yang diurut
+id. `drawSeed` = FNV-1a dari id turnamen (`ActiveTournament.drawSeed`), **tidak** disimpan sebagai kunci baru; perkaliannya
+dipecah supaya hasilnya sama di web. Test `test/services/mixed_priority_test.dart`: urutan dua kali hitung untuk round
+yang sama identik; round berbeda memberi undian berbeda; hasil `generateRound` = daftar prioritas yang ditampilkan.
 
 ## 6. Daftar istirahat (Jadwal Mixed)
 
@@ -109,15 +122,17 @@ Test: urutan dua kali hitung untuk round yang sama identik; round berbeda member
   tampil, yang baru ditambah langsung masuk). Dibagi dua memakai urutan generator untuk round n+1 dengan slot
   K = 4 × court yang masih muat round n+1: masuk K teratas → "Istirahat · Prioritas main di R(n+1)", sisanya →
   "Istirahat lagi di R(n+1)". Kalau semua kebagian slot, hanya daftar pertama.
+- Waktu habis (tidak ada court yang muat round n+1): K dihitung dari **semua** court, seperti frame 06l — daftar tetap
+  menunjukkan siapa yang main duluan kalau host menambah jam. Implementasi `ActiveTournament.restingAfterLastRound`.
 - Round lewat: `restingPlayerIdsByRound[k]` apa adanya, tanpa tag prioritas.
 - Fixed: hanya pasangan bye (`byePairIdByRound`), maksimal satu.
 
 ## 7. Estimasi Lanjutkan turnamen (sheet 08c)
 
-Sama dengan `ActiveTournament.capacityAhead`: sisa = max(0, booking − n × durasi); k per court = ⌊(sisa + tambahan) ÷ durasi⌋;
-round = k terbesar; match = Σ min(court dengan k ≥ r, ⌊aktif ÷ 4⌋). **Bug sekarang**
-(`resume_tournament_sheet.dart:122`): "mulai R… court berkurang" juga muncul untuk court yang sudah habis sejak awal
-(memakai `fullRounds`). Yang dihitung berkurang hanya court yang main di R(n+1) lalu habis di tengah.
+Implementasi `ActiveTournament.capacityAhead` (test `test/services/resume_tournament_test.dart`): sisa = max(0, booking − n × durasi); k per court = ⌊(sisa + tambahan) ÷ durasi⌋;
+round = k terbesar; match = Σ min(court dengan k ≥ r, ⌊aktif ÷ 4⌋). "Court berkurang mulai R…" (`fewerCourtsFrom`)
+hanya untuk court yang main di R(n+1) lalu habis di tengah; court yang sejak awal tidak dapat tambahan bukan "berkurang"
+(bug kode lama, sudah diperbaiki).
 Data test 08c: durasi 15, n = 8, Court 1 +1 jam, Court VIP +0, 10 pemain → 4 round (R9–R12), 1 court, 4 match.
 
 ## 8. Label round

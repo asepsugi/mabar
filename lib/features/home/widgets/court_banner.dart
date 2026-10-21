@@ -191,8 +191,14 @@ class _LiveBlock extends StatelessWidget {
             children: [
               Expanded(child: Text(live.matches, style: text)),
               const SizedBox(width: 12),
-              // `.liveblock .btn` menulis 46, tapi `min-height: 52px` `.btn` menang — frame 52.
-              MabarButton(label: 'Lanjutkan', variant: MabarButtonVariant.ball, expand: false, onPressed: live.onContinue),
+              // `.liveblock .btn` 46 pt, lebih rendah dari tombol biasa supaya muat di zona belakang lapangan.
+              MabarButton(
+                label: 'Lanjutkan',
+                variant: MabarButtonVariant.ball,
+                expand: false,
+                height: 46,
+                onPressed: live.onContinue,
+              ),
             ],
           ),
         ],

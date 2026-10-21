@@ -13,6 +13,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarRowAction`, `Ma
 - Dibuka dari tombol Pemain di action bar. Sheet naik bersama keyboard; daftar scroll di dalam.
 - Jumlah ditulis sekali, di label daftar: aktif · keluar. Dulu subjudul menulis "10 pemain aktif" dan label "Peserta (11)": dua istilah dan dua angka untuk daftar yang sama.
 - Nama dibersihkan seperti di layar Pemain (nomor/bullet dibuang), cocok-tidaknya tidak peka huruf besar. Enter = Tambah.
+- Tombol Tambah 48 pt, sama tinggi dengan kolom nama di sebelahnya.
 - "Keluarkan" dan "Kembalikan" memakai `.rowact`. Keluarkan sengaja netral, bukan merah: bisa dibatalkan lewat Kembalikan, dan merah di setiap baris membuat daftar ramai.
 - "Keluarkan" langsung tanpa konfirmasi; pemain tidak dihapus, hanya keluar dari round berikutnya. Match yang sudah terjadwal tetap ada (bisa ditandai WO).
 - Pemain baru/kembali dapat kredit "catch-up" (prioritas jadwal saja, tidak ikut ranking).

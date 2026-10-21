@@ -1,12 +1,13 @@
 # Paket implementasi desain v2
 
-Desain v2 ("papan skor pinggir lapangan") sudah final dan disetujui host per 2026-10-21, tapi **belum
-diimplementasi** — kode di `lib/` masih desain lama. Folder ini mengubah hi-fi jadi tugas yang bisa dikerjakan
-dan dicek secara objektif.
+Desain v2 ("papan skor pinggir lapangan") sudah final dan disetujui host per 2026-10-21. Langkah 1–4 (fondasi,
+logika, komponen, painter) sudah diimplementasi; **langkah 5 (layar) belum** — layar di `lib/features/` masih tata
+letak lama. Folder ini mengubah hi-fi jadi tugas yang bisa dikerjakan dan dicek secara objektif. Aturan produk: `PRD.md`
+(v2, sejalan dengan hi-fi).
 
 | Berkas | Isi | Cara diperbarui |
 |---|---|---|
-| `../hifi.html` | Hi-fi final: Fondasi, Komponen, 73 frame 390×844 + catatan perilaku, Cakupan. **Sumber kebenaran.** | Edit langsung (atau lewat artifact claude.ai lalu salin) |
+| `../hifi.html` | Hi-fi final: Fondasi, Komponen, 73 frame 390×844 + catatan perilaku, Cakupan. **Sumber kebenaran.** | Edit di repo hanya untuk keputusan host, catat di Cakupan, lalu publish file yang sama ke artifact `H9ZVDUfYvEBXsoBqih4iov` |
 | `../frames/<id>.png` | Render tiap frame pada 2x (layar app 780×1688 px, tanpa sudut/bayangan HP) | `python3 tool/hifi_extract.py` |
 | `screens/*.md` | Per alur: catatan perilaku tiap frame + komponen yang dipakai | idem (jangan diedit tangan) |
 | `components.md` | Per komponen: nama widget, frame pemakai, aturan CSS asli | idem |
@@ -24,7 +25,7 @@ Kalau hi-fi berubah: jalankan `python3 tool/hifi_extract.py` (butuh Google Chrom
    font Phosphor Bold resmi sebagai `MabarIcons`, karena `phosphor_flutter` gagal dikompilasi di Flutter 3.47.
 2. **Logika** — semua butir `logic.md`, test dulu. Data test di sana = angka di frame.
    **Selesai** (2026-10-21) untuk model/service; label round (§8) dan tampilan Bagikan (§9) dikerjakan di layarnya.
-   Satu keputusan host masih terbuka: skor per set turnamen lama (`legacySets`) di layar Input Skor/Jadwal v2.
+   Keputusan host 2026-10-22: turnamen app lama (skor per set) tidak dimuat di v2; format itu dihapus dari kode.
 3. **Komponen** — semua widget di `components.md`, masing-masing di `lib/core/widgets/` (atau folder fiturnya kalau
    khusus satu layar), dengan golden minimal satu frame yang memakainya.
    **Selesai** (2026-10-22). Golden per wilayah: `hifiRect` + `hifiStage` +
@@ -44,7 +45,9 @@ Langkah 5 bisa dikerjakan model yang lebih murah karena tinggal merakit komponen
    di `components.md` atau `style="…"` frame itu di `hifi.html` — jangan menebak.
 3. Buat golden per frame di `test/hifi/screens/<alur>_test.dart` dengan data yang sama persis dengan frame
    (nama, skor, round, jam). Riverpod: override `tournamentProvider` dengan `ActiveTournament` buatan; teks yang
-   bergantung jam (mis. "40m dari 2 jam") harus dari jam yang bisa disuntik.
+   bergantung jam (mis. "40m dari 2 jam") harus dari jam yang bisa disuntik. Belum ada: buat satu `clockProvider`
+   (`Provider<DateTime Function()>`, default `DateTime.now`) dan pakai di semua tempat yang membaca jam sekarang
+   (header Jadwal memakai `DateTime.now()` langsung di `schedule_widgets.dart`, controller saat membuat turnamen).
 
    ```dart
    testWidgets('06f round berjalan', (tester) async {

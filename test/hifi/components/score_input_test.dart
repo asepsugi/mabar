@@ -8,13 +8,11 @@ import '../hifi_golden.dart';
 
 /// Golden ScoreBoard + ScoreKeypad. Isi papan dibuat lewat ketikan [ScoreEntry] yang sama dengan yang
 /// dilakukan host, bukan disusun tangan.
-///
-/// Keypad hanya dibandingkan di 07h dan 07k: frame Input Skor lain (07a–07g) tidak menggambar tombol
-/// mati, padahal aturannya (catatan 07k, logic.md §2) mematikan 8 dan 9 di Race to 6 kosong.
 void main() {
   final theme = MabarTheme.light();
   const race6 = ScoreFormat(ScoringMethod.raceTo, 6);
   const americano21 = ScoreFormat(ScoringMethod.americano, 21);
+  const bestOf5 = ScoreFormat(ScoringMethod.bestOf, 5), bestOf6 = ScoreFormat(ScoringMethod.bestOf, 6);
 
   ScoreEntry typed(ScoreFormat f, List<int> digits) => digits.fold(ScoreEntry.start(f), (e, d) => e.type(d));
 
@@ -38,7 +36,20 @@ void main() {
     });
   }
 
-  for (final (frame, entry) in [('07k', typed(race6, [4])), ('07h', typed(americano21, [2]))]) {
+  for (final (frame, entry) in [
+    ('07a', ScoreEntry.start(race6)),
+    // Kotak penuh: angka berikutnya mengganti isi, jadi yang mati hanya angka di atas batas.
+    ('07b', typed(race6, [6, 4])),
+    ('07c', typed(race6, [7, 6])),
+    ('07d', typed(race6, [6, 6])),
+    ('07e', typed(bestOf5, [3])),
+    ('07f', typed(bestOf6, [3])),
+    ('07g', typed(americano21, [1, 3])),
+    ('07h', typed(americano21, [2])),
+    // Ubah skor: belum ada kotak aktif, semua angka mati.
+    ('07i', ScoreEntry.edit(race6, const SetScore(side1: 6, side2: 4))),
+    ('07k', typed(race6, [4])),
+  ]) {
     testWidgets('ScoreKeypad: tombol di atas batas mati ($frame)', (tester) async {
       final at = hifiRect(frame, 'keypad');
       await expectRegionMatchesHifi(

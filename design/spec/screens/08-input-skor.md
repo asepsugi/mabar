@@ -83,6 +83,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `S
 Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `ScoreBoard / ScoreKeypad`
 
 - Skor tersimpan diisi otomatis, belum ada kotak aktif sampai diketuk. Tombol jadi "Perbarui skor".
+- Selama belum ada kotak aktif semua angka mati; ketuk salah satu kotak (atau →) untuk mulai mengubah (keputusan host 2026-10-22).
 - Match WO dibuka di sini juga: skor lama (kalau ada) terisi; menyimpan skor mengubahnya dari WO jadi selesai.
 
 ## 07j · Sheet · walkover
@@ -103,6 +104,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `M
 Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `ScoreBoard / ScoreKeypad`
 
 - Isi satu kotak paling tinggi target + 1 (7), jadi tombol 8 dan 9 mati. Kalau tidak ada angka lagi yang mungkin (satu digit sudah penuh), kursor pindah sendiri ke kotak lawan yang masih kosong.
+- Kotak yang sudah penuh (tidak ada digit lagi yang bisa ditambahkan di belakangnya) menerima ketikan berikutnya sebagai pengganti isinya, begitu juga kotak yang baru dipilih. Jadi yang mati hanya angka di atas batas: Race to 6 berisi "4" → 8 dan 9 mati (07b), Best of 5 berisi "3" → 6–9 mati (07e), Americano 21 berisi "13" → semua aktif (07g); "2" di Americano 21 belum penuh, jadi hanya 0 dan 1 (07h). Keputusan host 2026-10-22.
 - Kombinasi baru dicek setelah dua kotak terisi, karena 7 sah atau tidak tergantung lawan (7–5 sah, 7–3 tidak; pesannya di 07d).
 - Tombol sengaja tidak dimatikan berdasarkan isi kotak lawan. Contoh: host salah ketik 6–4 padahal 7–5; kalau 7 dimatikan karena lawan masih 4, host harus mengubah kotak lawan dulu baru bisa mengetik 7.
 - Race to 9: batasnya 10, jadi setelah "1" hanya 0 yang aktif.

@@ -106,14 +106,13 @@ void main() {
         theme: MabarTheme.light(),
         background: MabarColors.card,
         at: region,
-        // Di frame tombolnya 52, bukan 48: `height: 48px` inline kalah oleh `min-height: 52px` milik
-        // `.btn`, dan isian 48 rata atas di sebelahnya.
+        // Tombol Tambah 48, sama tinggi dengan isian di sebelahnya.
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(child: MabarField(controller: TextEditingController(text: 'Gilang S'), autofocus: true)),
             const SizedBox(width: 8),
-            MabarButton(label: 'Tambah', expand: false, onPressed: () {}),
+            MabarButton(label: 'Tambah', expand: false, height: 48, onPressed: () {}),
           ],
         ),
       ),

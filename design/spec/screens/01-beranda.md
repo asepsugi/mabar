@@ -53,6 +53,7 @@ Komponen: `MabarButton`, `CourtBanner (CourtPainter)`, `HomePanel / SportPicker`
 - Banner mengikuti olahraga turnamen yang berjalan. Info round ditulis di zona belakang, antara dinding dan service line. Baris riwayat tidak tampil (slot aktif dan terakhir tidak muncul bersamaan).
 - "Lanjutkan" (bola) membuka Jadwal dengan config tersimpan apa adanya. "Mulai turnamen…" tetap tombol utama yang sama; karena akan menghapus turnamen ini, dialog 01h muncul dulu.
 - Kalau di web dan belum terpasang, baris pasang tetap tampil di bawah tombol seperti 01b.
+- Tombol Lanjutkan 46 pt (lebih rendah dari tombol biasa 52) supaya muat di zona belakang lapangan.
 - Semua teks di banner putih penuh, termasuk subjudul dan "6 dari 8 match" (dulu 78% dan 85%). Di terracotta putih penuh 4,5:1; putih 85% hanya 3,7:1.
 
 ## 01f · Turnamen berjalan · Tennis
@@ -73,8 +74,9 @@ Komponen: `CourtBanner (CourtPainter)`
 
 - Satu animasi 450 ms, `Curves.easeInOutCubic`, dijalankan saat tile berganti (arah dibalik untuk Padel → Tennis). Tidak dijalankan saat ada turnamen berjalan, karena banner mengikuti turnamen itu.
 - Garis bergerak, bukan ganti gambar: singles sideline menyatu ke sideline luar dan hilang; baseline menipis jadi tepi dinding; service line bergeser dari 5,485 m ke 3,05 m dari belakang; center line bergeser ke tengah lebar padel dan memanjang 20 cm. Kaca, tiang, dan jaring muncul dengan fade di 60% terakhir.
-- Warna permukaan tidak dicampur bertahap: biru ke terracotta lewat abu-abu ungu di tengahnya. Warna olahraga baru menyapu dari baseline/dinding belakang ke bawah dengan tepi tegas, seperti lapangan dicat ulang, pada kurva yang sama (di 200 ms ±35% tinggi lapangan). Run-off tidak berubah.
-- Nama olahraga crossfade di tempat yang sama. Dengan `reduce motion`: crossfade 150 ms saja (garis, warna, dan nama).
+- Warna permukaan tidak dicampur bertahap: biru ke terracotta lewat abu-abu ungu di tengahnya. Warna olahraga baru menyapu dari baseline/dinding belakang ke bawah dengan tepi tegas, seperti lapangan dicat ulang, pada kurva yang sama (di 200 ms ±37% tinggi lapangan). Run-off tidak berubah.
+- Nama olahraga crossfade di tempat yang sama: nama lama sudah hilang di 30% pertama perjalanan garis (dua kata tidak bertumpuk), nama baru muncul mengikuti kurva yang sama. Dengan `reduce motion`: crossfade 150 ms saja (garis, warna, dan nama).
+- Diganti lagi di tengah animasi: garis lanjut dari posisinya sekarang menuju olahraga yang baru dipilih (tidak meloncat).
 - Implementasi: satu `CustomPainter` dengan parameter `t` 0–1, dipakai bersama generator ikon app. Pudar 35% lewat satu `saveLayer` beropasitas di atas warna court (bukan opasitas per garis, supaya persilangan tidak lebih terang); ikon app memakai painter yang sama dengan opasitas penuh karena kecil.
 
 ## 01h · Dialog · mulai turnamen baru

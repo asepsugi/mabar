@@ -143,7 +143,9 @@ untuk tennis maupun padel.
 
 - Best of & Americano: mengisi satu sisi otomatis mengisi lawan `N − x`.
 - Keypad sendiri: tombol angka yang membuat isi kotak melebihi batas format mati (Race to N: N+1; Best of N: N;
-  Americano: total). Tombol tidak melihat isi kotak lawan. Pesan validasi persis seperti frame 07d/07h.
+  Americano: total). Tombol tidak melihat isi kotak lawan. Kotak yang sudah penuh atau baru dipilih menerima ketikan
+  berikutnya sebagai pengganti isinya; saat mengubah skor tersimpan, angka mati sampai salah satu kotak diketuk
+  (keputusan host 2026-10-22). Pesan validasi persis seperti frame 07d/07h.
 - Seri dihitung setengah menang di Win %.
 - Format best of 3 set (app lama) sudah dihapus; turnamen app lama tidak dimuat (lihat 5.10).
 

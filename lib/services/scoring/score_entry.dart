@@ -95,26 +95,27 @@ class ScoreEntry {
   bool canType(int digit) {
     final side = active;
     if (side == null) return false;
-    final next = _typed(valueOf(side), digit);
-    return next != null && next <= format.maxPerSide;
+    return _typed(valueOf(side), digit) <= format.maxPerSide;
   }
 
-  /// Nilai kotak setelah [digit] diketik; null kalau kotak sudah penuh (0 tidak diberi digit kedua).
-  int? _typed(int? current, int digit) {
-    if (_replaceNext || current == null) return digit;
-    if (current == 0) return null;
-    return current * 10 + digit;
-  }
+  /// Nilai kotak setelah [digit] diketik. Digit ditambahkan di belakang selama masih ada digit yang
+  /// muat; kotak yang sudah penuh (atau baru dipilih) diganti isinya — keputusan host 2026-10-22, catatan
+  /// 07e: Best of 5 berisi "3" → hanya 6–9 yang mati. Hasil di atas batas = tombol mati.
+  int _typed(int? current, int digit) =>
+      _replaceNext || current == null || !_canAppend(current) ? digit : current * 10 + digit;
+
+  /// Masih ada digit yang bisa ditambahkan di belakang [current] tanpa melewati batas. 0 tidak diberi
+  /// digit kedua.
+  bool _canAppend(int current) => current != 0 && current * 10 <= format.maxPerSide;
 
   ScoreEntry type(int digit) {
     final side = active;
     if (side == null || !canType(digit)) return this;
-    final value = _typed(valueOf(side), digit)!;
+    final value = _typed(valueOf(side), digit);
     var entry = _set(side, value);
 
-    // Tidak ada digit lagi yang mungkin → kursor pindah sendiri ke kotak lawan yang masih kosong.
-    final full = !List.generate(10, (d) => d).any(entry.canType);
-    if (full && entry.valueOf(_other(side)) == null) entry = entry.select(_other(side));
+    // Tidak ada digit lagi yang bisa ditambahkan → kursor pindah sendiri ke kotak lawan yang masih kosong.
+    if (!_canAppend(value) && entry.valueOf(_other(side)) == null) entry = entry.select(_other(side));
     return entry;
   }
 

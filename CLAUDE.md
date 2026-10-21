@@ -69,16 +69,15 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   baris ke pt bulat (22,4 → 22, 25,6 → 26), jadi kotak yang tingginya dari jumlah baris perlu dikompensasi
   (NameListField, baris poster); `OutlineInputBorder` menggeser isi 4 pt kecuali `gapPadding: 0`; `ButtonStyle.textStyle`
   mengganti gaya tema (makanya `MabarType` membawa `fontFamily`); `ThemeData` mengunci platform saat dibuat.
-- Frame yang tidak konsisten dengan aturannya (aturan yang diikuti): tombol keypad mati hanya digambar di 07h/07k
-  (07a–07g harus mematikan tombol juga); tombol "Tambah" di 08a 52 pt karena `min-height` `.btn`; tombol
-  Lanjutkan banner 01e/01f 52 pt (bukan 46, `min-height` lagi); keyframe 200 ms di 01g hanya ilustrasi (garis sudah
-  ±50% dan kaca sudah tampak saat sapuan warna baru 35%) — kode mengikuti teksnya: garis & sapuan satu kurva, kaca
-  muncul di 60% terakhir.
+- Frame yang dulu tidak konsisten dengan aturannya sudah dibetulkan di hi-fi atas keputusan host (2026-10-22), jadi
+  golden layar tidak perlu pengecualian: keypad 07a–07g/07i menggambar tombol mati sesuai aturan, Lanjutkan di banner
+  46 pt dan Tambah di 08a/08b 48 pt (dulu kalah oleh `min-height: 52px` `.btn`), keyframe 200 ms 01g digambar dari
+  aturan, gambar Feed/Story line-height 1,4. Kalau menemukan frame lain yang bertentangan dengan catatannya:
+  berhenti dan tanya host, jangan memilih sendiri.
 - Kalau hi-fi diubah: `python3 tool/hifi_extract.py` me-render ulang `design/frames/` dan menulis ulang
   `design/spec/screens/` + `components.md` (butuh Google Chrome + internet untuk font). Jangan edit hasilnya dengan tangan.
-  Hi-fi diubah hanya untuk keputusan host, bukan untuk menyamakan kode. Sejauh ini sekali (2026-10-22): `.poster-pair`
-  (gambar Feed/Story 11d/11f/11g) diberi line-height 1,4 seperti kartu pratinjau, dulu mewarisi 1,55 dan kaki Feed
-  Ringkas meluber dari padding.
+  Hi-fi diubah hanya untuk keputusan host, bukan untuk menyamakan kode; setiap keputusan dicatat juga di hi-fi →
+  Cakupan → "Sudah disetujui", lalu artifact online dipublish ulang dari file yang sama.
 - Membaca hi-fi: file ±320 KB tanpa base64 besar, aman dibaca per bagian (`<section class="flow" id="beranda">`,
   dst.). Untuk satu layar lebih ringkas baca `design/spec/screens/<alur>.md` + PNG frame-nya.
 
@@ -108,9 +107,14 @@ Konvensi: komentar seperlunya dan dalam bahasa Indonesia, menjelaskan *kenapa*. 
 
 ## Status: 11 layar selesai + persistensi lokal
 
+> **Saat merakit layar v2:** logika, provider, persistensi, dan aturan platform di bagian ini tetap berlaku. Detail
+> **tampilan** layar lama (ikon Material, gradien, `typeScale`, `ShareResultPoster`, teks versi di bawah Beranda, label
+> tombol lama) diganti hi-fi + komponen v2 — kalau bertentangan, hi-fi yang benar. Beranda v2 tidak menampilkan versi
+> (Cakupan → Dihapus); versi app hanya di `appVersion` + simpanan.
+
 Alur penuh jalan: Home → Peserta → Konfigurasi → Pasangan (Fixed) / Mode Endless (Mixed) → Jadwal 6a/6b → Input Skor + sheet WO → Peringkat → Detail Pemain → Share.
 
-Mesin domain yang sudah ada + ter-test (124 test lulus — 120 domain/widget + 4 alat pembanding hi-fi di `test/hifi/`; `flutter analyze` bersih kecuali 2 info lint lama di `models.dart`):
+Mesin domain yang sudah ada + ter-test (semua `flutter test` lulus, termasuk golden komponen di `test/hifi/`; `flutter analyze` bersih kecuali 2 info lint lama di `models.dart`):
 - `pairing/player_name_parser.dart` — parser textarea nama.
 - `pairing/pair_generator.dart` — pasangan Fixed (acak/manual), sisa pemain ganjil.
 - `schedule/round_robin_generator.dart` — circle method. **Invariant:** satu putaran circle dipotong jadi beberapa round sebesar jumlah court, tidak pernah menggabungkan dua putaran (kalau digabung, satu pair bisa main di dua lapangan bersamaan).
@@ -214,7 +218,8 @@ Sumber aslinya JPEG berlatar putih; konversinya: potong bingkai tipis 1-2px di t
 `android/`, `ios/`, dan `web/` semuanya ada. Bundle id / applicationId: **`id.mabar.app`** (label `Mabar`),
 minSdk 24, iOS minimum 15. Beranda tanpa header: hero biru naik sampai di bawah status bar (`SafeArea(top: false)` + inset di hero) dengan
 ikon status bar putih lewat `AnnotatedRegion` (`MabarTheme.statusBarLight`); default gelap dipasang di `builder`
-`MaterialApp` supaya gaya putih tidak terbawa ke layar lain. Versi ("v1.0", hardcode) ada di teks bawah Beranda.
+`MaterialApp` supaya gaya putih tidak terbawa ke layar lain. Beranda lama menulis `v$appVersion` di teks bawah; Beranda
+v2 tidak menampilkannya.
 Orientasi dikunci portrait di dua tempat — `SystemChrome` di `lib/main.dart`
 dan `UISupportedInterfaceOrientations` di `ios/Runner/Info.plist`; kalau menambah layar landscape,
 keduanya harus diubah bareng.
