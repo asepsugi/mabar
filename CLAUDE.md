@@ -8,8 +8,8 @@ App Flutter untuk host turnamen mabar tennis/padel (klub, 4–20 pemain, 1 devic
   catatan perilaku, Cakupan. Acuan visual dan perilaku untuk semua pekerjaan UI berikutnya.
 - `design/spec/` — paket implementasi v2. **Mulai dari `design/spec/README.md`** (urutan kerja, aturan golden), lalu
   `tokens.json`, `components.md`, `logic.md` (aturan logika yang berubah + data test), `screens/*.md` (per alur).
-Fondasi v2 (token, Archivo, ikon) sudah terpasang di `lib/`; komponen dan tata letak layar masih desain lama yang
-warnanya dipetakan ke token baru. Hi-fi lama (11 layar, Inter, hijau) ada di git: `git show dae32c9:hifi.html`.
+Fondasi, logika, komponen, dan painter lapangan v2 sudah ada di `lib/`; tata letak layar masih desain lama yang
+warnanya dipetakan ke token baru (langkah 5 belum). Hi-fi lama (11 layar, Inter, hijau) ada di git: `git show dae32c9:hifi.html`.
 Bagian "Status" di bawah menggambarkan app yang berjalan sekarang, bukan desain v2.
 
 ## Redesain v2 (final, implementasi bertahap)
@@ -50,6 +50,14 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   (di atas `ScoreEntry`), StandingTable, StatLine, NameListField, ModePicker/CourtSwatch/CourtColorGrid,
   HomePanel/HomeRowIcon/InstallStep, SharePoster (`share/widgets/`, preset pratinjau/Feed/Story, diekspor lewat
   `SharePosterTarget.exportPixelRatio`). Widget lama yang namanya bentrok jadi `LegacyChip`/`LegacyStepper`.
+- **Painter lapangan selesai** (langkah 4): `core/widgets/court_painter.dart` — `CourtPainter(t, toward, layout)`, satu
+  gambar sudut lapangan untuk banner Beranda **dan** ikon app (jangan bikin gambar lapangan kedua). `t` = posisi garis
+  tennis (0) → padel (1); warna `toward` menyapu dari dinding belakang dengan tepi tegas, tidak dicampur.
+  `CourtLayout.banner` (60 pt/m, garis dipudarkan 35% lewat satu `saveLayer`) dan `CourtLayout.icon` (kanvas 1024, garis
+  penuh). `features/home/widgets/court_banner.dart` — `CourtBanner(sport, live)`: wordmark, nama olahraga / `.liveblock`,
+  animasi 01g (controller = posisi garis + `animateTo`, jadi berbalik di tengah jalan tidak meloncat; kurva
+  `easeInOutCubic` Flutter tidak simetris). Gambarnya ikut safe area (frame: status bar 47 → baseline y 104).
+  Golden 01b/01c/01e/01f di `test/hifi/components/court_banner_test.dart`.
 - Golden per komponen: `hifiRect(frame, kelas, text:)` membaca `design/spec/rects.json` (posisi elemen yang diukur
   Chrome, ditulis `tool/hifi_extract.py`), `hifiStage` menaruh widget di posisi itu, `expectRegionMatchesHifi`
   membandingkan wilayahnya saja. Pembanding menyerap geseran 1 piksel perangkat (Chrome men-snap baseline, Flutter
@@ -61,7 +69,10 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   mengganti gaya tema (makanya `MabarType` membawa `fontFamily`); `ThemeData` mengunci platform saat dibuat.
 - Frame yang tidak konsisten dengan aturannya (aturan yang diikuti): tombol keypad mati hanya digambar di 07h/07k
   (07a–07g harus mematikan tombol juga); tombol "Tambah" di 08a 52 pt karena `min-height` `.btn`; frame gambar
-  11d/11f/11g dirender di luar `.app` sehingga line-height 1,55 dan kaki Feed Ringkas meluber dari padding.
+  11d/11f/11g dirender di luar `.app` sehingga line-height 1,55 dan kaki Feed Ringkas meluber dari padding; tombol
+  Lanjutkan banner 01e/01f 52 pt (bukan 46, `min-height` lagi); keyframe 200 ms di 01g hanya ilustrasi (garis sudah
+  ±50% dan kaca sudah tampak saat sapuan warna baru 35%) — kode mengikuti teksnya: garis & sapuan satu kurva, kaca
+  muncul di 60% terakhir.
 - Kalau hi-fi diubah: `python3 tool/hifi_extract.py` me-render ulang `design/frames/` dan menulis ulang
   `design/spec/screens/` + `components.md` (butuh Google Chrome + internet untuk font). Jangan edit hasilnya dengan tangan.
 - Membaca hi-fi: file ±320 KB tanpa base64 besar, aman dibaca per bagian (`<section class="flow" id="beranda">`,
@@ -75,7 +86,7 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
 - `lib/services/**` — logika murni Dart, **wajib ada test**; tidak boleh diduplikasi di widget.
 - `lib/features/<screen>/` — satu folder per layar.
 - `lib/core/widgets/mabar_widgets.dart` — komponen lintas layar (header, chip, info box, status badge, tombol primer, dashed border, stat box).
-- `lib/core/widgets/mabar_brand_mark.dart` — lapangan biru + garis court + bola tennis. Dipakai hero Home **dan** generator icon aplikasi; jangan bikin salinan bola kedua.
+- `lib/core/widgets/court_painter.dart` + `mabar_ball.dart` — lapangan + bola brand. Dipakai banner Beranda **dan** generator icon aplikasi; jangan bikin salinan kedua.
 - `lib/features/schedule/schedule_widgets.dart` — komponen khusus jadwal, dipakai bareng 6a/6b/7.
 - State turnamen: Riverpod `tournamentProvider` (`features/schedule/tournament_controller.dart`) — satu-satunya sumber kebenaran sejak layar jadwal. Sebelum itu data dioper lewat `extra` router.
 
@@ -217,14 +228,14 @@ Toolchain (per 2026-10-20): Android SDK di `~/Library/Android/sdk` dan Xcode 16.
 Xcode 27 Apple Silicon saja). `app-release.apk` pernah di-build, tapi release masih ditandatangani **debug key**
 (`android/app/build.gradle.kts`) — perlu keystore sendiri sebelum dibagikan rutin / ke Play Store.
 
-App icon Android/iOS digenerate dari brand mark, bukan digambar terpisah:
+App icon Android/iOS/web digenerate dari `CourtPainter` + `MabarBall` (opsi A, frame 01j), bukan digambar terpisah:
 
 ```bash
 flutter test tool/generate_app_icon.dart   # 3 PNG 1024×1024 ke assets/icon/
 dart run flutter_launcher_icons             # sebar ke android/ + ios/ + web/icons + favicon
 ```
 
-`tool/` sengaja di luar `test/` supaya generator tidak ikut `flutter test` biasa. Ulangi kedua perintah itu setiap kali `mabar_brand_mark.dart` berubah. Foreground adaptive icon dibuat lebih kecil (0.40 kanvas) karena Android memangkas ~25% tiap sisi.
+`tool/` sengaja di luar `test/` supaya generator tidak ikut `flutter test` biasa. Ulangi kedua perintah itu setiap kali painter, `CourtLayout.icon`, atau bola berubah. Adaptive icon Android: komposisi ikon utuh dikecilkan ke 72/108 bagian tengah (yang terlihat di mask), lapangan & run-off tetap sampai tepi latar, bola di foreground — jadi mask bulat/squircle memotong gambar yang sama dengan ikon iOS.
 
 ## Deploy web
 

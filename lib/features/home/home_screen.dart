@@ -5,7 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
-import '../../core/widgets/mabar_brand_mark.dart';
+import '../../core/widgets/court_painter.dart';
+import '../../core/widgets/mabar_ball.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
 import '../schedule/mixed/resume_tournament_sheet.dart';
@@ -128,7 +129,9 @@ class _BrandHero extends StatelessWidget {
       width: double.infinity,
       child: ClipRRect(
         borderRadius: _heroRadius,
-        child: MabarCourtBackground(
+        // Hero lama sampai layar Beranda v2 dirakit (langkah 5); lapangannya sudah painter v2.
+        child: CustomPaint(
+          painter: CourtPainter.of(SportType.tennis),
           child: Padding(
             padding: EdgeInsets.fromLTRB(24, 32 + MediaQuery.paddingOf(context).top, 24, 40),
             child: Column(
@@ -168,7 +171,7 @@ class _TennisBall extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // `.icon-badge` 76×76 sebagai kotak jarak, bolanya sendiri 48×48 di tengah.
-    return const SizedBox(width: 76, height: 76, child: Center(child: MabarTennisBall(size: 48)));
+    return const SizedBox(width: 76, height: 76, child: Center(child: MabarBall(size: 48)));
   }
 }
 
