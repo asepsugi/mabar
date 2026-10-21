@@ -32,8 +32,7 @@ class ScoreInvalid extends ScoreVerdict {
 
 /// Aturan skor akhir per format (`design/spec/logic.md` §1).
 class ScoreRules {
-  /// Memeriksa skor [side1]–[side2] satu match. Untuk format lama ([ScoringMethod.legacySets]) yang
-  /// diperiksa satu set: harus ada pemenang.
+  /// Memeriksa skor [side1]–[side2] satu match.
   static ScoreVerdict judge(ScoreFormat format, int side1, int side2) {
     final n = format.target;
     switch (format.method) {
@@ -51,8 +50,6 @@ class ScoreRules {
       case ScoringMethod.americano:
         if (side1 + side2 != n) return ScoreInvalid('Total ${format.unit} harus $n');
         return side1 == side2 ? const ScoreDraw() : _win(side1, side2);
-      case ScoringMethod.legacySets:
-        return side1 == side2 ? const ScoreInvalid('Skor seri, harus ada pemenang') : _win(side1, side2);
     }
   }
 

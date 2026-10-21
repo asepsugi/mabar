@@ -12,8 +12,7 @@ import '../schedule/schedule_widgets.dart';
 import '../schedule/tournament_controller.dart';
 import 'walkover_sheet.dart';
 
-/// Screen 7 · Input Skor — satu skor per match (Race to / Best of / Americano), atau per set untuk
-/// turnamen lama berformat best of 3 set. Best of & Americano: sisi lawan terisi otomatis `N − x`.
+/// Screen 7 · Input Skor — satu skor per match (Race to / Best of / Americano). Best of & Americano: sisi lawan terisi otomatis `N − x`.
 /// Aturan sah/tidaknya dari [ScoreRules].
 class ScoreInputScreen extends ConsumerStatefulWidget {
   final String matchId;
@@ -24,16 +23,11 @@ class ScoreInputScreen extends ConsumerStatefulWidget {
 }
 
 class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
-  /// Format lama: best of 3 set.
-  static const _maxSets = 3;
-
   /// Satu baris per set: controller untuk sisi kiri & kanan.
   final List<(TextEditingController, TextEditingController)> _sets = [];
   bool _seeded = false;
 
   ScoreFormat _format = ScoreFormat.standard;
-
-  bool get _perSet => _format.method == ScoringMethod.legacySets;
 
   /// Isi field dari skor yang sudah tersimpan supaya host bisa mengoreksi.
   /// Dilakukan saat build pertama, bukan di initState, karena di sinilah
@@ -132,7 +126,7 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
                   padding: const EdgeInsets.only(bottom: MabarSpacing.x4),
                   children: [
                     for (var i = 0; i < _sets.length; i++) ...[
-                      _SetLabel(text: _perSet ? 'SET ${i + 1}' : _format.label.toUpperCase()),
+                      _SetLabel(text: _format.label.toUpperCase()),
                       _SetRow(
                         active: active,
                         match: match,
@@ -147,7 +141,6 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
                         match: match,
                         left: _value(_sets[i].$1),
                         right: _value(_sets[i].$2),
-                        setNumber: _perSet ? i + 1 : null,
                         format: _format,
                       ),
                     ],
@@ -159,18 +152,6 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 11, color: MabarColors.faint),
                         ),
-                      )
-                    else if (_perSet)
-                      Padding(
-                        padding: const EdgeInsets.only(top: MabarSpacing.x4),
-                        child: _sets.length < _maxSets
-                            // Set terakhir harus lengkap dulu sebelum menambah set.
-                            ? _AddSetButton(label: 'Tambah Set ${_sets.length + 1}', onTap: () => setState(_addSet))
-                            : const Text(
-                                'Maks. $_maxSets set',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 11, color: MabarColors.faint),
-                              ),
                       ),
                   ],
                 ),
@@ -452,9 +433,6 @@ class _SetSummary extends StatelessWidget {
   final MatchGame match;
   final int? left;
   final int? right;
-
-  /// Nomor set untuk format lama; null untuk format satu skor.
-  final int? setNumber;
   final ScoreFormat format;
 
   const _SetSummary({
@@ -462,7 +440,6 @@ class _SetSummary extends StatelessWidget {
     required this.match,
     required this.left,
     required this.right,
-    required this.setNumber,
     required this.format,
   });
 
@@ -490,40 +467,9 @@ class _SetSummary extends StatelessWidget {
       ScoreDraw() => _line('Seri', MabarColors.ink3),
       ScoreWin(:final winnerSide, :final winnerScore, :final loserScore) => _line(
         '+${winnerScore - loserScore} ${format.unit} · '
-        '${active.pairLabel(winnerSide == 1 ? match.pair1 : match.pair2)} menang'
-        '${setNumber == null ? '' : ' set $setNumber'}',
+        '${active.pairLabel(winnerSide == 1 ? match.pair1 : match.pair2)} menang',
         MabarColors.ink,
       ),
     };
-  }
-}
-
-class _AddSetButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _AddSetButton({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 44,
-        alignment: Alignment.center,
-        foregroundDecoration: const MabarDashedBorder(color: MabarColors.line, radius: 14, width: 1.5),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(MabarIcons.plus, size: 14, color: MabarColors.ink3),
-            const SizedBox(width: MabarSpacing.x2),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: MabarColors.ink3),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

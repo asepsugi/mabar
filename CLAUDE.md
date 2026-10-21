@@ -22,8 +22,8 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
 - Perubahan logika (format skor Race to / Best of / Americano dengan data lama tetap terbaca, batas keypad, WO per
   format, status Final Mixed, undian seri dikunci per round, daftar prioritas istirahat, bug estimasi Lanjutkan)
   ada di `design/spec/logic.md`, lengkap dengan data test yang sama dengan angka di frame. **Sudah diimplementasi**
-  (langkah 2) di service/model, belum di layar — lihat Status. Belum diputuskan host: cara menampilkan/mengisi skor
-  per set turnamen lama (format `legacySets`) di layar v2; layar lama masih mengisinya per set.
+  (langkah 2) di service/model, belum di layar — lihat Status. Turnamen dari app lama (skor per set) **tidak dimuat**
+  di app v2 (keputusan host 2026-10-22): format per set sudah dihapus dari kode, lihat Persistensi lokal.
 - Verifikasi visual: `expectMatchesHifi(tester, layar, '<id frame>')` di `test/hifi/hifi_golden.dart` membandingkan
   render Flutter dengan `design/frames/<id>.png` (2x, Archivo dimuat; gagal → `build/hifi_diff/`). Jangan klaim
   layar sudah sesuai tanpa golden lolos.
@@ -68,13 +68,15 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   (NameListField, baris poster); `OutlineInputBorder` menggeser isi 4 pt kecuali `gapPadding: 0`; `ButtonStyle.textStyle`
   mengganti gaya tema (makanya `MabarType` membawa `fontFamily`); `ThemeData` mengunci platform saat dibuat.
 - Frame yang tidak konsisten dengan aturannya (aturan yang diikuti): tombol keypad mati hanya digambar di 07h/07k
-  (07a–07g harus mematikan tombol juga); tombol "Tambah" di 08a 52 pt karena `min-height` `.btn`; frame gambar
-  11d/11f/11g dirender di luar `.app` sehingga line-height 1,55 dan kaki Feed Ringkas meluber dari padding; tombol
+  (07a–07g harus mematikan tombol juga); tombol "Tambah" di 08a 52 pt karena `min-height` `.btn`; tombol
   Lanjutkan banner 01e/01f 52 pt (bukan 46, `min-height` lagi); keyframe 200 ms di 01g hanya ilustrasi (garis sudah
   ±50% dan kaca sudah tampak saat sapuan warna baru 35%) — kode mengikuti teksnya: garis & sapuan satu kurva, kaca
   muncul di 60% terakhir.
 - Kalau hi-fi diubah: `python3 tool/hifi_extract.py` me-render ulang `design/frames/` dan menulis ulang
   `design/spec/screens/` + `components.md` (butuh Google Chrome + internet untuk font). Jangan edit hasilnya dengan tangan.
+  Hi-fi diubah hanya untuk keputusan host, bukan untuk menyamakan kode. Sejauh ini sekali (2026-10-22): `.poster-pair`
+  (gambar Feed/Story 11d/11f/11g) diberi line-height 1,4 seperti kartu pratinjau, dulu mewarisi 1,55 dan kaki Feed
+  Ringkas meluber dari padding.
 - Membaca hi-fi: file ±320 KB tanpa base64 besar, aman dibaca per bagian (`<section class="flow" id="beranda">`,
   dst.). Untuk satu layar lebih ringkas baca `design/spec/screens/<alur>.md` + PNG frame-nya.
 
@@ -125,9 +127,7 @@ Mesin domain yang sudah ada + ter-test (124 test lulus — 120 domain/widget + 4
   lawan `N − x`; seri hanya kalau N genap (`canDraw`, juga penentu kolom S). Aturan sah + pesan frame 07d/07h di
   `services/scoring/score_entry.dart` (`ScoreRules.judge`), begitu juga keypad v2 (`ScoreEntry`: batas per kotak
   `maxPerSide`, ketikan pertama setelah kotak dipilih mengganti isi, digit penuh → pindah ke kotak lawan yang kosong,
-  tombol tidak melihat isi lawan). `ScoringMethod.legacySets` = format lama best of 3 set: tidak bisa dipilih, tapi
-  simpanan lama (`scoring` tanpa/`tennis`) terbaca sebagai itu, Americano lama dari `americanoPoints`; tanpa menaikkan
-  `schemaVersion`. Durasi match selalu kelipatan 5 (`TournamentConfig.roundDuration`). Config yang disalin wajib lewat
+  tombol tidak melihat isi lawan). Durasi match selalu kelipatan 5 (`TournamentConfig.roundDuration`). Config yang disalin wajib lewat
   `copyWith` supaya `format` tidak hilang.
 - `MatchGame.withScore` / `asWalkover` menimpa match sepenuhnya: skor di match WO membuang sisa WO, dan alasan WO yang
   dilepas benar-benar hilang (`copyWith` tidak bisa mengosongkan field).
@@ -150,8 +150,10 @@ Seluruh MVP PRD sudah jalan, termasuk bagian 5 (Penyimpanan Data).
 
 - `services/storage/tournament_codec.dart` — `ActiveTournament` ↔ JSON, Dart murni, ter-test.
   Sengaja **bukan** TypeAdapter Hive: model domain jadi bebas anotasi/codegen dan tidak perlu
-  mengelola nomor `typeId`. `schemaVersion` dinaikkan kalau bentuk JSON berubah tidak kompatibel;
-  payload beda versi atau rusak (app di-kill di tengah tulis) di-`decode` jadi `null`, bukan
+  mengelola nomor `typeId`. `schemaVersion` dinaikkan kalau bentuk JSON berubah tidak kompatibel
+  (sekarang 2 = app v2), dan tiap simpanan membawa `appVersion` (`lib/core/app_version.dart`, harus sama dengan
+  `version` di pubspec — dijaga test; tampil juga di Beranda). Simpanan app lama (skema 1, tanpa `appVersion`,
+  skor per set) sengaja tidak dimuat. Payload beda versi atau rusak (app di-kill di tengah tulis) di-`decode` jadi `null`, bukan
   melempar — turnamennya saja yang hilang, app tetap bisa dibuka.
 - `services/storage/tournament_store.dart` — box Hive `tournament` berisi 2 key: `active` dan
   `lastFinished`. `TournamentStore.memory()` dipakai test dan sebagai penyelamat kalau box gagal

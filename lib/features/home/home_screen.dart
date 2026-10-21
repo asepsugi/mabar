@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/app_version.dart';
 import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/court_painter.dart';
@@ -87,7 +88,7 @@ class HomeScreen extends ConsumerWidget {
                       const _Gutter(child: _SportSelector()),
                       const SizedBox(height: 14),
                       const Text(
-                        'Skor tersimpan otomatis · v1.0',
+                        'Skor tersimpan otomatis · v$appVersion',
                         style: TextStyle(fontSize: 11, color: MabarColors.faint, height: 1.5),
                         textAlign: TextAlign.center,
                       ),

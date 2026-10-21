@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../core/app_version.dart';
 import '../../models/models.dart';
 
 /// Serialisasi [ActiveTournament] ke JSON dan kembali. Dipisah dari Hive supaya
@@ -8,11 +9,14 @@ import '../../models/models.dart';
 class TournamentCodec {
   /// Dinaikkan kalau bentuk JSON berubah tidak kompatibel. Payload dengan versi
   /// lain dibuang, bukan dipaksa dibaca — turnamen lama hilang lebih baik
-  /// daripada app gagal start.
-  static const schemaVersion = 1;
+  /// daripada app gagal start. Skema 2 = app v2: simpanan app lama (skema 1, skor
+  /// per set) sengaja tidak dimuat — keputusan host 2026-10-22.
+  static const schemaVersion = 2;
 
   static String encode(ActiveTournament active) => jsonEncode({
     'schema': schemaVersion,
+    // Versi app yang menulis data ini, untuk mengenali simpanan saat format berubah lagi.
+    'appVersion': appVersion,
     'tournament': _tournament(active.tournament),
     // Kunci JSON wajib String, jadi nomor round di-stringify.
     'bye': {for (final e in active.byePairIdByRound.entries) '${e.key}': e.value},
@@ -21,12 +25,12 @@ class TournamentCodec {
     'credits': active.matchCredits,
   });
 
-  /// Mengembalikan null kalau payload kosong, rusak, atau dari skema lain.
+  /// Mengembalikan null kalau payload kosong, rusak, dari skema lain, atau tanpa versi app.
   static ActiveTournament? decode(String? raw) {
     if (raw == null || raw.isEmpty) return null;
     try {
       final json = jsonDecode(raw) as Map<String, dynamic>;
-      if (json['schema'] != schemaVersion) return null;
+      if (json['schema'] != schemaVersion || json['appVersion'] is! String) return null;
       return ActiveTournament(
         tournament: _readTournament(json['tournament'] as Map<String, dynamic>),
         byePairIdByRound: {
@@ -128,16 +132,8 @@ class TournamentCodec {
         : [for (final p in j['fixedPairs'] as List) _readPair(p as Map<String, dynamic>)],
   );
 
-  /// Format skor. Kunci lama tetap sah tanpa menaikkan [schemaVersion]: tanpa `scoring` (sebelum ada
-  /// pilihan metode) dan `tennis` adalah skor per set best of 3; Americano dulu menyimpan totalnya di
-  /// `americanoPoints`, bukan `target`.
-  static ScoreFormat _readFormat(Map<String, dynamic> j) {
-    final scoring = j['scoring'] as String?;
-    if (scoring == null || scoring == 'tennis') return ScoreFormat.legacySets;
-    final method = ScoringMethod.values.byName(scoring);
-    final target = (j['target'] as int?) ?? (j['americanoPoints'] as int?) ?? method.defaultTarget;
-    return ScoreFormat(method, target);
-  }
+  static ScoreFormat _readFormat(Map<String, dynamic> j) =>
+      ScoreFormat(ScoringMethod.values.byName(j['scoring'] as String), j['target'] as int);
 
   static Pair _readPair(Map<String, dynamic> j) =>
       Pair(id: j['id'] as String, player1Id: j['player1Id'] as String, player2Id: j['player2Id'] as String);

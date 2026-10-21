@@ -47,21 +47,16 @@ enum ScoringMethod {
 
   /// Poin reli, total N poin per match; seri kalau N genap.
   americano,
-
-  /// Skor tennis per set, best of 3 — format sebelum desain v2. Tidak bisa dipilih lagi, tapi turnamen
-  /// yang tersimpan dengan format ini tetap bisa dibuka, diperingkat, dan dibagikan.
-  legacySets,
 }
 
 extension ScoringMethodX on ScoringMethod {
-  /// Yang bisa dipilih untuk turnamen baru, urut seperti segmented control di Konfigurasi.
-  static const selectable = [ScoringMethod.raceTo, ScoringMethod.bestOf, ScoringMethod.americano];
+  /// Urutan segmented control di Konfigurasi.
+  static const selectable = ScoringMethod.values;
 
   String get label => switch (this) {
     ScoringMethod.raceTo => 'Race to',
     ScoringMethod.bestOf => 'Best of',
     ScoringMethod.americano => 'Americano',
-    ScoringMethod.legacySets => 'Best of 3 set',
   };
 
   /// Satuan skor: "game" atau "poin".
@@ -72,55 +67,48 @@ extension ScoringMethodX on ScoringMethod {
     ScoringMethod.raceTo => 2,
     ScoringMethod.bestOf => 1,
     ScoringMethod.americano => 2,
-    ScoringMethod.legacySets => 0,
   };
 
   int get maxTarget => switch (this) {
     ScoringMethod.raceTo => 9,
     ScoringMethod.bestOf => 15,
     ScoringMethod.americano => 99,
-    ScoringMethod.legacySets => 0,
   };
 
   int get defaultTarget => switch (this) {
     ScoringMethod.raceTo => 6,
     ScoringMethod.bestOf => 5,
     ScoringMethod.americano => 21,
-    ScoringMethod.legacySets => 0,
   };
 
   /// N yang diketik dikembalikan ke batas terdekat (stepper memang tidak bisa keluar batas).
   int clampTarget(int target) => target.clamp(minTarget, maxTarget);
 }
 
-/// Format skor turnamen: metode + N. Semua format kecuali [ScoringMethod.legacySets] disimpan sebagai satu
-/// [SetScore] per match, jadi ranking, share, dan codec tidak perlu bercabang per format.
+/// Format skor turnamen: metode + N. Semua format disimpan sebagai satu [SetScore] per match, jadi ranking, share, dan codec tidak perlu bercabang per format.
 @immutable
 class ScoreFormat {
   final ScoringMethod method;
 
-  /// N: target game (Race to), jumlah game (Best of), atau total poin (Americano). 0 untuk format lama.
+  /// N: target game (Race to), jumlah game (Best of), atau total poin (Americano).
   final int target;
 
   const ScoreFormat(this.method, this.target);
 
   /// Default kedua olahraga.
   static const standard = ScoreFormat(ScoringMethod.raceTo, 6);
-  static const legacySets = ScoreFormat(ScoringMethod.legacySets, 0);
 
   /// "Race to 6", "Best of 5", "Americano 21".
-  String get label => method == ScoringMethod.legacySets ? method.label : '${method.label} $target';
+  String get label => '${method.label} $target';
 
   String get unit => method.unit;
 
-  bool get isValid => method != ScoringMethod.legacySets && target >= method.minTarget && target <= method.maxTarget;
+  bool get isValid => target >= method.minTarget && target <= method.maxTarget;
 
   /// Bisa berakhir seri — menentukan ada tidaknya kolom S (M–K–S) di Peringkat.
   bool get canDraw => switch (method) {
     ScoringMethod.raceTo => false,
     ScoringMethod.bestOf || ScoringMethod.americano => target.isEven,
-    // Skor lama 1–1 set tercatat seri.
-    ScoringMethod.legacySets => true,
   };
 
   /// Best of & Americano: total kedua sisi tetap, jadi sisi lawan terisi otomatis `N − x`.
@@ -134,13 +122,11 @@ class ScoreFormat {
 
   /// Game/poin untuk pemenang WO (PRD 4.4): Race to N → N; Best of & Americano → rata-rata skor dari
   /// match yang dia mainkan sendiri ([ownAverage], null kalau belum pernah main), dibulatkan (,5 ke atas),
-  /// tapi tidak pernah di bawah [minWinningScore] — supaya menang WO tidak bernilai skor kalah. Format
-  /// lama tetap memakai aturan lamanya: WO tidak menyumbang game.
+  /// tapi tidak pernah di bawah [minWinningScore] — supaya menang WO tidak bernilai skor kalah.
   int woWinnerScore(double? ownAverage) => switch (method) {
     ScoringMethod.raceTo => target,
     ScoringMethod.bestOf || ScoringMethod.americano =>
       ownAverage == null ? minWinningScore : max(ownAverage.round(), minWinningScore),
-    ScoringMethod.legacySets => 0,
   };
 
   ScoreFormat withTarget(int target) => ScoreFormat(method, method.clampTarget(target));

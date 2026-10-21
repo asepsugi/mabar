@@ -42,7 +42,7 @@ void main() {
         ),
       ],
       method: RankingMethod.totalGames,
-      format: ScoreFormat.legacySets,
+      format: ScoreFormat.standard,
     );
 
     test('mode Mixed: satu baris per pemain, urutan tidak berubah', () {
@@ -85,7 +85,7 @@ void main() {
           ),
         ],
         method: RankingMethod.totalGames,
-        format: ScoreFormat.legacySets,
+        format: ScoreFormat.standard,
       );
 
       final entries = standingEntries(standings: rankedOdd, fixedPairs: [ab, cd]);
@@ -108,7 +108,7 @@ void main() {
           _match(p1: ab, p2: cd, sets: const [SetScore(side1: 6, side2: 4), SetScore(side1: 6, side2: 3)]),
         ],
         method: RankingMethod.winPercent,
-        format: ScoreFormat.legacySets,
+        format: ScoreFormat.standard,
       );
 
       final andi = standings.firstWhere((s) => s.player.id == 'Andi');
@@ -124,12 +124,12 @@ void main() {
       expect(citra.gamesWon, 7);
     });
 
-    test('format lama (per set): walkover gives a win and a loss but no games', () {
+    test('walkover: menang/kalah dihitung, game tidak (kredit WO terpisah di woPoints)', () {
       final standings = RankingCalculator.rank(
         players: players,
         matches: [_match(p1: ab, p2: cd, status: MatchStatus.wo, woLoser: ab.id)],
         method: RankingMethod.winPercent,
-        format: ScoreFormat.legacySets,
+        format: ScoreFormat.standard,
       );
 
       final andi = standings.firstWhere((s) => s.player.id == 'Andi');
@@ -151,7 +151,7 @@ void main() {
           _match(p1: ab, p2: cd, status: MatchStatus.pending, round: 2),
         ],
         method: RankingMethod.winPercent,
-        format: ScoreFormat.legacySets,
+        format: ScoreFormat.standard,
       );
       for (final s in standings) {
         expect(s.matchesPlayed, 0);
@@ -170,7 +170,7 @@ void main() {
           _match(p1: cd, p2: ab, sets: const [SetScore(side1: 1, side2: 6)], round: 2),
         ],
         method: RankingMethod.winPercent,
-        format: ScoreFormat.legacySets,
+        format: ScoreFormat.standard,
       );
       expect(standings.first.player.id, 'Andi');
       expect(standings.firstWhere((s) => s.player.id == 'Andi').winPercent, 100);
@@ -186,7 +186,7 @@ void main() {
           _match(p1: ac, p2: bd, sets: const [SetScore(side1: 6, side2: 5)]),
         ],
         method: RankingMethod.totalGames,
-        format: ScoreFormat.legacySets,
+        format: ScoreFormat.standard,
       );
       expect(standings.take(2).map((s) => s.player.id), containsAll(['Andi', 'Citra']));
       expect(standings.first.gamesWon, 6);
@@ -207,7 +207,7 @@ void main() {
           _match(p1: ad, p2: bc, sets: const [SetScore(side1: 6, side2: 5)], round: 3),
         ],
         method: RankingMethod.totalGames,
-        format: ScoreFormat.legacySets,
+        format: ScoreFormat.standard,
       );
 
       expect(standings.firstWhere((s) => s.player.id == 'Andi').totalPoint, 18);
@@ -229,7 +229,7 @@ void main() {
           _match(p1: cd2, p2: ab2, sets: const [SetScore(side1: 4, side2: 6)], round: 4),
         ],
         method: RankingMethod.winPercent,
-        format: ScoreFormat.legacySets,
+        format: ScoreFormat.standard,
       );
       final andi = standings.indexWhere((s) => s.player.id == 'Andi');
       final citra = standings.indexWhere((s) => s.player.id == 'Citra');

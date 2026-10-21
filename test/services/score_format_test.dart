@@ -1,10 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mabar/core/app_version.dart';
 import 'package:mabar/models/models.dart';
 import 'package:mabar/services/scoring/score_entry.dart';
 import 'package:mabar/services/storage/tournament_codec.dart';
 
-/// Format skor desain v2 (design/spec/logic.md §1–§2): Race to N, Best of N, Americano N, plus format
-/// lama best of 3 set yang tetap terbaca. Angka = frame 07a–07k.
+/// Format skor desain v2 (design/spec/logic.md §1–§2): Race to N, Best of N, Americano N, dan
+/// simpanan app lama yang tidak dimuat. Angka = frame 07a–07k.
 
 const race6 = ScoreFormat(ScoringMethod.raceTo, 6);
 const race9 = ScoreFormat(ScoringMethod.raceTo, 9);
@@ -49,7 +52,6 @@ void main() {
       expect(race6.withTarget(12), race9);
       expect(americano21.withTarget(1).target, 2);
       expect(const ScoreFormat(ScoringMethod.americano, 100).isValid, isFalse);
-      expect(ScoreFormat.legacySets.isValid, isFalse, reason: 'tidak bisa dipilih untuk turnamen baru');
     });
 
     test('label, satuan, dan kemungkinan seri', () {
@@ -94,19 +96,19 @@ void main() {
       }
     });
 
-    test('simpanan lama: tanpa scoring / "tennis" = best of 3 set, Americano dari americanoPoints', () {
+    test('simpanan app lama (skema 1, tanpa versi app) tidak dimuat', () {
       final encoded = TournamentCodec.encode(active(americano24));
-      expect(encoded, contains('"scoring":"americano","target":24'));
+      expect(encoded, contains('"schema":2,"appVersion":"$appVersion"'));
 
-      final legacyAmericano = encoded.replaceFirst('"scoring":"americano","target":24', '"scoring":"americano","americanoPoints":32');
-      expect(TournamentCodec.decode(legacyAmericano)!.config.format, const ScoreFormat(ScoringMethod.americano, 32));
+      final v1 = encoded.replaceFirst('"schema":2,"appVersion":"$appVersion"', '"schema":1');
+      expect(TournamentCodec.decode(v1), isNull);
+      final noVersion = encoded.replaceFirst(',"appVersion":"$appVersion"', '');
+      expect(TournamentCodec.decode(noVersion), isNull);
+    });
 
-      final legacyTennis = encoded.replaceFirst('"scoring":"americano","target":24', '"scoring":"tennis","americanoPoints":21');
-      expect(TournamentCodec.decode(legacyTennis)!.config.format, ScoreFormat.legacySets);
-
-      final beforeScoring = encoded.replaceFirst('"scoring":"americano","target":24,', '');
-      expect(beforeScoring, isNot(contains('scoring')));
-      expect(TournamentCodec.decode(beforeScoring)!.config.format, ScoreFormat.legacySets);
+    test('appVersion sama dengan version di pubspec.yaml', () {
+      final line = File('pubspec.yaml').readAsLinesSync().firstWhere((l) => l.startsWith('version:'));
+      expect(line.substring('version:'.length).trim().split('+').first, appVersion);
     });
   });
 
@@ -136,11 +138,6 @@ void main() {
       expect(ScoreRules.judge(americano21, 13, 8), isA<ScoreWin>());
       expect(_message(americano21, 13, 9), 'Total poin harus 21');
       expect(_message(bestOf5, 3, 3), 'Total game harus 5');
-    });
-
-    test('format lama: per set harus ada pemenang', () {
-      expect(ScoreRules.judge(ScoreFormat.legacySets, 6, 4), isA<ScoreWin>());
-      expect(_message(ScoreFormat.legacySets, 6, 6), 'Skor seri, harus ada pemenang');
     });
   });
 

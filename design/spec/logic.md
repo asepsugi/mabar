@@ -15,10 +15,9 @@ Sekarang `ScoringMethod { tennis, americano }` (`lib/models/models.dart:39`). Ba
 | Americano N poin | N = 2–99 | 21 | a + b = N | kalau N genap dan a = b |
 
 - Disimpan tetap sebagai satu `SetScore` per match (seperti Americano sekarang), jadi ranking/share/codec tidak bercabang.
-- **Data lama harus tetap terbaca.** Turnamen tersimpan dengan `tennis` (best of 3 set) tetap bisa dibuka,
-  dilihat peringkatnya, dan dibagikan; format itu tidak bisa dipilih untuk turnamen baru. Codec: kunci lama
-  dibaca sebagai format lama, `schemaVersion` dinaikkan hanya kalau bentuk JSON berubah tidak kompatibel.
-  Cara menampilkan skor per set lama di baris match belum didesain — tanyakan host sebelum menebak.
+- **Data lama tidak dimuat** (keputusan host 2026-10-22, menggantikan "data lama harus tetap terbaca"): turnamen dari
+  app lama (skor per set, `schemaVersion` 1) diabaikan saat app v2 dibuka. Simpanan v2 = `schemaVersion` 2 + `appVersion`
+  (versi app yang menulisnya).
 - Konfigurasi: durasi match stepper ±5, **selalu kelipatan 5** (minimal 5); ketikan dibulatkan ke kelipatan 5 terdekat.
 
 ## 2. Batas angka di keypad Input Skor
