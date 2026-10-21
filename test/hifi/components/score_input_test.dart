@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mabar/core/theme/mabar_theme.dart';
 import 'package:mabar/features/score_input/widgets/score_board.dart';
