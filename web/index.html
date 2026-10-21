@@ -43,6 +43,39 @@
   -->
   <script src="flutter_bootstrap.js" async></script>
   <script>
+    // Tombol "Pasang Mabar" di Beranda (lib/features/home/app_install_web.dart).
+    // beforeinstallprompt bisa datang sebelum Flutter selesai dimuat, jadi ditangkap di sini dan
+    // disimpan sampai tombolnya ditekan. Browser tidak mengirimnya kalau app sudah terpasang.
+    window.mabarInstall = (() => {
+      let deferred = null;
+      const api = {
+        onchange: null,
+        // 'prompt': dialog pasang bawaan bisa dimunculkan · 'manual': iPhone/iPad, tidak ada API
+        // pasang, hanya lewat menu Bagikan · 'none': sudah dibuka sebagai app / tidak didukung.
+        state() {
+          if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) return 'none';
+          if (deferred) return 'prompt';
+          // iPadOS mengaku Mac; bedanya hanya di layar sentuh.
+          const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+          return ios ? 'manual' : 'none';
+        },
+        async prompt() {
+          const event = deferred;
+          if (!event) return;
+          deferred = null; // satu event hanya bisa prompt() sekali
+          event.prompt();
+          await event.userChoice;
+          notify();
+        },
+      };
+      const notify = () => api.onchange?.();
+      addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferred = e; notify(); });
+      addEventListener('appinstalled', () => { deferred = null; notify(); });
+      return api;
+    })();
+  </script>
+  <script>
     // Offline: sw.js (diisi tool/build_web.sh). Gagal daftar tidak fatal, app tetap jalan online.
     // Versi baru yang sudah terunduh di sesi sebelumnya langsung dipasang saat app dibuka, lalu
     // halaman dimuat ulang sekali — PWA di Android jarang benar-benar ditutup, jadi menunggu

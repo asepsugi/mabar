@@ -132,9 +132,24 @@ Orientasi dikunci portrait di dua tempat — `SystemChrome` di `lib/main.dart`
 dan `UISupportedInterfaceOrientations` di `ios/Runner/Info.plist`; kalau menambah layar landscape,
 keduanya harus diubah bareng.
 
-Kode Dart-nya bebas platform (nol `kIsWeb`/`dart:html`/`Platform.*`). Satu-satunya titik sentuh platform
-adalah share sheet di `features/share/share_result_screen.dart` — `XFile.fromData` in-memory, jadi tidak ada
-permission/Info.plist yang perlu ditambah. Konsekuensinya share **wajib diuji di HP fisik**, bukan simulator.
+Kode Dart-nya bebas platform (nol `kIsWeb`/`dart:html`/`Platform.*`). Titik sentuh platform cuma dua:
+
+- Share sheet di `features/share/share_result_screen.dart` — `XFile.fromData` in-memory, jadi tidak ada
+  permission/Info.plist yang perlu ditambah. Konsekuensinya share **wajib diuji di HP fisik**, bukan simulator.
+- Kartu **"Pasang Mabar di HP"** di Beranda (PWA saja). `features/home/app_install.dart` memilih implementasi
+  lewat conditional export: `app_install_web.dart` (`dart:js_interop`) atau stub (native/test → selalu `none`,
+  kartu tidak muncul). Logikanya di `window.mabarInstall` (`web/index.html`): `beforeinstallprompt` harus
+  ditangkap di sana karena sering datang sebelum Flutter selesai dimuat. Chrome/Edge/Samsung Internet →
+  tombolnya langsung memunculkan dialog pasang bawaan (tetap butuh satu ketukan konfirmasi; pasang diam-diam
+  memang tidak bisa). iPhone/iPad tidak punya API pasang → tombolnya membuka panduan Bagikan → Tambah ke Layar
+  Utama (`ios_install_sheet.dart`). Deteksi "sudah terpasang": dibuka dalam mode standalone, atau Chrome tidak
+  lagi mengirim event-nya. Di tab Safari iOS status terpasang **tidak bisa** diketahui, jadi kartunya tetap
+  muncul di sana. Closure yang dioper ke `.toJS` harus mengembalikan tipe JS/void — `() => x.value = y`
+  gagal compile di web (tidak ketahuan di `flutter test`, jadi cek dengan `tool/build_web.sh`).
+
+Beranda dibungkus `CustomScrollView` + `SliverFillRemaining(hasScrollBody: false)`: `Spacer` tetap mendorong
+pilihan permainan ke bawah, tapi di browser HP yang pendek (bar alamat + kartu lanjutkan + kartu pasang)
+halamannya bisa digulir alih-alih meluber.
 
 Toolchain (per 2026-10-20): Android SDK di `~/Library/Android/sdk` dan Xcode 16.4 sudah terpasang (Mac Intel,
 Xcode 27 Apple Silicon saja). `app-release.apk` pernah di-build, tapi release masih ditandatangani **debug key**

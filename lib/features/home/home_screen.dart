@@ -9,6 +9,8 @@ import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
 import '../schedule/mixed/resume_tournament_sheet.dart';
 import '../schedule/tournament_controller.dart';
+import 'app_install.dart';
+import 'ios_install_sheet.dart';
 
 /// Screen 1 · Home — pilih jenis permainan (tidak ada default, wajib pilih).
 class HomeScreen extends ConsumerWidget {
@@ -28,60 +30,70 @@ class HomeScreen extends ConsumerWidget {
         // amannya diberikan di dalam hero.
         body: SafeArea(
           top: false,
-          child: Padding(
-            // Padding horizontal dipasang per-bagian, bukan di sini, supaya hero
-            // bisa full-bleed sampai tepi layar.
-            padding: const EdgeInsets.only(bottom: 28),
-            child: Column(
-              children: [
-                const _BrandHero(),
-                const SizedBox(height: MabarSpacing.x5),
-                const _Gutter(child: _QuickStats()),
-                if (active != null) ...[
-                  const SizedBox(height: MabarSpacing.x4),
-                  _Gutter(
-                    child: _ResumeCard(
-                      title: 'Lanjutkan turnamen',
-                      active: active,
-                      // Config-nya dioper apa adanya supaya `startIfNeeded` mengenalinya sebagai
-                      // turnamen yang sama (perbandingannya `identical`) dan tidak menimpa state.
-                      onTap: () => context.push('/schedule', extra: active.config),
-                    ),
-                  ),
-                ] else if (last != null && last.config.mode == PartnerMode.mixed) ...[
-                  const SizedBox(height: MabarSpacing.x4),
-                  _Gutter(
-                    child: _ResumeCard(
-                      title: 'Turnamen terakhir · tambah jam',
-                      active: last,
-                      onTap: () async {
-                        if (!await showResumeTournamentSheet(context, last, archived: true)) return;
-                        final resumed = ref.read(tournamentProvider);
-                        if (resumed != null && context.mounted) context.push('/schedule', extra: resumed.config);
-                      },
-                    ),
-                  ),
-                ],
-                const Spacer(),
-                const Text(
-                  'PILIH JENIS PERMAINAN',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: MabarColors.text4,
-                    letterSpacing: 0.3,
+          // Spacer mendorong pilihan permainan ke bawah selama muat; di layar pendek (browser HP
+          // dengan bar alamat + kartu lanjutkan + kartu pasang) halamannya bisa digulir.
+          child: CustomScrollView(
+            slivers: [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  // Padding horizontal dipasang per-bagian, bukan di sini, supaya hero
+                  // bisa full-bleed sampai tepi layar.
+                  padding: const EdgeInsets.only(bottom: 28),
+                  child: Column(
+                    children: [
+                      const _BrandHero(),
+                      const SizedBox(height: MabarSpacing.x5),
+                      const _Gutter(child: _QuickStats()),
+                      if (active != null) ...[
+                        const SizedBox(height: MabarSpacing.x4),
+                        _Gutter(
+                          child: _ResumeCard(
+                            title: 'Lanjutkan turnamen',
+                            active: active,
+                            // Config-nya dioper apa adanya supaya `startIfNeeded` mengenalinya sebagai
+                            // turnamen yang sama (perbandingannya `identical`) dan tidak menimpa state.
+                            onTap: () => context.push('/schedule', extra: active.config),
+                          ),
+                        ),
+                      ] else if (last != null && last.config.mode == PartnerMode.mixed) ...[
+                        const SizedBox(height: MabarSpacing.x4),
+                        _Gutter(
+                          child: _ResumeCard(
+                            title: 'Turnamen terakhir · tambah jam',
+                            active: last,
+                            onTap: () async {
+                              if (!await showResumeTournamentSheet(context, last, archived: true)) return;
+                              final resumed = ref.read(tournamentProvider);
+                              if (resumed != null && context.mounted) context.push('/schedule', extra: resumed.config);
+                            },
+                          ),
+                        ),
+                      ],
+                      const _InstallCard(),
+                      const Spacer(),
+                      const Text(
+                        'PILIH JENIS PERMAINAN',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: MabarColors.text4,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const _Gutter(child: _SportSelector()),
+                      const SizedBox(height: 14),
+                      const Text(
+                        'Skor tersimpan otomatis · v1.0',
+                        style: TextStyle(fontSize: 11, color: MabarColors.text4, height: 1.5),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 10),
-                const _Gutter(child: _SportSelector()),
-                const SizedBox(height: 14),
-                const Text(
-                  'Skor tersimpan otomatis · v1.0',
-                  style: TextStyle(fontSize: 11, color: MabarColors.text4, height: 1.5),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -197,9 +209,53 @@ class _ResumeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final total = active.matches.length;
-    final played = active.playedMatchCount;
+    final config = active.config;
+    return _ActionCard(
+      icon: Icons.play_circle_outline,
+      title: title,
+      subtitle:
+          '${config.sport.label} · ${config.mode.label} · ${config.players.length} pemain · '
+          '${active.playedMatchCount}/${active.matches.length} match',
+      onTap: onTap,
+    );
+  }
+}
 
+/// Ajakan memasang PWA ke layar utama, hanya di browser yang belum memasangnya. Di Chrome
+/// dkk. langsung memunculkan dialog pasang bawaan; iPhone tidak punya API-nya, jadi
+/// tombolnya membuka panduan menu Bagikan.
+class _InstallCard extends StatelessWidget {
+  const _InstallCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: appInstallMode,
+      builder: (context, mode, _) {
+        if (mode == AppInstallMode.none) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(MabarSpacing.x5, MabarSpacing.x4, MabarSpacing.x5, 0),
+          child: _ActionCard(
+            icon: Icons.install_mobile,
+            title: 'Pasang Mabar di HP',
+            subtitle: 'Buka dari layar utama, tanpa browser',
+            onTap: mode == AppInstallMode.prompt ? promptAppInstall : () => showIosInstallSheet(context),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ActionCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  const _ActionCard({required this.icon, required this.title, required this.subtitle, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -211,7 +267,7 @@ class _ResumeCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(Icons.play_circle_outline, size: 22, color: MabarColors.brand),
+            Icon(icon, size: 22, color: MabarColors.brand),
             const SizedBox(width: MabarSpacing.x3),
             Expanded(
               child: Column(
@@ -222,11 +278,7 @@ class _ResumeCard extends StatelessWidget {
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: MabarColors.brandDark),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    '${active.config.sport.label} · ${active.config.mode.label} · '
-                    '${active.config.players.length} pemain · $played/$total match',
-                    style: const TextStyle(fontSize: 11, color: MabarColors.text3),
-                  ),
+                  Text(subtitle, style: const TextStyle(fontSize: 11, color: MabarColors.text3)),
                 ],
               ),
             ),
