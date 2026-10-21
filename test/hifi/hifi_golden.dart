@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -197,6 +198,20 @@ Widget hifiStage({required Widget child, required Rect at, required ThemeData th
         ),
       ),
     );
+
+/// Mendekode gambar aset lebih dulu: di `flutter_test` `Image.asset` baru tampil kalau gambarnya sudah
+/// ada di cache sebelum frame digambar (dekodenya butuh `runAsync`).
+Future<void> precacheHifiAssets(WidgetTester tester, List<String> paths) async {
+  await tester.runAsync(() async {
+    for (final path in paths) {
+      final done = Completer<void>();
+      AssetImage(path).resolve(ImageConfiguration.empty).addListener(
+            ImageStreamListener((_, _) => done.complete(), onError: (e, s) => done.completeError(e, s ?? StackTrace.current)),
+          );
+      await done.future;
+    }
+  });
+}
 
 Future<void> _renameDiff(String frameId, String name) async {
   for (final suffix in ['', '_flutter']) {
