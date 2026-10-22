@@ -17,14 +17,14 @@ class StandingTableRow {
   const StandingTableRow({required this.position, required this.names, required this.record, required this.value, this.onTap});
 }
 
-/// `.rank` — tabel peringkat rapat dengan angka rata kanan: # · nama · M–K–S (atau M–K kalau format
+/// `.rank` — tabel peringkat rapat dengan angka rata kanan: # · nama · W–L–D (atau W–L kalau format
 /// tidak bisa seri) · nilai metode. Peringkat 1 diberi bola (semua baris bernomor 1). Pemain yang belum
 /// main dikelompokkan di bawah judul "Belum main" tanpa nomor ([idleNames]).
 class StandingTable extends StatelessWidget {
   /// Judul kolom nama: "Pemain" atau "Pasangan".
   final String subjectLabel;
 
-  /// "M–K–S" atau "M–K".
+  /// "W–L–D" atau "W–L".
   final String recordLabel;
 
   /// "Poin", "Game", atau "Win %".

@@ -30,7 +30,7 @@ void main() {
         at: at,
         child: StandingTable(
           subjectLabel: 'Pemain',
-          recordLabel: 'M–K–S',
+          recordLabel: 'W–L–D',
           valueLabel: 'Poin',
           rows: [for (final (p, n, r, v) in rows) StandingTableRow(position: p, names: [n], record: r, value: v)],
           idleNames: const [
@@ -44,7 +44,7 @@ void main() {
     );
   });
 
-  testWidgets('StandingTable: pasangan Fixed dua baris, M–K (09c)', (tester) async {
+  testWidgets('StandingTable: pasangan Fixed dua baris, W–L (09c)', (tester) async {
     final at = hifiRect('09c', 'rank');
     const rows = [
       (1, ['Andi P', 'Budi S'], '4–0', '24'),
@@ -60,7 +60,7 @@ void main() {
         at: at,
         child: StandingTable(
           subjectLabel: 'Pasangan',
-          recordLabel: 'M–K',
+          recordLabel: 'W–L',
           valueLabel: 'Game',
           rows: [for (final (p, n, r, v) in rows) StandingTableRow(position: p, names: n, record: r, value: v)],
         ),
@@ -75,13 +75,13 @@ void main() {
     ('10a', const <StatLineItem>[
       (value: '42', unit: null, label: 'Poin'),
       (value: '100', unit: '%', label: 'Win'),
-      (value: '3–0–0', unit: null, label: 'M–K–S'),
+      (value: '3–0–0', unit: null, label: 'W–L–D'),
       (value: '+12', unit: null, label: 'Selisih poin'),
     ]),
     ('10b', const <StatLineItem>[
       (value: '23', unit: null, label: 'Game'),
       (value: '75', unit: '%', label: 'Win'),
-      (value: '3–1', unit: null, label: 'M–K'),
+      (value: '3–1', unit: null, label: 'W–L'),
       (value: '+7', unit: null, label: 'Selisih game'),
     ]),
   ]) {

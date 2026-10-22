@@ -105,7 +105,7 @@ class ScoreFormat {
 
   bool get isValid => target >= method.minTarget && target <= method.maxTarget;
 
-  /// Bisa berakhir seri — menentukan ada tidaknya kolom S (M–K–S) di Peringkat.
+  /// Bisa berakhir seri — menentukan ada tidaknya kolom D (W–L–D) di Peringkat.
   bool get canDraw => switch (method) {
     ScoringMethod.raceTo => false,
     ScoringMethod.bestOf || ScoringMethod.americano => target.isEven,

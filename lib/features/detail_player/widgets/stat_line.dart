@@ -5,7 +5,7 @@ import '../../../core/theme/mabar_theme.dart';
 /// Satu angka di [StatLine]: nilai besar, satuan kecil opsional ("%"), label di bawah.
 typedef StatLineItem = ({String value, String? unit, String label});
 
-/// `.statline` — empat angka di Detail (poin/game, Win, M–K(–S), selisih), dipisah garis tipis.
+/// `.statline` — empat angka di Detail (poin/game, Win, W–L(–D), selisih), dipisah garis tipis.
 class StatLine extends StatelessWidget {
   final List<StatLineItem> items;
 

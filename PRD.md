@@ -163,7 +163,7 @@ app dibuka ulang kembali ke Total Point.
 
 1. Metode utama → 2. Total Point → 3. Head-to-head → 4. Selisih game/poin → 5. Nama (pengganti undian, supaya stabil)
 
-- Statistik identik (poin, selisih, M–K–S) mendapat **nomor sama** (1, 1, 3); urutan baris tetap mengikuti tie-break.
+- Statistik identik (poin, selisih, W–L–D) mendapat **nomor sama** (1, 1, 3); urutan baris tetap mengikuti tie-break.
 - Pemain yang belum main (pemain baru, sisa ganjil Fixed) dikelompokkan di "Belum main" tanpa nomor.
 - Fixed: satu baris per pasangan (dua nama), posisinya mengikuti anggota terbaik.
 
@@ -239,7 +239,7 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 - WO lewat sheet (4.4).
 
 ### 5.7 Peringkat (09a–09f)
-- Tabel: # · nama · M–K–S (M–K kalau format tidak bisa seri) · nilai metode; peringkat 1 diberi bola.
+- Tabel: # · nama · W–L–D (W–L kalau format tidak bisa seri) · nilai metode; peringkat 1 diberi bola.
 - Toggle Total Point / Win %, status di subjudul, catatan WO / tidak dimainkan, ketuk baris → Detail. Tombol Bagikan.
 
 ### 5.8 Detail Pemain (10a–10c)

@@ -56,7 +56,7 @@ ke selisih); test `test/services/ranking_v2_test.dart`.
 
 - Rata-rata dibulatkan ke bilangan bulat terdekat (,5 ke atas). Belum pernah main → ⌊total ÷ 2⌋ + 1.
 - Dihitung ulang tiap kali klasemen dihitung (rata-rata berubah kalau dia main lagi).
-- Menang/kalah tetap masuk M–K–S dan Win %. **Selisih tidak berubah** untuk kedua tim.
+- Menang/kalah tetap masuk W–L–D dan Win %. **Selisih tidak berubah** untuk kedua tim.
 - Skor menang terkecil: Americano 21 → 11 · Americano 24 → 13 · Best of 5 → 3 · Best of 6 → 4.
 
 Data test: lihat data set 2 di bawah (Budi rata-rata 14 ≥ 13 → +14; Joko rata-rata 8,5 < 13 → +13) dan Fixed 09c
@@ -66,8 +66,8 @@ Data test: lihat data set 2 di bawah (Budi rata-rata 14 ≥ 13 → +14; Joko rat
 
 - Statistik identik → **nomor sama** (1, 1, 3). Identik = poin, selisih, M, K, S sama. Urutan baris tetap tie-break:
   metode → Total Point → head-to-head → selisih → nama.
-- Kolom M–K–S di **kedua** metode; kolom terakhir = nilai metode. **S hanya ada kalau format bisa seri**
-  (Best of genap, Americano genap); selain itu M–K. Win % dibulatkan tanpa desimal di tabel, 1 desimal di Detail.
+- Kolom W–L–D di **kedua** metode; kolom terakhir = nilai metode. **D hanya ada kalau format bisa seri**
+  (Best of genap, Americano genap); selain itu W–L. Win % dibulatkan tanpa desimal di tabel, 1 desimal di Detail.
 - Label satuan mengikuti format: "Poin" (Americano) / "Game" (Race to, Best of).
 - **Status Mixed**: Final kalau `isFinished || (courtsAvailableForRound(n+1).isEmpty && isRoundComplete(n))`;
   kembali Sementara setelah Lanjutkan/tambah jam. Fixed: Final kalau diakhiri atau semua match selesai.

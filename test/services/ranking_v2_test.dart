@@ -104,7 +104,7 @@ void main() {
       ]);
     });
 
-    test('M–K–S Hana 1–1–1 dan Fajar 0–2–1', () {
+    test('W–L–D Hana 1–1–1 dan Fajar 0–2–1', () {
       final byName = {for (final e in _entries(_players1, _set1, RankingMethod.totalGames)) e.label: e.standing};
       expect((byName['Hana']!.wins, byName['Hana']!.losses, byName['Hana']!.draws), (1, 1, 1));
       expect((byName['Fajar']!.wins, byName['Fajar']!.losses, byName['Fajar']!.draws), (0, 2, 1));
@@ -127,7 +127,7 @@ void main() {
       // Yang kalah WO dapat 0, selisih kedua tim tidak berubah.
       expect((byName['Dewant']!.woPoints, byName['Dewant']!.woLosses, byName['Dewant']!.gameDiff), (0, 1, 2));
       expect(byName['Budi']!.gameDiff, 8);
-      // Menang/kalah WO tetap masuk M–K–S.
+      // Menang/kalah WO tetap masuk W–L–D.
       expect((byName['Budi']!.wins, byName['Budi']!.losses, byName['Budi']!.draws), (2, 0, 1));
     });
 

@@ -66,7 +66,7 @@ class LeaderboardScreen extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: StandingTable(
                     subjectLabel: fixed ? 'Pasangan' : 'Pemain',
-                    recordLabel: format.canDraw ? 'M–K–S' : 'M–K',
+                    recordLabel: format.canDraw ? 'W–L–D' : 'W–L',
                     valueLabel: method == RankingMethod.winPercent ? 'Win %' : '${unit[0].toUpperCase()}${unit.substring(1)}',
                     rows: [
                       for (final e in entries)

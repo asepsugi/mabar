@@ -11,7 +11,7 @@ Tabel rapat dengan angka rata kanan. Status ditulis di subjudul, bukan badge. Me
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarSegmented`, `StandingTable`
 
 - Statistik identik → nomor sama (1, 1, 3 dan 9, 9). Urutan baris tetap mengikuti tie-break: metode → Total Point → head-to-head → selisih → nama.
-- Kolom M–K–S = menang–kalah–seri. Seri tidak lagi ditulis kecil di bawah nama, jadi tinggi semua baris sama. Kolom S hanya ada kalau format skornya bisa seri (Americano total genap, Best of genap); Race to dan format ganjil cukup M–K (09c), supaya tidak ada kolom yang isinya selalu 0.
+- Kolom W–L–D = win–loss–draw (menang–kalah–seri), singkatan Inggris seperti Win % dan Total Point. Seri tidak lagi ditulis kecil di bawah nama, jadi tinggi semua baris sama. Kolom D hanya ada kalau format skornya bisa seri (Americano total genap, Best of genap); Race to dan format ganjil cukup W–L (09c), supaya tidak ada kolom yang isinya selalu 0.
 - Subjudul: olahraga · mode · status · round · match, sama urutannya dengan Detail ("Peringkat 1 · Padel · Mixed · Americano 24"; Detail menambah format skor).
 - Medali emas/perak/perunggu dihapus; peringkat 1 diberi bola. Baris bisa diketuk → Detail.
 - "Belum main" = pemain tanpa match selesai/WO (pemain baru, sisa ganjil di Fixed). Pemain yang keluar tetap tampil tanpa tanda. Catatan "n match WO" di bawah tabel hanya kalau ada WO (09d).
@@ -24,7 +24,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarSegmented`, `StandingTable`
 
-- Kolom ketiga tetap M–K–S di kedua metode (dulu Selisih di Win %): ganti metode hanya mengubah urutan dan kolom terakhir. M–K–S juga yang menjelaskan Win %: seri dihitung setengah menang (1–1–1 → 50%). Selisih tetap ada di Detail.
+- Kolom ketiga tetap W–L–D di kedua metode (dulu Selisih di Win %): ganti metode hanya mengubah urutan dan kolom terakhir. W–L–D juga yang menjelaskan Win %: seri dihitung setengah menang (1–1–1 → 50%). Selisih tetap ada di Detail.
 - Win % dibulatkan tanpa desimal di tabel (Detail tetap 1 desimal). Win % sama dipisah Total Point (Hana 36 di atas Citra 26 dan Joko 23).
 - Pilihan metode tidak disimpan; setelah resume kembali ke Total Point.
 
@@ -37,7 +37,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 - Fixed: satu baris per pasangan (dua nama ditumpuk), posisinya mengikuti anggota terbaik. Ketuk → Detail pasangan (10b).
 - Judul ikon piala dan progress bar dihapus. "Final" kalau sudah diakhiri atau semua match selesai.
 - Pemain sisa (jumlah ganjil) tampil sendiri di grup "Belum main".
-- Race to 6 tidak pernah seri, jadi kolomnya M–K tanpa S.
+- Race to 6 tidak pernah seri, jadi kolomnya W–L tanpa D.
 - Gina · Hana menang WO di R2 dan dapat 6 game (Race to = skor penuh), jadi totalnya 23. Citra · Dewant yang kalah WO dapat 0.
 
 ## 09d · Mixed · Total Point · peringkat 1 & 2 beda

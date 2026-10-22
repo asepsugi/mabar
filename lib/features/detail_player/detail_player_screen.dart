@@ -49,7 +49,7 @@ class DetailPlayerScreen extends ConsumerWidget {
       (
         value: !played ? '–' : (format.canDraw ? '${s.wins}–${s.losses}–${s.draws}' : '${s.wins}–${s.losses}'),
         unit: null,
-        label: format.canDraw ? 'M–K–S' : 'M–K',
+        label: format.canDraw ? 'W–L–D' : 'W–L',
       ),
       (
         value: !played ? '–' : (diff > 0 ? '+$diff' : (diff < 0 ? '−${-diff}' : '0')),

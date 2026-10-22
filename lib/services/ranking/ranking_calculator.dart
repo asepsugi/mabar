@@ -40,7 +40,7 @@ class PlayerStanding {
 
   int get gameDiff => gamesWon - gamesLost;
 
-  /// Statistik yang tampil sama persis (poin, selisih, M–K–S) → nomor peringkat sama (09a).
+  /// Statistik yang tampil sama persis (poin, selisih, W–L–D) → nomor peringkat sama (09a).
   bool hasSameStatsAs(PlayerStanding other) =>
       totalPoint == other.totalPoint &&
       gameDiff == other.gameDiff &&
