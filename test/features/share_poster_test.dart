@@ -76,6 +76,7 @@ void main() {
         entries: _standings(active),
         method: RankingMethod.totalGames,
         format: ShareFormat.ringkas,
+        isFinal: false,
       );
       expect(data.rows, hasLength(shareSummaryCount));
       expect(data.more, '+3 pemain lainnya');
@@ -92,6 +93,7 @@ void main() {
         entries: _standings(active),
         method: RankingMethod.winPercent,
         format: ShareFormat.lengkap,
+        isFinal: false,
       );
       expect(data.rows, hasLength(8));
       expect(data.more, isNull);
@@ -121,6 +123,7 @@ void main() {
         entries: _fixedStandings(active, pairs),
         method: RankingMethod.totalGames,
         format: ShareFormat.ringkas,
+        isFinal: false,
       );
       expect(data.more, '+1 pasangan lainnya');
       expect(data.rows.first.names, hasLength(2));
@@ -152,6 +155,7 @@ void main() {
                         entries: _standings(active),
                         method: RankingMethod.totalGames,
                         format: ShareFormat.lengkap,
+                        isFinal: false,
                       ),
                       theme: ShareTheme.hijau,
                       target: target,

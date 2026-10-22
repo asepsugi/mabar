@@ -48,7 +48,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
       // Cara kerja Mixed muncul sendiri sekali, saat R1 baru saja dibuat dari Konfigurasi.
       if (after != null && !identical(before, after) && after.roundCount == 1) showMixedGuideSheet(context, after);
     });
-    // Waktu berjalan di subjudul — cukup ditik tiap menit.
+    // Waktu berjalan di subjudul, dan "Waktu habis" mengikuti jam sungguhan — cukup ditik tiap menit.
     _clock = Timer.periodic(const Duration(minutes: 1), (_) => setState(() {}));
   }
 
@@ -108,6 +108,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
     final active = ref.watch(tournamentProvider);
     if (active == null || active.roundCount == 0) return const Scaffold(backgroundColor: MabarColors.paper);
 
+    final now = ref.read(clockProvider)();
     final finished = active.tournament.isFinished;
     final last = active.roundCount;
     final selected = (_selectedRound ?? last).clamp(1, last);
@@ -115,7 +116,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
     final matches = active.matchesOfRound(selected);
     final played = matches.where((m) => m.status == MatchStatus.done || m.status == MatchStatus.wo).length;
     final pending = active.matchesOfRound(last).where((m) => m.status == MatchStatus.pending).length;
-    final nextCourts = active.courtsAvailableForRound(last + 1).length;
+    final nextCourts = active.courtsAvailableAt(now).length;
     final timeUp = !finished && nextCourts == 0;
 
     void openScore(MatchGame m) => context.push('/score-input', extra: m.id);
@@ -124,7 +125,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
     // round itu dibuat.
     final List<Widget> resting;
     if (onLast) {
-      final split = EndlessRoundGenerator.restingAfterLastRound(active);
+      final split = EndlessRoundGenerator.restingAfterLastRound(active, now);
       resting = [
         if (split.priority.isNotEmpty)
           RestingList(names: [for (final p in split.priority) p.name], priorityRound: last + 1),
@@ -136,7 +137,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
     }
 
     final Widget primary;
-    if (active.canResume) {
+    if (active.canResume(now)) {
       primary = MabarButton(
         label: finished ? 'Lanjutkan turnamen' : 'Tambah jam',
         icon: MabarIcons.clock,
@@ -149,7 +150,8 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
         variant: MabarButtonVariant.wait,
       );
     } else {
-      final fewer = nextCourts < active.courtsAvailableForRound(last).length;
+      // Court yang habis di tengah: round berikutnya dapat court lebih sedikit dari round terakhir.
+      final fewer = nextCourts < active.matchesOfRound(last).map((m) => m.courtId).toSet().length;
       primary = MabarButton(
         label: 'Buat R${last + 1}',
         meta: fewer ? '· $nextCourts court' : null,
@@ -165,7 +167,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
         children: [
           MabarAppBar(
             title: 'Round $selected',
-            subtitle: scheduleSubtitle(active, ref.read(clockProvider)()),
+            subtitle: scheduleSubtitle(active, now),
             onBack: () => context.pop(),
             actions: [
               Builder(
@@ -219,7 +221,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
             children: [
               MabarIconButton(
                 icon: MabarIcons.ranking,
-                semanticLabel: 'Peringkat',
+                semanticLabel: 'Klasemen',
                 solid: true,
                 onPressed: () => context.push('/leaderboard'),
               ),

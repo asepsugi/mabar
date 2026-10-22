@@ -104,10 +104,10 @@ class EndlessRoundGenerator {
 
   /// Baris Istirahat di tab round terakhir n (06f–06o): pemain aktif **sekarang** yang tidak main di
   /// round n, urut seperti daftar pemain. [priority] = yang pasti kebagian slot R(n+1) menurut
-  /// [priorityOrder] (sama persis dengan hasil Buat); [later] = yang istirahat lagi. Kalau tidak ada court
-  /// yang muat R(n+1) (waktu habis, 06l), slot dihitung dari semua court — round berikutnya baru ada
-  /// setelah Lanjutkan turnamen, dan yang istirahat tetap diprioritaskan di sana.
-  static ({List<Player> priority, List<Player> later}) restingAfterLastRound(ActiveTournament active) {
+  /// [priorityOrder] (sama persis dengan hasil Buat pada [now]); [later] = yang istirahat lagi. Kalau tidak
+  /// ada court yang muat R(n+1) (waktu habis, 06l), slot dihitung dari semua court — round berikutnya baru
+  /// ada setelah Lanjutkan turnamen, dan yang istirahat tetap diprioritaskan di sana.
+  static ({List<Player> priority, List<Player> later}) restingAfterLastRound(ActiveTournament active, DateTime now) {
     final n = active.roundCount;
     final playing = {
       for (final m in active.matchesOfRound(n)) ...[...m.pair1.playerIds, ...m.pair2.playerIds],
@@ -118,7 +118,7 @@ class EndlessRoundGenerator {
     ];
     if (resting.isEmpty) return (priority: const [], later: const []);
 
-    final courts = active.courtsAvailableForRound(n + 1);
+    final courts = active.courtsAvailableAt(now);
     final slots = slotsFor(
       players: active.activePlayers.length,
       courts: courts.isEmpty ? active.config.courts.length : courts.length,

@@ -71,11 +71,12 @@ void main() {
         active: active,
         standings: standings,
         format: ShareFormat.ringkas,
+        now: DateTime(2026, 9, 14, 1),
       );
 
       expect(text, contains('Mabar Turnamen · Padel'));
       // R3 belum dimainkan dan turnamen belum diakhiri.
-      expect(text, contains('Peringkat Sementara'));
+      expect(text, contains('Klasemen Sementara'));
       for (final p in _players) {
         expect(text, contains(p.name));
       }
@@ -93,6 +94,7 @@ void main() {
         active: active,
         standings: standings,
         format: ShareFormat.lengkap,
+        now: DateTime(2026, 9, 14, 1),
       );
 
       expect(text, contains('Hasil per Round'));
@@ -109,10 +111,10 @@ void main() {
       );
     });
 
-    test('peringkat akhir kalau turnamen sudah diakhiri', () {
+    test('klasemen akhir kalau turnamen sudah diakhiri', () {
       final finished = ActiveTournament(tournament: tournament.copyWith(isFinished: true));
-      final text = ResultTextBuilder.build(active: finished, standings: standings, format: ShareFormat.ringkas);
-      expect(text, contains('Peringkat Akhir'));
+      final text = ResultTextBuilder.build(active: finished, standings: standings, format: ShareFormat.ringkas, now: DateTime(2026, 9, 14, 1));
+      expect(text, contains('Klasemen Akhir'));
     });
 
     test('summary line omits WO when there is none', () {

@@ -75,7 +75,7 @@ Komponen: `SharePoster`
 Komponen: `SharePoster`
 
 - Fixed paling banyak 10 baris, jadi Feed tetap satu kolom dengan nama lengkap kedua anggota dalam satu baris.
-- Story lebih sempit, jadi nama pasangan ditumpuk dua baris (seperti tabel Peringkat 09c) supaya tidak terpotong.
+- Story lebih sempit, jadi nama pasangan ditumpuk dua baris (seperti tabel Klasemen 09c) supaya tidak terpotong.
 
 ## 11h · Lengkap · Mixed 12 pemain · dua kolom 6–6
 

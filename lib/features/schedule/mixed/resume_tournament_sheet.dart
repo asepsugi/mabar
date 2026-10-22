@@ -19,7 +19,7 @@ Future<bool> showResumeTournamentSheet(BuildContext context, ActiveTournament so
   final resumed = await showMabarSheet<bool>(
     context,
     title: 'Lanjutkan turnamen',
-    subtitle: 'Skor & peringkat ${n == 1 ? 'R1' : 'R1–R$n'} tetap',
+    subtitle: 'Skor & klasemen ${n == 1 ? 'R1' : 'R1–R$n'} tetap',
     builder: (_) => _ResumeTournament(source: source, archived: archived),
   );
   return resumed ?? false;
@@ -60,7 +60,8 @@ class _ResumeTournamentState extends ConsumerState<_ResumeTournament> {
 
   @override
   Widget build(BuildContext context) {
-    final ahead = _source.capacityAhead(_extraMinutes);
+    final now = ref.read(clockProvider)();
+    final ahead = _source.capacityAhead(now, _extraMinutes);
     final n = _source.roundCount;
     final unplayed = _source.matches.where((m) => m.status == MatchStatus.cancelled).length;
     final courts = _source.config.courts;
@@ -87,7 +88,7 @@ class _ResumeTournamentState extends ConsumerState<_ResumeTournament> {
             children: [
               for (final (i, c) in courts.indexed)
                 () {
-                  final remaining = _source.remainingBookingMinutes(c);
+                  final remaining = _source.remainingBookingMinutes(c, now);
                   final extra = _extraHours[c.id] ?? 0;
                   final left = remaining > 0 ? 'Sisa ${_duration(remaining)}' : 'Waktu habis';
                   return MabarRow(

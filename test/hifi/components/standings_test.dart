@@ -32,7 +32,7 @@ void main() {
           subjectLabel: 'Pemain',
           recordLabel: 'W–L–D',
           valueLabel: 'Poin',
-          rows: [for (final (p, n, r, v) in rows) StandingTableRow(position: p, names: [n], record: r, value: v)],
+          rows: [for (final (p, n, r, v) in rows) StandingTableRow(position: p, names: [n], played: _played(r), record: r, value: v)],
           idleNames: const [
             ['Gilang S'],
           ],
@@ -62,7 +62,7 @@ void main() {
           subjectLabel: 'Pasangan',
           recordLabel: 'W–L',
           valueLabel: 'Game',
-          rows: [for (final (p, n, r, v) in rows) StandingTableRow(position: p, names: n, record: r, value: v)],
+          rows: [for (final (p, n, r, v) in rows) StandingTableRow(position: p, names: n, played: _played(r), record: r, value: v)],
         ),
       ),
       '09c',
@@ -97,3 +97,6 @@ void main() {
     });
   }
 }
+
+/// Jumlah main = W + L + D, sama dengan kolom Main di frame.
+int _played(String record) => record.split('–').map(int.parse).fold(0, (a, b) => a + b);

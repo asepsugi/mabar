@@ -184,7 +184,7 @@ void main() {
     for (var r = 1; r <= 2; r++) {
       expect(cancelled.matchesOfRound(r), before.matchesOfRound(r), reason: 'R$r utuh');
     }
-    expect(cancelled.canGenerateNextRound, isTrue);
+    expect(cancelled.canGenerateNextRound(DateTime.now()), isTrue);
 
     // Kredit dihitung ulang tanpa R3 yang dihapus; kalau tidak, Zaki istirahat.
     controller.generateNextRound();

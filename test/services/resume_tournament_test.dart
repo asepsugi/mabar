@@ -18,31 +18,41 @@ TournamentConfig _config() => TournamentConfig(
       players: [for (var i = 0; i < 8; i++) Player(id: 'p$i', name: 'Pemain $i')],
     );
 
-void _scoreCurrentRound(TournamentController c, ActiveTournament a) {
-  for (final m in a.matchesOfRound(a.roundCount)) {
-    c.submitScore(m.id, const [SetScore(side1: 6, side2: 4)]);
-  }
-}
-
 void main() {
   late TournamentStore store;
   late ProviderContainer container;
   late TournamentController controller;
+  late DateTime now;
   ActiveTournament read() => container.read(tournamentProvider)!;
 
   setUp(() {
+    now = DateTime(2026, 10, 22, 19);
     store = TournamentStore.memory();
-    container = ProviderContainer(overrides: [tournamentStoreProvider.overrideWithValue(store)]);
+    container = ProviderContainer(
+      overrides: [
+        tournamentStoreProvider.overrideWithValue(store),
+        clockProvider.overrideWithValue(() => now),
+      ],
+    );
     controller = container.read(tournamentProvider.notifier);
     controller.startIfNeeded(_config());
   });
   tearDown(() => container.dispose());
 
-  /// Mainkan sampai waktu booking semua court habis (3 round).
+  /// Isi skor round terakhir setelah [minutes] menit jam sungguhan berjalan.
+  void playRound({int minutes = 10}) {
+    final a = read();
+    for (final m in a.matchesOfRound(a.roundCount)) {
+      controller.submitScore(m.id, const [SetScore(side1: 6, side2: 4)]);
+    }
+    now = now.add(Duration(minutes: minutes));
+  }
+
+  /// Mainkan sampai waktu booking semua court habis (3 round, tiap round tepat 10 menit).
   void playUntilTimeout() {
     while (true) {
-      _scoreCurrentRound(controller, read());
-      if (!read().canGenerateNextRound) break;
+      playRound();
+      if (!read().canGenerateNextRound(now)) break;
       controller.generateNextRound();
     }
   }
@@ -50,13 +60,13 @@ void main() {
   test('waktu habis: jam ditambah per court, dihitung dari akhir round terakhir', () {
     playUntilTimeout();
     expect(read().roundCount, 3);
-    expect(read().canResume, isTrue);
+    expect(read().canResume(now), isTrue);
 
     // Court 1 sudah habis sejak R1; +1 jam tetap berarti 6 round lagi, bukan 4.
     controller.resume({'c1': 60});
     final courts = {for (final c in read().config.courts) c.id: c.bookingDurationMinutes};
     expect(courts, {'c1': 90, 'c2': 30});
-    expect(read().canResume, isFalse);
+    expect(read().canResume(now), isFalse);
 
     controller.generateNextRound();
     expect(read().roundCount, 4);
@@ -95,7 +105,7 @@ void main() {
     controller.resume({'c2': 60}, from: last);
     expect(read().tournament.id, id);
     expect(read().roundCount, 3);
-    expect(read().canGenerateNextRound, isTrue);
+    expect(read().canGenerateNextRound(now), isTrue);
     expect(store.loadActive()?.tournament.id, id, reason: 'langsung tersimpan sebagai turnamen aktif');
   });
 
@@ -123,24 +133,43 @@ void main() {
         isFinished: true,
       ),
     );
-    expect(fixed.canResume, isFalse);
+    expect(fixed.canResume(now), isFalse);
     controller.resume({'c1': 60}, from: fixed);
     expect(read().config.mode, PartnerMode.mixed, reason: 'state tidak berubah');
   });
 
+  test('round yang selesai lebih cepat menyisakan waktu untuk round tambahan', () {
+    // Tiap round cuma 2 menit: Court 2 (30 menit) masih muat match 10 menit sampai menit ke-20.
+    for (var r = 1; r <= 3; r++) {
+      playRound(minutes: 2);
+      controller.generateNextRound();
+    }
+    expect(read().roundCount, 4, reason: 'dulu dibatasi 30 ÷ 10 = 3 round');
+    expect(read().canResume(now), isFalse);
+    expect(read().matchesOfRound(2).map((m) => m.courtId).toSet(), {'c2'}, reason: 'Court 1 sudah habis');
+
+    // Waktu habis karena jam berjalan, bukan karena jumlah round.
+    playRound(minutes: 15);
+    expect(read().remainingBookingMinutes(read().config.courts[1], now), 9);
+    expect(read().canResume(now), isTrue);
+    controller.generateNextRound();
+    expect(read().roundCount, 4);
+  });
+
   test('estimasi: tambahan di court yang lebih pendek tetap mengubah jumlah match', () {
+    now = now.add(const Duration(minutes: 10));
     // Setelah R1: Court 1 habis, Court 2 sisa 20 menit (2 round). Court 1 tidak main sama sekali, jadi
     // bukan "berkurang" (dulu tertulis "mulai R2 court berkurang").
-    expect(read().capacityAhead(), (rounds: 2, matches: 2, courts: 1, fewerCourtsFrom: null, matchesPerRound: 2));
+    expect(read().capacityAhead(now), (rounds: 2, matches: 2, courts: 1, fewerCourtsFrom: null, matchesPerRound: 2));
 
     // Court 1 +1 jam = 6 round; R2–R3 dua court, berkurang mulai round tambahan ke-3 (R4).
     expect(
-      read().capacityAhead({'c1': 60}),
+      read().capacityAhead(now, {'c1': 60}),
       (rounds: 6, matches: 8, courts: 2, fewerCourtsFrom: 3, matchesPerRound: 2),
     );
     // Court 2 ikut ditambah: jumlah round sama (Court 1 tetap terpanjang), match bertambah.
     expect(
-      read().capacityAhead({'c1': 60, 'c2': 30}),
+      read().capacityAhead(now, {'c1': 60, 'c2': 30}),
       (rounds: 6, matches: 11, courts: 2, fewerCourtsFrom: 6, matchesPerRound: 2),
     );
   });
@@ -150,9 +179,10 @@ void main() {
       controller.withdrawPlayer('p$i');
     }
     expect(read().activePlayers, hasLength(4));
+    now = now.add(const Duration(minutes: 10));
     // 4 pemain = 1 match per round meski dua court masih ada waktunya.
     expect(
-      read().capacityAhead({'c1': 60, 'c2': 60}),
+      read().capacityAhead(now, {'c1': 60, 'c2': 60}),
       (rounds: 8, matches: 8, courts: 2, fewerCourtsFrom: 7, matchesPerRound: 1),
     );
   });

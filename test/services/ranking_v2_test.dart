@@ -228,20 +228,24 @@ void main() {
       ),
     );
 
+    // Waktu sungguhan sejak mulai; durasi match 15 menit.
+    DateTime at(int minutes) => DateTime(2026, 10, 21).add(Duration(minutes: minutes));
+
     test('Mixed tidak Final hanya karena round lengkap; Final setelah diakhiri', () {
       final complete = _set2().where((m) => m.roundNumber < 4).toList();
-      expect(mixed(complete).isFinal, isFalse, reason: 'masih bisa buat R4');
-      expect(mixed(_set2(lastMatch: 'cancelled'), finished: true).isFinal, isTrue);
+      expect(mixed(complete).isFinal(at(45)), isFalse, reason: 'masih bisa buat R4');
+      expect(mixed(_set2(lastMatch: 'cancelled'), finished: true).isFinal(at(45)), isTrue);
     });
 
     test('Mixed Final kalau waktu habis dan round terakhir lengkap; belum lengkap tetap Sementara', () {
-      // Booking 60 menit ÷ 15 = 4 round: R5 tidak muat.
-      expect(mixed(_set2(), booking: 60).isFinal, isFalse, reason: 'R4 M2 belum diisi');
+      // Sudah 60 menit dari booking 60: R5 tidak muat.
+      expect(mixed(_set2(), booking: 60).isFinal(at(60)), isFalse, reason: 'R4 M2 belum diisi');
       final r4Done = [
         for (final m in _set2()) m.id == 'r4-2' ? m.withScore(const [SetScore(side1: 12, side2: 12)]) : m,
       ];
-      expect(mixed(r4Done, booking: 60).isFinal, isTrue);
-      expect(mixed(r4Done).isFinal, isFalse, reason: 'booking 2 jam: R5 masih muat');
+      expect(mixed(r4Done, booking: 60).isFinal(at(60)), isTrue);
+      expect(mixed(r4Done).isFinal(at(60)), isFalse, reason: 'booking 2 jam: R5 masih muat');
+      expect(mixed(r4Done, booking: 60).isFinal(at(45)), isFalse, reason: 'round selesai cepat: R5 masih muat');
     });
 
     test('Fixed Final kalau semua match terisi', () {
@@ -256,8 +260,8 @@ void main() {
           ),
         ),
       );
-      expect(fixed(_set2()).isFinal, isFalse);
-      expect(fixed(_set2(lastMatch: 'cancelled')).isFinal, isTrue);
+      expect(fixed(_set2()).isFinal(at(0)), isFalse);
+      expect(fixed(_set2(lastMatch: 'cancelled')).isFinal(at(0)), isTrue);
     });
 
     test('round & match yang dimainkan: "3 round · 6 match" (set 1), "4 round · 7 match" (09f)', () {

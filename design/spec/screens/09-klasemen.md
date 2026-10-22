@@ -1,4 +1,4 @@
-# Peringkat
+# Klasemen
 
 > Dihasilkan `tool/hifi_extract.py` dari `design/hifi.html`. Jangan diedit langsung.
 
@@ -11,6 +11,7 @@ Tabel rapat dengan angka rata kanan. Status ditulis di subjudul, bukan badge. Me
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarSegmented`, `StandingTable`
 
 - Statistik identik → nomor sama (1, 1, 3 dan 9, 9). Urutan baris tetap mengikuti tie-break: metode → Total Point → head-to-head → selisih → nama.
+- Kolom Main = jumlah match yang sudah dimainkan (selesai + WO, sama dengan W + L + D). Mixed bisa berbeda antar pemain (pemain telat, istirahat), jadi kelihatan kenapa Total Point-nya tertinggal.
 - Kolom W–L–D = win–loss–draw (menang–kalah–seri), singkatan Inggris seperti Win % dan Total Point. Seri tidak lagi ditulis kecil di bawah nama, jadi tinggi semua baris sama. Kolom D hanya ada kalau format skornya bisa seri (Americano total genap, Best of genap); Race to dan format ganjil cukup W–L (09c), supaya tidak ada kolom yang isinya selalu 0.
 - Subjudul: olahraga · mode · status · round · match, sama urutannya dengan Detail ("Peringkat 1 · Padel · Mixed · Americano 24"; Detail menambah format skor).
 - Medali emas/perak/perunggu dihapus; peringkat 1 diberi bola. Baris bisa diketuk → Detail.
@@ -24,7 +25,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarSegmented`, `StandingTable`
 
-- Kolom ketiga tetap W–L–D di kedua metode (dulu Selisih di Win %): ganti metode hanya mengubah urutan dan kolom terakhir. W–L–D juga yang menjelaskan Win %: seri dihitung setengah menang (1–1–1 → 50%). Selisih tetap ada di Detail.
+- Kolom Main dan W–L–D tetap di kedua metode (dulu Selisih di Win %): ganti metode hanya mengubah urutan dan kolom terakhir. W–L–D juga yang menjelaskan Win %: seri dihitung setengah menang (1–1–1 → 50%). Selisih tetap ada di Detail.
 - Win % dibulatkan tanpa desimal di tabel (Detail tetap 1 desimal). Win % sama dipisah Total Point (Hana 36 di atas Citra 26 dan Joko 23).
 - Pilihan metode tidak disimpan; setelah resume kembali ke Total Point.
 
@@ -64,8 +65,8 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarSegmented`, `StandingTable`
 
-- Mixed jadi Final kalau (a) sudah "Akhiri turnamen" (06e), atau (b) waktu booking semua court habis dan round terakhir sudah lengkap (06l), karena tidak ada lagi yang bisa dimainkan tanpa tindakan host. Di kode: `isFinished || (courtsAvailableForRound(n+1).isEmpty && isRoundComplete(n))`.
+- Mixed jadi Final kalau (a) sudah "Akhiri turnamen" (06e), atau (b) waktu booking semua court habis dan round terakhir sudah lengkap (06l), karena tidak ada lagi yang bisa dimainkan tanpa tindakan host. Di kode: `isFinished || (courtsAvailableAt(now).isEmpty && isRoundComplete(n))` — waktu habis menurut jam sungguhan.
 - Subjudul memakai pola Final yang sama dengan Fixed (09c): jumlah round dan match yang dimainkan, bukan "R4 · 7 dari 8 match", karena progres round tidak bermakna lagi setelah selesai. Contoh untuk data 09a: "Padel · Mixed · Final · 3 round · 6 match".
 - Match yang belum dimainkan saat Akhiri jadi "Tidak dimainkan" dan tidak dihitung (di sini R4 Andi–Hana vs Budi–Gina); jumlahnya ditulis di catatan bawah bersama WO.
 - Kalau dilanjutkan atau ditambah jam lewat "Lanjutkan turnamen" (08c), status kembali Sementara dan subjudul kembali ke pola "R… · x dari y match". Waktu habis tapi round terakhir belum lengkap: tetap Sementara sampai skornya terisi atau diakhiri.
-- Bagikan dari sini menulis "Peringkat akhir" di poster (11b, 11d).
+- Bagikan dari sini menulis "Klasemen akhir" di poster (11b, 11d).

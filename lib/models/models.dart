@@ -435,14 +435,14 @@ class ActiveTournament {
   }.length;
 
   /// Peringkat "Final" (09c, 09f): sudah diakhiri, atau tidak ada lagi yang bisa dimainkan tanpa tindakan
-  /// host — Fixed semua match terisi; Mixed waktu booking semua court habis dan round terakhir lengkap.
-  /// Kembali "Sementara" setelah Lanjutkan turnamen.
-  bool get isFinal {
+  /// host — Fixed semua match terisi; Mixed waktu booking semua court habis (per jam [now]) dan round
+  /// terakhir lengkap. Kembali "Sementara" setelah Lanjutkan turnamen.
+  bool isFinal(DateTime now) {
     if (tournament.isFinished) return true;
     if (matches.isEmpty) return false;
     return switch (config.mode) {
       PartnerMode.fixed => matches.every((m) => m.status != MatchStatus.pending),
-      PartnerMode.mixed => courtsAvailableForRound(roundCount + 1).isEmpty && isRoundComplete(roundCount),
+      PartnerMode.mixed => courtsAvailableAt(now).isEmpty && isRoundComplete(roundCount),
     };
   }
 
@@ -475,25 +475,26 @@ class ActiveTournament {
 
   Court courtById(String id) => config.courts.firstWhere((c) => c.id == id, orElse: () => config.courts.first);
 
-  /// Court yang masih punya sisa waktu booking untuk round ke-[round].
-  List<Court> courtsAvailableForRound(int round) => [
+  /// Menit yang sudah berjalan sejak turnamen dimulai, menurut jam sungguhan. Booking dihitung dari awal
+  /// turnamen, jadi round yang selesai lebih cepat dari durasinya menyisakan waktu untuk round tambahan.
+  int elapsedMinutes(DateTime now) => max(0, now.difference(tournament.createdAt).inMinutes);
+
+  /// Court yang sisa booking-nya pada [now] masih muat satu match penuh — dipakai round yang dibuat sekarang.
+  List<Court> courtsAvailableAt(DateTime now) => [
     for (final c in config.courts)
-      if (round * config.matchDurationMinutes <= c.bookingDurationMinutes) c,
+      if (remainingBookingMinutes(c, now) >= config.matchDurationMinutes) c,
   ];
 
   /// Mode Mixed: round berikutnya baru boleh digenerate kalau skor round
   /// berjalan sudah lengkap dan masih ada court yang waktunya cukup.
-  bool get canGenerateNextRound =>
+  bool canGenerateNextRound(DateTime now) =>
       !tournament.isFinished &&
       (roundCount == 0 || isRoundComplete(roundCount)) &&
-      courtsAvailableForRound(roundCount + 1).isNotEmpty;
+      courtsAvailableAt(now).isNotEmpty;
 
-  /// Sisa waktu booking [court] setelah round terakhir. Booking dihitung dari
-  /// awal turnamen, jadi round ke-n memakai menit sampai n × durasi match.
-  int remainingBookingMinutes(Court court) {
-    final left = court.bookingDurationMinutes - roundCount * config.matchDurationMinutes;
-    return left < 0 ? 0 : left;
-  }
+  /// Sisa waktu booking [court] pada [now].
+  int remainingBookingMinutes(Court court, DateTime now) =>
+      max(0, court.bookingDurationMinutes - elapsedMinutes(now));
 
   /// Perkiraan round & match yang masih muat kalau tiap court ditambah [extraMinutes] (per court id),
   /// untuk sheet Lanjutkan turnamen (08c). Round jalan selama masih ada satu court, jadi jumlah round
@@ -503,12 +504,13 @@ class ActiveTournament {
   /// (1 = round pertama tambahan) saat salah satu court itu habis di tengah, null kalau tidak ada; court
   /// yang sejak awal tidak dapat tambahan tidak dihitung "berkurang". [matchesPerRound] = batas dari
   /// jumlah pemain aktif (⌊pemain ÷ 4⌋).
-  ({int rounds, int matches, int courts, int? fewerCourtsFrom, int matchesPerRound}) capacityAhead([
+  ({int rounds, int matches, int courts, int? fewerCourtsFrom, int matchesPerRound}) capacityAhead(
+    DateTime now, [
     Map<String, int> extraMinutes = const {},
   ]) {
     final perCourt = [
       for (final c in config.courts)
-        (remainingBookingMinutes(c) + (extraMinutes[c.id] ?? 0)) ~/ config.matchDurationMinutes,
+        (remainingBookingMinutes(c, now) + (extraMinutes[c.id] ?? 0)) ~/ config.matchDurationMinutes,
     ];
     final matchesPerRound = activePlayers.length ~/ 4;
     final firstCourts = perCourt.where((n) => n >= 1).length;
@@ -532,8 +534,8 @@ class ActiveTournament {
 
   /// Mode Mixed: turnamen yang sudah diakhiri atau kehabisan waktu booking
   /// bisa dilanjutkan dengan menambah jam court.
-  bool get canResume =>
-      config.mode == PartnerMode.mixed && (tournament.isFinished || courtsAvailableForRound(roundCount + 1).isEmpty);
+  bool canResume(DateTime now) =>
+      config.mode == PartnerMode.mixed && (tournament.isFinished || courtsAvailableAt(now).isEmpty);
 
   /// Mode Mixed: round terakhir boleh dibatalkan (dihapus) selama belum ada
   /// satu skor pun, mis. pemain baru datang dan ingin langsung main. R1 tidak

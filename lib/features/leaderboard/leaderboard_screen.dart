@@ -13,7 +13,7 @@ import 'widgets/standing_table.dart';
 
 /// Status di subjudul Peringkat: "Sementara · R3 · 6 dari 6 match" atau, setelah final, jumlah round dan
 /// match yang dimainkan ("Final · 4 round · 7 match") — progres round tidak bermakna lagi setelah selesai.
-String rankingStatus(ActiveTournament active) => active.isFinal
+String rankingStatus(ActiveTournament active, DateTime now) => active.isFinal(now)
     ? 'Final · ${active.playedRoundCount} round · ${active.playedMatchCount} match'
     : 'Sementara · R${active.currentRound} · ${active.playedMatchCount} dari ${active.matches.length} match';
 
@@ -46,8 +46,8 @@ class LeaderboardScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           MabarAppBar(
-            title: 'Peringkat',
-            subtitle: '${config.sport.label} · ${config.mode.label} · ${rankingStatus(active)}',
+            title: 'Klasemen',
+            subtitle: '${config.sport.label} · ${config.mode.label} · ${rankingStatus(active, ref.read(clockProvider)())}',
             onBack: () => context.pop(),
           ),
           Padding(
@@ -74,6 +74,7 @@ class LeaderboardScreen extends ConsumerWidget {
                           StandingTableRow(
                             position: position,
                             names: [for (final p in e.players) p.name],
+                            played: e.standing.matchesPlayed,
                             record: record(e.standing),
                             value: method == RankingMethod.winPercent
                                 ? '${e.standing.winPercent.round()}'

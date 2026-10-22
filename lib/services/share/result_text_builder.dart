@@ -20,6 +20,7 @@ class ResultTextBuilder {
     required ActiveTournament active,
     required List<StandingEntry> standings,
     required ShareFormat format,
+    required DateTime now,
   }) {
     final tournament = active.tournament;
     final config = tournament.config;
@@ -29,7 +30,7 @@ class ResultTextBuilder {
       ..writeln(DateFormat('d MMMM yyyy', 'id').format(tournament.createdAt))
       ..writeln();
 
-    buffer.writeln(active.isFinal ? 'Peringkat Akhir' : 'Peringkat Sementara');
+    buffer.writeln(active.isFinal(now) ? 'Klasemen Akhir' : 'Klasemen Sementara');
     for (final entry in standings) {
       final position = entry.position;
       if (position == null) continue;

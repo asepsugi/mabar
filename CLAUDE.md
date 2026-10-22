@@ -3,7 +3,7 @@
 App Flutter untuk host turnamen mabar tennis/padel (klub, 4–20 pemain, 1 device host, offline).
 
 **Sumber kebenaran, baca sebelum mengubah UI/logika:**
-- `PRD.md` — produk, algoritma, aturan skor & ranking, **versi 2.0 sejalan dengan hi-fi v2** (diselaraskan 2026-10-22).
+- `PRD.md` — produk, algoritma, aturan skor & ranking, **versi 2.1 sejalan dengan hi-fi v2** (diselaraskan 2026-10-22).
   Kalau keputusan host mengubah perilaku, perbarui PRD + hi-fi (`design/hifi.html` dan artifact online
   `H9ZVDUfYvEBXsoBqih4iov`, publish file yang sama) dalam perubahan yang sama.
 - `design/hifi.html` — **hi-fi v2 final** (disetujui host 2026-10-21): Fondasi, Komponen, 73 frame 390×844 +
@@ -73,7 +73,7 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   Input Skor = `ScoreBoard` + `ScoreKeypad` di atas `ScoreEntry` (skor tersimpan → `ScoreEntry.edit`, "Perbarui
   skor"); feedback Americano menulis selisih ("menang +5"), format lain skornya. Jebakan CSS: dua tombol
   `flex: 1` / `flex: 2` membagi sisa lebar **setelah** padding tombol (Batal 129, Simpan WO 219), bukan 1:2 murni.
-  Peringkat: status subjudul dari `rankingStatus()` (`leaderboard_screen.dart`, "Sementara · R3 · 6 dari 6 match" /
+  Klasemen (dulu Peringkat, folder `leaderboard/`): kolom Main = `PlayerStanding.matchesPlayed` (WO ikut). Status subjudul dari `rankingStatus()` (`leaderboard_screen.dart`, "Sementara · R3 · 6 dari 6 match" /
   "Final · 4 round · 7 match"); golden memakai data `ranking_v2_test.dart` (fixture di `test/hifi/screens/ranking_fixture.dart`), Fixed 09c
   dengan jadwal yang cocok 10b. Detail: riwayat terbaru di atas, baris atas = tim sendiri (Mixed: nama sendiri
   dulu), menang WO "+n" pudar = `woPoints` ÷ jumlah menang WO. `MatchScoreRow` mematok tinggi baris tim 22,4 supaya
@@ -153,7 +153,12 @@ Mesin domain yang sudah ada + ter-test (semua `flutter test` lulus, termasuk gol
   per round**: `Random(drawSeed + nomor round)` dibagikan ke pemain urut id, `drawSeed` = FNV-1a dari id turnamen
   (`ActiveTournament.drawSeed`, tanpa kunci simpanan baru; perkaliannya dipecah supaya sama di web). Jadi
   `restingAfterLastRound` (baris "Istirahat · Prioritas main di R…" / "Istirahat lagi di R…", dari pemain aktif
-  sekarang) selalu sama dengan hasil "Buat R…". Waktu habis (tidak ada court untuk R(n+1)) → slot dihitung dari semua
+  sekarang) selalu sama dengan hasil "Buat R…". **Waktu = jam sungguhan** (keputusan host 2026-10-22): sisa booking
+  court = booking − menit sejak `createdAt` (`ActiveTournament.elapsedMinutes(now)`), court ikut round baru kalau sisa
+  itu muat satu match (`courtsAvailableAt(now)`); round yang selesai cepat menyisakan waktu. Semua turunannya
+  (`canGenerateNextRound`, `canResume`, `isFinal`, `remainingBookingMinutes`, `capacityAhead`, `restingAfterLastRound`)
+  menerima `now` dari `clockProvider` — test wajib meng-override jam, kalau tidak hasilnya ikut tanggal mesin. Jadwal
+  Mixed ditik ulang tiap menit supaya "Waktu habis" muncul sendiri. Waktu habis (tidak ada court yang muat) → slot dihitung dari semua
   court, sesuai frame 06l. Tes: `test/services/mixed_priority_test.dart`.
 - Peserta Mixed bisa berubah di tengah turnamen (sheet "Kelola Peserta", `features/schedule/mixed/manage_players_sheet.dart`; tes di `test/services/mixed_roster_test.dart`). Pemain keluar **tidak dihapus** dari `config.players`, hanya masuk `ActiveTournament.withdrawnPlayerIds`, supaya nama di match lama & peringkatnya tetap ada (tampil di Peringkat/Detail/Share tanpa penanda "keluar" — keputusan host 2026-10-20); generator hanya menerima `activePlayers`. Pemain baru/kembali dapat `matchCredits` (`EndlessRoundGenerator.catchUpCredit`) = disejajarkan dengan pemain aktif yang paling sedikit main — tanpa itu dia main terus sampai menyusul. Kredit hanya untuk prioritas jadwal, tidak ikut ranking (di Total Point pemain telat memang tertinggal; ini keputusan host). Minimal 4, maksimal 20 pemain aktif.
 - Mixed: round terakhir yang belum ada satu skor pun bisa **dibatalkan = dihapus** ("Batalkan Rn",
@@ -166,7 +171,7 @@ Mesin domain yang sudah ada + ter-test (semua `flutter test` lulus, termasuk gol
   12 pemain/2 court, lihat test).
 - `ranking/ranking_calculator.dart` — dua metode: Win % dan **Total Point** (`gamesWon`, yaitu jumlah game yang dimenangkan lintas match: 6-5, 4-6, 3-6 → 13). Default app = Total Point, sesuai keputusan host bahwa total point dihitung lebih dulu; metode "Kombinasi" sudah dihapus karena isinya identik dengan Win %. Tie-break: metode → total point → head-to-head → selisih game → nama (PRD bilang undian; dipakai nama supaya stabil). WO (PRD 4.4, `ScoreFormat.woWinnerScore`): menang/kalah dihitung; pemenang dapat N game di Race to, di Best of/Americano rata-rata skornya sendiri dari match yang dia mainkan (bulat ,5 ke atas) tapi minimal ⌊N÷2⌋+1; yang kalah 0. Nilai itu masuk `woPoints` → `totalPoint`, **tidak** ke `gameDiff`. Format lama tetap: WO tanpa game. `cancelled` & `pending` diabaikan total. Tes dengan data frame 09a–09f/10b: `test/services/ranking_v2_test.dart`.
 - `ranking/ranking_calculator.dart` → `standingEntries()` — mengubah klasemen per pemain jadi baris tampilan. Mode Fixed: pasangan tidak pernah berganti sehingga statistik kedua anggotanya identik, jadi dua baris kembar digabung jadi satu baris "Andi + Budi" yang mengambil posisi anggota terbaiknya. Mode Mixed: satu baris per pemain, urutan `rank()` tidak diubah. Pemain sisa (jumlah ganjil) tetap tampil sendiri. `StandingEntry.position`: statistik identik (poin, selisih, W–L–D) → nomor sama (1, 1, 3); baris yang belum main dipindah ke belakang dengan `position == null` (grup "Belum main"). Peringkat, Detail, Bagikan, dan caption memakai nomor ini — jangan menomori dengan indeks.
-- `ActiveTournament.isFinal` — status Final/Sementara: diakhiri, Fixed semua match terisi, Mixed waktu booking habis + round terakhir lengkap (bukan tiap round lengkap). `playedRoundCount` = jumlah round yang punya match selesai/WO ("5 round · 10 match").
+- `ActiveTournament.isFinal(now)` — status Final/Sementara: diakhiri, Fixed semua match terisi, Mixed waktu booking habis + round terakhir lengkap (bukan tiap round lengkap). `playedRoundCount` = jumlah round yang punya match selesai/WO ("5 round · 10 match").
 - **Format skor** (`TournamentConfig.format` = `ScoreFormat(method, target)`; tes `test/services/score_format_test.dart`):
   Race to N (2–9, default 6 — default kedua olahraga; murni: skor akhir N lawan 0..N−1, tanpa 7–5/7–6), Best of N (1–15, default 5), Americano N (2–99, default 21).
   Semua disimpan sebagai **satu `SetScore`**, jadi ranking/share/codec tidak bercabang; Best of & Americano mengisi
@@ -221,10 +226,10 @@ Seluruh MVP PRD sudah jalan, termasuk bagian 5 (Penyimpanan Data).
   tidak menghapusnya, sesuai PRD. Future-nya dikembalikan supaya test bisa menunggu tulisannya.
 - **Lanjutkan Turnamen** (Mixed saja; Fixed sengaja tidak — keputusan host): `TournamentController.resume`
   + sheet `features/schedule/mixed/resume_tournament_sheet.dart`, tes di `test/services/resume_tournament_test.dart`.
-  Muncul kalau `ActiveTournament.canResume` (sudah "Akhiri" atau waktu booking semua court habis) di layar Jadwal,
+  Muncul kalau `ActiveTournament.canResume(now)` (sudah "Akhiri" atau waktu booking semua court habis) di layar Jadwal,
   dan dari kartu "Turnamen terakhir" di Beranda untuk slot `lastFinished` (`lastFinishedProvider`, diset sinkron
   oleh `close()` supaya Beranda tidak menunggu tulisan ke device). Jam ditambah **per court** karena sering cuma
-  sebagian court yang bisa diperpanjang, dan dihitung dari akhir round terakhir: `max(booking, round × durasi) + tambahan`
+  sebagian court yang bisa diperpanjang, dan dihitung dari sekarang: `max(booking, menit berjalan) + tambahan`
   — court yang waktunya sudah lama habis tetap dapat jam penuh. Match `cancelled` (hanya dibuat oleh "Akhiri")
   kembali `pending`. Estimasi di sheet = `ActiveTournament.capacityAhead` dalam **jumlah match** (bukan round: round jalan
   selama masih ada satu court, jadi cuma mengikuti court terpanjang dan tambahan di court lain tidak kelihatan). Header Jadwal menampilkan booking court **terpanjang** karena sesi baru selesai saat court terakhir habis.
@@ -235,7 +240,7 @@ Seluruh MVP PRD sudah jalan, termasuk bagian 5 (Penyimpanan Data).
 
 Wording UI sudah direview host (2026-10-20) dan sengaja menyimpang dari mockup: istilah olahraga tetap
 Inggris (court, round, match, set, WO, Win %, Total Point), istilah teknis diganti (generate → buat,
-device → HP, Ranking/Share/Home → Peringkat/Bagikan/Beranda, "Endless" tidak muncul lagi di UI). Yang
+device → HP, Ranking/Share/Home → Klasemen/Bagikan/Beranda — layar Peringkat jadi "Klasemen" 2026-10-22, posisi pemain tetap "Peringkat n" di Detail, "Endless" tidak muncul lagi di UI). Yang
 dipertahankan atas permintaan host: "Aturan Fairness", "Selisih match antar pemain ≤ 1", label Estimasi
 (Max Round · Match/Pemain · Court Aktif · Total Match), "→ Prioritas main di R…". Pakai "duplikat" (bukan
 "dobel") dan "diprioritaskan" (bukan "didahulukan").

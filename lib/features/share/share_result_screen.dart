@@ -51,7 +51,12 @@ class _ShareResultScreenState extends ConsumerState<ShareResultScreen> {
   Future<void> _share(ActiveTournament active, SharePosterData data) async {
     if (_sharing) return;
     setState(() => _sharing = true);
-    final caption = ResultTextBuilder.build(active: active, standings: ref.read(standingEntriesProvider), format: _format);
+    final caption = ResultTextBuilder.build(
+      active: active,
+      standings: ref.read(standingEntriesProvider),
+      format: _format,
+      now: ref.read(clockProvider)(),
+    );
     try {
       // Watermark raket harus sudah ter-decode sebelum render di luar layar, kalau tidak posternya tanpa gambar.
       await precacheImage(AssetImage(active.config.sport.assetPath), context);
@@ -82,11 +87,13 @@ class _ShareResultScreenState extends ConsumerState<ShareResultScreen> {
     if (active == null) return const Scaffold(backgroundColor: MabarColors.paper);
 
     final entries = ref.watch(standingEntriesProvider);
+    final isFinal = active.isFinal(ref.read(clockProvider)());
     final data = sharePosterData(
       active: active,
       entries: entries,
       method: ref.watch(rankingMethodProvider),
       format: _format,
+      isFinal: isFinal,
     );
     final config = active.config;
     final fixed = config.mode == PartnerMode.fixed;
@@ -99,7 +106,7 @@ class _ShareResultScreenState extends ConsumerState<ShareResultScreen> {
         children: [
           MabarAppBar(
             title: 'Bagikan hasil',
-            subtitle: '${config.sport.label} · ${config.mode.label} · ${active.isFinal ? 'akhir' : 'sementara'}',
+            subtitle: '${config.sport.label} · ${config.mode.label} · ${isFinal ? 'akhir' : 'sementara'}',
             onBack: () => context.pop(),
           ),
           Expanded(

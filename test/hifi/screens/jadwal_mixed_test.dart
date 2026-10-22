@@ -122,7 +122,12 @@ void main() {
     );
   });
 
-  Future<void> pumpRouted(WidgetTester tester, ActiveTournament active, List<String> visited) async {
+  Future<void> pumpRouted(
+    WidgetTester tester,
+    ActiveTournament active,
+    List<String> visited, {
+    Duration elapsed = Duration.zero,
+  }) async {
     tester.view.physicalSize = const Size(390, 844) * hifiPixelRatio;
     tester.view.devicePixelRatio = hifiPixelRatio;
     addTearDown(tester.view.reset);
@@ -141,7 +146,7 @@ void main() {
           path: '/leaderboard',
           builder: (_, _) {
             visited.add('leaderboard');
-            return const Text('Peringkat');
+            return const Text('Klasemen');
           },
         ),
       ],
@@ -151,7 +156,7 @@ void main() {
         router,
         overrides: [
           tournamentProvider.overrideWith(() => LoadedTournament(active)),
-          clockProvider.overrideWithValue(() => start),
+          clockProvider.overrideWithValue(() => start.add(elapsed)),
         ],
       ),
     );
@@ -218,7 +223,8 @@ void main() {
         config: config.copyWith(courts: [config.courts[0], config.courts[1].copyWith(bookingDurationMinutes: 45)]),
       ),
     );
-    await pumpRouted(tester, active, []);
+    // Menit ke-52 (06g): Court 2 (45 menit) tidak muat match 15 menit lagi.
+    await pumpRouted(tester, active, [], elapsed: const Duration(minutes: 52));
     expect((primary(tester).label, primary(tester).meta), ('Buat R4', '· 1 court'));
   });
 

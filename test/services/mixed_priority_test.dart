@@ -21,18 +21,22 @@ TournamentConfig _config({int players = 10, int courts = 2, int booking = 120}) 
 void main() {
   late ProviderContainer container;
   late TournamentController controller;
+  late DateTime now;
   ActiveTournament read() => container.read(tournamentProvider)!;
 
   setUp(() {
-    container = ProviderContainer();
+    now = DateTime(2026, 10, 22, 19);
+    container = ProviderContainer(overrides: [clockProvider.overrideWithValue(() => now)]);
     controller = container.read(tournamentProvider.notifier);
   });
   tearDown(() => container.dispose());
 
+  /// Isi skor round terakhir; round dianggap makan satu durasi match (15 menit) jam sungguhan.
   void scoreRound() {
     for (final m in read().matchesOfRound(read().roundCount)) {
       controller.submitScore(m.id, const [SetScore(side1: 6, side2: 4)]);
     }
+    now = now.add(const Duration(minutes: 15));
   }
 
   List<String> order(ActiveTournament a, int round, {int? seed}) => EndlessRoundGenerator.priorityOrder(
@@ -77,7 +81,7 @@ void main() {
   group('daftar istirahat round terakhir', () {
     test('06o: 20 pemain 2 court — 12 istirahat, 8 prioritas main di R2, 4 istirahat lagi', () {
       controller.startIfNeeded(_config(players: 20, courts: 2));
-      final rest = EndlessRoundGenerator.restingAfterLastRound(read());
+      final rest = EndlessRoundGenerator.restingAfterLastRound(read(), now);
       expect((rest.priority.length, rest.later.length), (8, 4));
       // Urut seperti daftar pemain, bukan urutan prioritas.
       final ids = [for (final p in rest.priority) p.id];
@@ -87,7 +91,7 @@ void main() {
     test('hasil "Buat R2" sama persis dengan daftar yang tampil sebelumnya', () {
       controller.startIfNeeded(_config(players: 20, courts: 2));
       scoreRound();
-      final rest = EndlessRoundGenerator.restingAfterLastRound(read());
+      final rest = EndlessRoundGenerator.restingAfterLastRound(read(), now);
       controller.generateNextRound();
       final playing = {
         for (final m in read().matchesOfRound(2)) ...[...m.pair1.playerIds, ...m.pair2.playerIds],
@@ -98,16 +102,16 @@ void main() {
 
     test('semua kebagian slot → hanya daftar pertama (10 pemain, 2 court)', () {
       controller.startIfNeeded(_config());
-      final rest = EndlessRoundGenerator.restingAfterLastRound(read());
+      final rest = EndlessRoundGenerator.restingAfterLastRound(read(), now);
       expect((rest.priority.length, rest.later.length), (2, 0));
     });
 
     test('dihitung dari pemain aktif sekarang: yang keluar hilang, yang baru langsung masuk', () {
       controller.startIfNeeded(_config());
-      final resting = EndlessRoundGenerator.restingAfterLastRound(read()).priority.map((p) => p.id).toList();
+      final resting = EndlessRoundGenerator.restingAfterLastRound(read(), now).priority.map((p) => p.id).toList();
       controller.withdrawPlayer(resting.first);
       expect(controller.addPlayer('Gilang'), isNull);
-      final rest = EndlessRoundGenerator.restingAfterLastRound(read());
+      final rest = EndlessRoundGenerator.restingAfterLastRound(read(), now);
       final names = [...rest.priority, ...rest.later].map((p) => p.name);
       expect(names, contains('Gilang'));
       expect([...rest.priority, ...rest.later].map((p) => p.id), isNot(contains(resting.first)));
@@ -117,8 +121,8 @@ void main() {
       // Booking 15 menit = cuma R1.
       controller.startIfNeeded(_config(booking: 15));
       scoreRound();
-      expect(read().courtsAvailableForRound(2), isEmpty);
-      expect(EndlessRoundGenerator.restingAfterLastRound(read()).priority, hasLength(2));
+      expect(read().courtsAvailableAt(now), isEmpty);
+      expect(EndlessRoundGenerator.restingAfterLastRound(read(), now).priority, hasLength(2));
     });
   });
 
@@ -131,7 +135,7 @@ void main() {
     scoreRound();
     expect(read().roundCount, 8);
     expect(
-      read().capacityAhead({'c0': 60}),
+      read().capacityAhead(now, {'c0': 60}),
       (rounds: 4, matches: 4, courts: 1, fewerCourtsFrom: null, matchesPerRound: 2),
     );
   });

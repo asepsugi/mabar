@@ -353,14 +353,14 @@ Dipakai di frame: 07a, 07b, 07c, 07d, 07e, 07f, 07g, 07h, 07i, 07j, 07k
 
 ## `StandingTable`
 
-Tabel peringkat.
+Tabel klasemen.
 
 Kelas hi-fi: `.rank`, `.rrow`  
 Dipakai di frame: 09a, 09b, 09c, 09d, 09e, 09f
 
 ```css
 .rank { margin: 0 16px; background: var(--card); border-radius: 12px; overflow: hidden; flex: none; }
-.rrow { display: grid; grid-template-columns: 30px minmax(0, 1fr) 58px 52px; gap: 8px; align-items: center; min-height: 44px; padding: 0 14px; border-top: 1px solid var(--line); font-size: 16px; }
+.rrow { display: grid; grid-template-columns: 30px minmax(0, 1fr) 34px 58px 52px; gap: 8px; align-items: center; min-height: 44px; padding: 0 14px; border-top: 1px solid var(--line); font-size: 16px; }
 .rrow:first-child { border-top: 0; }
 .rrow.head { min-height: 34px; font-size: 12px; font-weight: 700; color: var(--ink-3); }
 .rrow.head span:nth-child(n+3) { text-align: right; }
@@ -368,12 +368,12 @@ Dipakai di frame: 09a, 09b, 09c, 09d, 09e, 09f
 .rrow .r.lead { width: 28px; height: 28px; border-radius: 50%; background: var(--ball); color: var(--ink); display: grid; place-items: center; font-size: 17px; box-shadow: inset 0 0 0 1px var(--ball-edge); }
 .rrow .nm { font-weight: 600; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rrow .nm small { display: block; font-size: 12.5px; font-weight: 500; color: var(--ink-3); }
-.rrow .c3 { text-align: right; font-size: 18px; color: var(--ink-2); }
+.rrow .mp, .rrow .c3 { text-align: right; font-size: 18px; color: var(--ink-2); }
 .rrow .c4 { text-align: right; font-size: 22px; }
 .rrow.sub { min-height: 32px; background: #F5F7F9; font-size: 12px; font-weight: 700; color: var(--ink-3); }
 .rrow.idle { color: var(--ink-3); }
 .rrow.idle .nm { font-weight: 500; }
-.rrow.idle .c3, .rrow.idle .c4, .rrow.idle .r { color: #A3AEB8; }
+.rrow.idle .mp, .rrow.idle .c3, .rrow.idle .c4, .rrow.idle .r { color: #A3AEB8; }
 ```
 
 ## `StatLine`
@@ -563,7 +563,7 @@ Dipakai di frame: 11a, 11b, 11c, 11d, 11e, 11f, 11g, 11h, 11i, 11j
 .poster .rows .prow, .poster .cols .prow { flex: 1; min-height: 0; align-items: center; padding: 0; line-height: 1.1; }
 .poster .cols .prow { grid-template-columns: 24px minmax(0, 1fr) auto; gap: 6px; }
 .poster .prow .r::before { content: "#"; opacity: .55; }
-.poster .prow.gold .r { justify-self: start; background: #E3B341; color: #0F1E2C; padding: 0 .3em; border-radius: .35em; line-height: 1; }
+.poster .prow.gold .r { justify-self: start; background: #E3B341; color: #0F1E2C; padding: 0 .3em; margin-left: -.3em; border-radius: .35em; line-height: 1; }
 .poster .prow.gold .r::before { opacity: .6; }
 .poster .prow.gold .nm, .poster .prow.gold .nm2 { font-weight: 800; }
 .poster .prow .nm2 { font-weight: 600; line-height: 1.15; min-width: 0; }

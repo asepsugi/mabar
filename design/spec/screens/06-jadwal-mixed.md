@@ -13,7 +13,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 - Tab default = round terakhir; kembali ke round terakhir setelah Buat/Batalkan. Titik bola di round terakhir selama belum lengkap. Placeholder "R4 ?" dihapus.
 - Badge LIVE dihapus. Istirahat: label lalu nama lengkap dalam dua kolom rata (banyak nama: 06o); judulnya "Istirahat · Prioritas main di R4" (bagian prioritas bertinta gelap, bukan biru court supaya tidak terbaca sebagai tautan), hanya saat melihat round terakhir. Nama seukuran judul (13). Kalau tidak semua kebagian slot R4, daftar dibagi dua (06o).
 - Round terakhir: daftar dihitung dari pemain aktif sekarang (yang keluar tidak tampil, yang baru ditambahkan langsung masuk). Round yang sudah lewat: catatan saat round itu dibuat (06n).
-- Action bar: Peringkat (ikon), Pemain (ikon + jumlah aktif → sheet 08a), Buat R4. Tombol akhiri pindah ke menu ⋯.
+- Action bar: Klasemen (ikon), Pemain (ikon + jumlah aktif → sheet 08a), Buat R4. Tombol akhiri pindah ke menu ⋯.
 
 ## 06g · Round lengkap · siap buat berikutnya
 
@@ -21,7 +21,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`
 
-- Aktif kalau round terakhir lengkap (selesai atau WO) dan masih ada court dengan waktu. Kalau court berkurang di round berikutnya: "Buat R4 · 1 court" (menggantikan "Sisa waktu booking: 1 dari 2 court").
+- Aktif kalau round terakhir lengkap (selesai atau WO) dan masih ada court yang sisa booking-nya muat satu match. Sisa booking dihitung dari jam sungguhan sejak turnamen dimulai, bukan dari jumlah round × durasi: round yang selesai lebih cepat menyisakan waktu untuk round tambahan, dan "Waktu habis" baru muncul saat jamnya memang habis. Kalau court berkurang dibanding round terakhir: "Buat R4 · 1 court" (menggantikan "Sisa waktu booking: 1 dari 2 court").
 - WO: pasangan yang kalah ditandai "WO" plus alasannya kalau diisi. Baru: alasan WO sekarang tampil (dulu disimpan tapi tidak pernah terlihat).
 - Kalimat "Pemain yang istirahat diprioritaskan…" dihapus; baris Istirahat sudah menyatakannya.
 
@@ -70,7 +70,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`
 
 - `canResume` tanpa "Akhiri": semua court sudah tidak muat round berikutnya. "Buat R9" diganti "Tambah jam" → sheet 08c.
-- Begitu round terakhir di sini lengkap, Peringkat dan Bagikan menyebutnya Final / "Peringkat akhir" (09f), tanpa perlu Akhiri.
+- Begitu round terakhir di sini lengkap, Klasemen dan Bagikan menyebutnya Final / "Klasemen akhir" (09f), tanpa perlu Akhiri.
 - Baru: tab menulis "Waktu habis" (clay). Kotak kuning lama yang tetap menulis "0 dari 2 court" tidak muncul lagi.
 - 8 tab tidak muat: baris tab digeser sampai round terakhir rapat di kanan, dan tab yang terpotong di kiri dipudarkan sebagai tanda masih ada round sebelumnya. Interaksi lengkapnya di 06n.
 
@@ -95,7 +95,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 - Tepi yang menyembunyikan tab dipudarkan 36 pt: kiri (06l), kanan (frame ini), atau keduanya saat di tengah. Tab yang terpotong di tepi adalah tanda utama bahwa masih ada round di baliknya.
 - Saat layar dibuka, setelah Buat R*n*, dan setelah Batalkan R*n*, tab terpilih otomatis digeser masuk tampilan (round terakhir rapat kanan). Mengetuk tab yang terpotong menggesernya sampai utuh.
 - Ganti round hanya lewat tab; daftar match tidak bisa digeser kiri-kanan, supaya geser tak sengaja saat mengisi skor tidak memindahkan round.
-- Round yang sudah lewat menampilkan siapa yang benar-benar istirahat di round itu: catatan saat round dibuat (`restingPlayerIdsByRound`), tidak berubah oleh tambah atau keluar pemain sesudahnya. Pemain yang kemudian keluar tetap tampil tanpa penanda, sama seperti di Peringkat.
+- Round yang sudah lewat menampilkan siapa yang benar-benar istirahat di round itu: catatan saat round dibuat (`restingPlayerIdsByRound`), tidak berubah oleh tambah atau keluar pemain sesudahnya. Pemain yang kemudian keluar tetap tampil tanpa penanda, sama seperti di Klasemen.
 - Di round lewat tidak ada "Prioritas main di R…", daftar kedua, maupun "Batalkan R…"; semuanya hanya untuk round terakhir. Tombol bawah tetap untuk round berikutnya (Buat R13).
 - Flutter: komponen `RoundTabs` (baris tab yang digeser + `ShaderMask` di tepi); tidak pakai `TabBarView`.
 

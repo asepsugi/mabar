@@ -41,7 +41,7 @@ void main() {
         at: at,
         child: MabarActionBar(
           children: [
-            MabarIconButton(icon: MabarIcons.ranking, semanticLabel: 'Peringkat', solid: true, onPressed: () {}),
+            MabarIconButton(icon: MabarIcons.ranking, semanticLabel: 'Klasemen', solid: true, onPressed: () {}),
             MabarIconButton(icon: MabarIcons.users, semanticLabel: 'Pemain', solid: true, count: 10, onPressed: () {}),
             const Expanded(child: MabarButton(label: 'Buat R4', meta: '· tunggu 1 match', variant: MabarButtonVariant.wait)),
           ],

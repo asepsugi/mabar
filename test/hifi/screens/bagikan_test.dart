@@ -29,6 +29,8 @@ void main() {
     'Nanda Rizki', 'Oki Setiawan', 'Putri Anggraini', 'Rizky Hidayat', 'Sari Dewi', 'Tono Basuki', 'Umar Faruq',
   ];
   final date = DateTime(2026, 10, 21, 19);
+  // Jam saat membagikan: R3 baru selesai, booking 2 jam masih tersisa (Mixed "sementara").
+  final now = date.add(const Duration(minutes: 45));
 
   /// 11a: data set 1 Peringkat (Americano 24, R1–R3) dengan nama lengkap; Gilang belum main ikut "+6".
   final set1 = mixedTournament(
@@ -132,6 +134,7 @@ void main() {
     const ShareResultScreen(),
     overrides: [
       tournamentProvider.overrideWith(() => LoadedTournament(active)),
+      clockProvider.overrideWithValue(() => now),
       if (entries != null) standingEntriesProvider.overrideWithValue(entries),
     ],
   );
@@ -211,7 +214,13 @@ void main() {
       ],
     );
     await tester.pumpWidget(
-      hifiRouterScreen(router, overrides: [tournamentProvider.overrideWith(() => LoadedTournament(active))]),
+      hifiRouterScreen(
+        router,
+        overrides: [
+          tournamentProvider.overrideWith(() => LoadedTournament(active)),
+          clockProvider.overrideWithValue(() => now),
+        ],
+      ),
     );
     router.push('/share');
     await tester.pumpAndSettle();
@@ -240,7 +249,7 @@ void main() {
 
     await untilCopied(tester);
     expect(find.text('Hasil disalin'), findsOneWidget);
-    expect(copied, contains('Peringkat Sementara'));
+    expect(copied, contains('Klasemen Sementara'));
     expect(find.text('Bagikan hasil'), findsWidgets);
     await tester.pump(const Duration(seconds: 3));
   });

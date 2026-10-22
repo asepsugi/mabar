@@ -211,7 +211,7 @@ class MabarTextButton extends StatelessWidget {
 }
 
 /// `.icbtn` — tombol ikon 44 pt, atau 52 pt berlatar kartu di action bar ([solid]). Ikon tanpa label
-/// wajib punya [semanticLabel] ("Kembali", "Menu", "Peringkat", "Pemain").
+/// wajib punya [semanticLabel] ("Kembali", "Menu", "Klasemen", "Pemain").
 class MabarIconButton extends StatelessWidget {
   final IconData icon;
   final String semanticLabel;

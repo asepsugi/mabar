@@ -145,7 +145,7 @@ void main() {
           path: '/leaderboard',
           builder: (_, _) {
             visited.add('leaderboard');
-            return const Text('Peringkat');
+            return const Text('Klasemen');
           },
         ),
       ],
@@ -172,7 +172,7 @@ void main() {
     expect(visited, ['score:r1c1']);
   });
 
-  testWidgets('Akhiri: match kosong tidak dimainkan, buka Peringkat, item menu hilang', (tester) async {
+  testWidgets('Akhiri: match kosong tidak dimainkan, buka Klasemen, item menu hilang', (tester) async {
     final visited = <String>[];
     await pumpRouted(tester, running, visited);
     await tester.tap(find.bySemanticsLabel('Menu'));
@@ -191,7 +191,7 @@ void main() {
     // Tab default = round terakhir setelah diakhiri; R5 belum dimainkan sama sekali.
     expect(find.text('Round 5'), findsOneWidget);
     expect(find.text('Tidak dimainkan'), findsNWidgets(2));
-    expect(find.text('Lihat peringkat'), findsOneWidget);
+    expect(find.text('Lihat klasemen'), findsOneWidget);
     expect(tester.widget<MabarIconButton>(find.byType(MabarIconButton).last).onPressed, isNull);
     expect(tester.widget<MatchScoreRow>(find.byType(MatchScoreRow).last).onTap, isNull);
   });

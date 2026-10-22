@@ -148,14 +148,14 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
           MabarActionBar(
             children: [
               Expanded(
-                child: active.isFinal
+                child: active.isFinal(ref.read(clockProvider)())
                     ? MabarButton(
-                        label: 'Lihat peringkat',
+                        label: 'Lihat klasemen',
                         icon: MabarIcons.ranking,
                         onPressed: () => context.push('/leaderboard'),
                       )
                     : MabarButton(
-                        label: 'Peringkat',
+                        label: 'Klasemen',
                         icon: MabarIcons.ranking,
                         variant: MabarButtonVariant.secondary,
                         onPressed: () => context.push('/leaderboard'),

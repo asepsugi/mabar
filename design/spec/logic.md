@@ -120,7 +120,8 @@ yang sama identik; round berbeda memberi undian berbeda; hasil `generateRound` =
 
 - Round terakhir (tab = n): yang tidak main di round n, dihitung dari **pemain aktif sekarang** (yang keluar tidak
   tampil, yang baru ditambah langsung masuk). Dibagi dua memakai urutan generator untuk round n+1 dengan slot
-  K = 4 × court yang masih muat round n+1: masuk K teratas → "Istirahat · Prioritas main di R(n+1)", sisanya →
+  K = 4 × court yang sisa booking-nya sekarang masih muat satu match (`courtsAvailableAt(now)`, jam sungguhan sejak
+  turnamen dimulai): masuk K teratas → "Istirahat · Prioritas main di R(n+1)", sisanya →
   "Istirahat lagi di R(n+1)". Kalau semua kebagian slot, hanya daftar pertama.
 - Waktu habis (tidak ada court yang muat round n+1): K dihitung dari **semua** court, seperti frame 06l — daftar tetap
   menunjukkan siapa yang main duluan kalau host menambah jam. Implementasi `ActiveTournament.restingAfterLastRound`.
@@ -129,11 +130,11 @@ yang sama identik; round berbeda memberi undian berbeda; hasil `generateRound` =
 
 ## 7. Estimasi Lanjutkan turnamen (sheet 08c)
 
-Implementasi `ActiveTournament.capacityAhead` (test `test/services/resume_tournament_test.dart`): sisa = max(0, booking − n × durasi); k per court = ⌊(sisa + tambahan) ÷ durasi⌋;
+Implementasi `ActiveTournament.capacityAhead` (test `test/services/resume_tournament_test.dart`): sisa = max(0, booking − menit berjalan sejak turnamen dimulai); k per court = ⌊(sisa + tambahan) ÷ durasi⌋;
 round = k terbesar; match = Σ min(court dengan k ≥ r, ⌊aktif ÷ 4⌋). "Court berkurang mulai R…" (`fewerCourtsFrom`)
 hanya untuk court yang main di R(n+1) lalu habis di tengah; court yang sejak awal tidak dapat tambahan bukan "berkurang"
 (bug kode lama, sudah diperbaiki).
-Data test 08c: durasi 15, n = 8, Court 1 +1 jam, Court VIP +0, 10 pemain → 4 round (R9–R12), 1 court, 4 match.
+Data test 08c: durasi 15, n = 8, sudah berjalan 2 jam, Court 1 +1 jam, Court VIP +0, 10 pemain → 4 round (R9–R12), 1 court, 4 match.
 
 ## 8. Label round
 

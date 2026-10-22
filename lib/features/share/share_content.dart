@@ -17,6 +17,7 @@ SharePosterData sharePosterData({
   required List<StandingEntry> entries,
   required RankingMethod method,
   required ShareFormat format,
+  required bool isFinal,
 }) {
   final config = active.config;
   final fixed = config.mode == PartnerMode.fixed;
@@ -40,7 +41,7 @@ SharePosterData sharePosterData({
   return SharePosterData(
     sport: config.sport,
     eyebrow: '${config.sport.label} · ${config.mode.label} · ${date.day} ${_months[date.month - 1]} ${date.year}',
-    isFinal: active.isFinal,
+    isFinal: isFinal,
     rows: [for (final e in rows) row(e)],
     summary: [
       '${active.playedRoundCount} round',

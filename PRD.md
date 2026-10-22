@@ -1,6 +1,6 @@
 # PRD — Aplikasi Mabar Tennis/Padel (Klub/Komunitas)
 
-**Versi dokumen:** 2.0 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21) dan app **2.0.0**
+**Versi dokumen:** 2.1 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21) dan app **2.1.0**
 **Platform:** Android + iOS + Web/PWA (1 codebase — Flutter)
 **Target user:** Host mabar klub/komunitas tennis & padel, 4–20 pemain per turnamen, 1 HP host, offline
 
@@ -41,7 +41,7 @@ Aplikasi untuk host turnamen mabar yang:
   putaran circle.
 - **Court** = lapangan fisik; 1 match per court per round. Tiap court punya nama, warna, dan durasi booking sendiri.
 - Istilah UI: istilah olahraga tetap Inggris (court, round, match, set, WO, Win %, Total Point); semua orang disebut
-  **pemain** (bukan peserta); Peringkat / Bagikan / Beranda (bukan Ranking / Share / Home).
+  **pemain** (bukan peserta); Klasemen / Bagikan / Beranda (bukan Ranking / Share / Home); posisi pemain tetap "Peringkat n".
 
 ### 3.1 User Flow
 
@@ -50,8 +50,8 @@ Aplikasi untuk host turnamen mabar yang:
    ↑ Lanjutkan            (format skor,  └ Mixed → [Jadwal Mixed] (R1 langsung dibuat, sheet Cara kerja Mixed)
    │                      court, durasi)
 [Jadwal] ↔ [Input Skor] ↔ [Walkover]
-[Jadwal] → [Peringkat] → [Detail Pemain]
-[Peringkat] → [Bagikan] → Selesai → [Beranda]
+[Jadwal] → [Klasemen] → [Detail Pemain]
+[Klasemen] → [Bagikan] → Selesai → [Beranda]
 ```
 
 ### 3.2 Mode Partner
@@ -99,7 +99,7 @@ function generateRoundRobin(pairs):
 
 ```
 function generateNextRound(activePlayers, history, courts, round):
-    slots = courtsAvailable(round) × 4
+    slots = courtsAvailableAt(now) × 4
     order = activePlayers.sortBy(
         matchCount + catchUpCredit ASC,   // paling sedikit main
         lastRoundPlayed ASC,              // paling lama istirahat
@@ -115,15 +115,19 @@ function generateNextRound(activePlayers, history, courts, round):
   istirahat diprioritaskan di round berikutnya.
 - Pemain baru/kembali mendapat **kredit catch-up** = disejajarkan dengan pemain aktif yang paling sedikit main.
   Kredit hanya untuk prioritas jadwal, tidak ikut peringkat.
+- Waktu booking dihitung dari **jam sungguhan** sejak turnamen dimulai (keputusan host 2026-10-22), bukan dari
+  jumlah round × durasi. Court ikut round yang dibuat sekarang kalau sisa booking-nya (booking − menit berjalan)
+  masih muat satu match, jadi round yang selesai lebih cepat dari durasinya menyisakan waktu untuk round tambahan.
 - Court yang waktu booking-nya habis tidak dipakai lagi; kalau semua habis, slot dihitung dari semua court (untuk
   daftar prioritas) dan tombolnya menjadi "Tambah jam".
 
 ### 3.5 Estimasi & Waktu
 
 - Durasi match kelipatan 5 menit (minimal 5). Default Tennis 20 menit, Padel 15 menit; court default 2 × 2 jam.
-- Konfigurasi: ±round = booking terpendek ÷ durasi, match = round × court. Booking terpendek < durasi → error yang
-  menyebut court penyebabnya.
-- Lanjutkan turnamen: waktu tiap court dihitung dari akhir round terakhir, `max(booking, round × durasi) + tambahan`.
+- Konfigurasi: ±round = booking terpendek ÷ durasi, match = round × court — perkiraan; jumlah round sebenarnya
+  mengikuti jam (3.4). Booking terpendek < durasi → error yang menyebut court penyebabnya.
+- Lanjutkan turnamen: waktu tiap court dihitung dari sekarang kalau booking-nya sudah lewat,
+  `max(booking, menit berjalan) + tambahan`.
   Estimasi dalam jumlah match (rumus di catatan frame 08c, `ActiveTournament.capacityAhead`).
 
 ---
@@ -156,7 +160,7 @@ untuk tennis maupun padel.
 | **Total Point** (default) | Jumlah game/poin yang dimenangkan lintas match (+ nilai WO, lihat 4.4) |
 | **Win %** | Menang = 1, seri = 0,5, kalah = 0, dibagi jumlah match |
 
-Metode dipilih di layar Peringkat (tidak di setup) dan dipakai juga oleh Detail & Bagikan. Tidak disimpan: setelah
+Metode dipilih di layar Klasemen (tidak di setup) dan dipakai juga oleh Detail & Bagikan. Tidak disimpan: setelah
 app dibuka ulang kembali ke Total Point.
 
 ### 4.3 Tie-Breaker & Nomor Peringkat
@@ -195,9 +199,9 @@ skor di match WO mengubahnya jadi match selesai.
 ### 4.6 Status Sementara / Final
 
 - **Fixed:** Final setelah diakhiri atau semua match terisi.
-- **Mixed:** Final setelah diakhiri, atau waktu booking semua court habis **dan** round terakhir lengkap. Kembali
+- **Mixed:** Final setelah diakhiri, atau waktu booking semua court habis (jam sungguhan) **dan** round terakhir lengkap. Kembali
   Sementara kalau dilanjutkan.
-- Final: subjudul "… · Final · 5 round · 10 match"; poster menulis "Peringkat akhir". Sementara: "… · R3 · 6 dari 8 match".
+- Final: subjudul "… · Final · 5 round · 10 match"; poster menulis "Klasemen akhir". Sementara: "… · R3 · 6 dari 8 match".
 
 ---
 
@@ -238,8 +242,9 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 - Papan skor gelap: satu angka besar per tim, keypad sendiri, pesan validasi, "Perbarui skor" saat mengubah.
 - WO lewat sheet (4.4).
 
-### 5.7 Peringkat (09a–09f)
-- Tabel: # · nama · W–L–D (W–L kalau format tidak bisa seri) · nilai metode; peringkat 1 diberi bola.
+### 5.7 Klasemen (09a–09f)
+- Tabel: # · nama · Main (jumlah match dimainkan, WO ikut) · W–L–D (W–L kalau format tidak bisa seri) · nilai metode;
+  peringkat 1 diberi bola.
 - Toggle Total Point / Win %, status di subjudul, catatan WO / tidak dimainkan, ketuk baris → Detail. Tombol Bagikan.
 
 ### 5.8 Detail Pemain (10a–10c)
@@ -248,7 +253,7 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 
 ### 5.9 Bagikan (11a–11j)
 - Kartu pratinjau + 10 tema (default biru) + Ringkas (5 teratas + "+n lainnya") / Lengkap (semua; Feed > 10 baris
-  dibagi dua kolom rata). Nomor "#n"; peringkat 1 lencana emas.
+  dibagi dua kolom rata). Nomor "#n"; peringkat 1 lencana emas, digantung ke kiri supaya "#1" sejajar dengan nomor di bawahnya.
 - Dua gambar 1080×1080 dan 1080×1920 dibagikan lewat share sheet sistem dengan caption teks hasil; gagal → caption
   disalin + toast "Hasil disalin".
 - "Selesai" memindahkan turnamen ke slot terakhir lalu kembali ke Beranda.
@@ -275,7 +280,7 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 | Jadwal Mixed (+ sheet Cara kerja Mixed) | 06f–06o |
 | Sheet Kelola pemain, sheet Lanjutkan turnamen | 08a–08d |
 | Input Skor + sheet Walkover | 07a–07k |
-| Peringkat | 09a–09f |
+| Klasemen | 09a–09f |
 | Detail Pemain | 10a–10c |
 | Bagikan | 11a–11j |
 

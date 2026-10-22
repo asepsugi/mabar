@@ -97,11 +97,15 @@ void main() {
     );
   });
 
-  Future<ProviderContainerHolder> pumpLive(WidgetTester tester, ActiveTournament active) async {
+  Future<ProviderContainerHolder> pumpLive(
+    WidgetTester tester,
+    ActiveTournament active, {
+    Duration elapsed = Duration.zero,
+  }) async {
     tester.view.physicalSize = const Size(390, 844) * hifiPixelRatio;
     tester.view.devicePixelRatio = hifiPixelRatio;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(screen(active, Duration.zero));
+    await tester.pumpWidget(screen(active, elapsed));
     await tester.pumpAndSettle();
     return ProviderContainerHolder(tester);
   }
@@ -149,7 +153,8 @@ void main() {
       [mixedR1, mixedR2, const [('Andi', 'Dewant', 'Citra', 'Fajar', 13, 8), ('Eko', 'Budi', 'Hana', 'Gina', null, null)]],
       finished: true,
     );
-    final holder = await pumpLive(tester, ended);
+    // Diakhiri di menit ke-45 dari booking 2 jam.
+    final holder = await pumpLive(tester, ended, elapsed: const Duration(minutes: 45));
     await tester.tap(find.text('Lanjutkan turnamen'));
     await tester.pumpAndSettle();
     expect(find.text('Sisa 1j 15m'), findsNWidgets(2));

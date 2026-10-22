@@ -70,12 +70,13 @@ class TournamentController extends Notifier<ActiveTournament?> {
   /// Mode Mixed: buat round berikutnya dari history yang sudah ada.
   void generateNextRound() {
     final current = state;
-    if (current == null || !current.canGenerateNextRound) return;
+    final now = ref.read(clockProvider)();
+    if (current == null || !current.canGenerateNextRound(now)) return;
 
     final roundNumber = current.roundCount + 1;
     final round = EndlessRoundGenerator.generateRound(
       players: current.activePlayers,
-      courts: current.courtsAvailableForRound(roundNumber),
+      courts: current.courtsAvailableAt(now),
       history: current.matches,
       roundNumber: roundNumber,
       seed: current.drawSeed,
@@ -232,17 +233,18 @@ class TournamentController extends Notifier<ActiveTournament?> {
   /// tanpa mengulang. [from] diisi kalau turnamennya sudah ditutup (slot
   /// "turnamen terakhir"); kosong berarti turnamen aktif.
   ///
-  /// [extraMinutes] per court id dihitung dari akhir round terakhir, bukan
-  /// ditambahkan ke booking awal: court yang waktunya sudah lama habis tetap
-  /// dapat jam penuh. Match yang dibatalkan saat "Akhiri" kembali menunggu skor.
+  /// [extraMinutes] per court id dihitung dari sekarang kalau booking-nya sudah
+  /// lewat, bukan ditambahkan ke booking awal: court yang waktunya sudah lama
+  /// habis tetap dapat jam penuh. Match yang dibatalkan saat "Akhiri" kembali menunggu skor.
   void resume(Map<String, int> extraMinutes, {ActiveTournament? from}) {
     final current = from ?? state;
     if (current == null || current.config.mode != PartnerMode.mixed) return;
     // Turnamen yang sudah ditutup selalu boleh dibuka lagi, meski waktunya
     // masih ada (host bisa menekan "Selesai" tanpa "Akhiri" dulu).
-    if (from == null && !current.canResume) return;
+    final now = ref.read(clockProvider)();
+    if (from == null && !current.canResume(now)) return;
 
-    final used = current.roundCount * current.config.matchDurationMinutes;
+    final used = current.elapsedMinutes(now);
     final courts = [
       for (final c in current.config.courts)
         if ((extraMinutes[c.id] ?? 0) > 0)

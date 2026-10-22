@@ -7,17 +7,20 @@ class StandingTableRow {
   final int position;
   final List<String> names;
 
-  /// Kolom ketiga, "3–0–0" atau "4–0".
+  /// Kolom Main: jumlah match yang sudah dimainkan (selesai + WO).
+  final int played;
+
+  /// Kolom W–L–D, "3–0–0" atau "4–0".
   final String record;
 
   /// Kolom terakhir: nilai metode ("42", "75").
   final String value;
   final VoidCallback? onTap;
 
-  const StandingTableRow({required this.position, required this.names, required this.record, required this.value, this.onTap});
+  const StandingTableRow({required this.position, required this.names, required this.played, required this.record, required this.value, this.onTap});
 }
 
-/// `.rank` — tabel peringkat rapat dengan angka rata kanan: # · nama · W–L–D (atau W–L kalau format
+/// `.rank` — tabel peringkat rapat dengan angka rata kanan: # · nama · Main · W–L–D (atau W–L kalau format
 /// tidak bisa seri) · nilai metode. Peringkat 1 diberi bola (semua baris bernomor 1). Pemain yang belum
 /// main dikelompokkan di bawah judul "Belum main" tanpa nomor ([idleNames]).
 class StandingTable extends StatelessWidget {
@@ -50,13 +53,14 @@ class StandingTable extends StatelessWidget {
         cells: (
           Text('#', style: _head, textAlign: TextAlign.left),
           Text(subjectLabel, style: _head),
+          Text('Main', style: _head, textAlign: TextAlign.right),
           Text(recordLabel, style: _head, textAlign: TextAlign.right),
           Text(valueLabel, style: _head, textAlign: TextAlign.right),
         ),
       ),
       for (final r in rows) _ranked(r),
       if (idleNames.isNotEmpty) ...[
-        _row(minHeight: 32, color: _subBackground, cells: (const SizedBox(), Text('Belum main', style: _head), const SizedBox(), const SizedBox())),
+        _row(minHeight: 32, color: _subBackground, cells: (const SizedBox(), Text('Belum main', style: _head), const SizedBox(), const SizedBox(), const SizedBox())),
         for (final names in idleNames) _idle(names),
       ],
     ];
@@ -86,11 +90,11 @@ class StandingTable extends StatelessWidget {
   static const _subBackground = Color(0xFFF5F7F9);
   static const _idleNumber = Color(0xFFA3AEB8);
 
-  /// Kolom grid: 30 | sisa | 58 | 52, jarak 8, padding samping 14. Tinggi minimal termasuk garis atas
+  /// Kolom grid: 30 | sisa | 34 | 58 | 52, jarak 8, padding samping 14. Tinggi minimal termasuk garis atas
   /// 1 pt (border-box), jadi baris setelah garis dikurangi 1.
   Widget _row({
     required double minHeight,
-    required (Widget, Widget, Widget, Widget) cells,
+    required (Widget, Widget, Widget, Widget, Widget) cells,
     Color? color,
     VoidCallback? onTap,
     bool afterLine = true,
@@ -107,9 +111,11 @@ class StandingTable extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(child: cells.$2),
               const SizedBox(width: 8),
-              SizedBox(width: 58, child: cells.$3),
+              SizedBox(width: 34, child: cells.$3),
               const SizedBox(width: 8),
-              SizedBox(width: 52, child: cells.$4),
+              SizedBox(width: 58, child: cells.$4),
+              const SizedBox(width: 8),
+              SizedBox(width: 52, child: cells.$5),
             ],
           ),
         ),
@@ -148,6 +154,7 @@ class StandingTable extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: MabarType.body.copyWith(fontWeight: FontWeight.w600, color: MabarColors.ink),
         ),
+        Text('${r.played}', textAlign: TextAlign.right, style: MabarType.numM.copyWith(fontSize: 18, color: MabarColors.ink2)),
         Text(r.record, textAlign: TextAlign.right, style: MabarType.numM.copyWith(fontSize: 18, color: MabarColors.ink2)),
         Text(r.value, textAlign: TextAlign.right, style: MabarType.numM.copyWith(color: MabarColors.ink)),
       ),
@@ -161,6 +168,7 @@ class StandingTable extends StatelessWidget {
       cells: (
         Text('–', textAlign: TextAlign.center, style: MabarType.numM.copyWith(fontSize: 20, color: _idleNumber)),
         Text(names.join('\n'), maxLines: names.length, overflow: TextOverflow.ellipsis, style: MabarType.body.copyWith(color: MabarColors.ink3)),
+        Text('–', textAlign: TextAlign.right, style: dash),
         Text('–', textAlign: TextAlign.right, style: dash),
         Text('–', textAlign: TextAlign.right, style: dash),
       ),

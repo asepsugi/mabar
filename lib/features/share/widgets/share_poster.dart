@@ -180,7 +180,7 @@ class SharePoster extends StatelessWidget {
             const SizedBox(width: 8),
             Flexible(
               child: Text(
-                data.isFinal ? 'Peringkat akhir' : 'Peringkat sementara',
+                data.isFinal ? 'Klasemen akhir' : 'Klasemen sementara',
                 maxLines: 1,
                 style: MabarType.title.copyWith(fontSize: title, height: 1.05, color: ink),
               ),
@@ -374,11 +374,15 @@ class SharePoster extends StatelessWidget {
       width: sizes.rankWidth,
       child: Align(
         alignment: Alignment.centerLeft,
+        // Lencana digantung ke kiri sebesar padding-nya (`margin-left: -.3em`), jadi "#1" sejajar dengan "#2" dst.
         child: gold
-            ? Container(
-                padding: EdgeInsets.symmetric(horizontal: sizes.rank * 0.3),
-                decoration: BoxDecoration(color: MabarColors.gold, borderRadius: BorderRadius.circular(sizes.rank * 0.35)),
-                child: rank,
+            ? Transform.translate(
+                offset: Offset(-sizes.rank * 0.3, 0),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: sizes.rank * 0.3),
+                  decoration: BoxDecoration(color: MabarColors.gold, borderRadius: BorderRadius.circular(sizes.rank * 0.35)),
+                  child: rank,
+                ),
               )
             : rank,
       ),

@@ -50,7 +50,7 @@ COMPONENTS = [
     ('MatchScoreRow', ['.list', '.bug', '.team'], 'Satu match gaya scorebug.'),
     ('RestingList', ['.rest'], 'Yang istirahat di round ini (+ prioritas round berikutnya).'),
     ('ScoreBoard / ScoreKeypad', ['.board', '.bhead', '.brow', '.cell', '.feedback', '.keypad', '.key', '.setctl'], 'Papan skor + keypad sendiri.'),
-    ('StandingTable', ['.rank', '.rrow'], 'Tabel peringkat.'),
+    ('StandingTable', ['.rank', '.rrow'], 'Tabel klasemen.'),
     ('StatLine', ['.statline'], 'Empat angka di Detail.'),
     ('showMabarSheet', ['.sheet', '.grab', '.scrim', '.opt'], 'Bottom sheet (lima jenis footer).'),
     ('showMabarConfirm', ['.dialog', '.dactions'], 'Dialog konfirmasi (varian bahaya / lanjut).'),
