@@ -6,15 +6,23 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
-import '../../core/widgets/mabar_widgets.dart';
+import '../../core/widgets/mabar_controls.dart';
+import '../../core/widgets/mabar_layers.dart';
 import '../../models/models.dart';
+import '../../services/schedule/endless_round_generator.dart';
 import 'mixed/manage_players_sheet.dart';
+import 'mixed/mixed_guide_sheet.dart';
 import 'mixed/resume_tournament_sheet.dart';
 import 'schedule_widgets.dart';
 import 'tournament_controller.dart';
+import 'widgets/resting_list.dart';
+import 'widgets/round_tabs.dart';
+import 'widgets/schedule_match_row.dart';
 
-/// Screen 6b · Jadwal Mixed (Endless) — round dibuat satu per satu,
-/// round lama tetap bisa dilihat dan skornya masih bisa diedit.
+enum _MenuAction { guide, finish }
+
+/// Screen 06 · Jadwal Mixed — round dibuat satu per satu. Tab default = round terakhir; tombol bawah
+/// selalu untuk round berikutnya dan menulis alasannya kalau belum bisa.
 class ScheduleMixedScreen extends ConsumerStatefulWidget {
   final TournamentConfig config;
   const ScheduleMixedScreen({super.key, required this.config});
@@ -24,13 +32,23 @@ class ScheduleMixedScreen extends ConsumerStatefulWidget {
 }
 
 class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
+  /// Null = round terakhir; kembali ke sana setelah Buat/Batalkan.
   int? _selectedRound;
   Timer? _clock;
 
   @override
   void initState() {
     super.initState();
-    ref.read(tournamentProvider.notifier).startIfNeeded(widget.config);
+    // Provider tidak boleh diubah selama widget sedang dibangun, jadi turnamen dimulai sesudah frame ini.
+    Future.microtask(() {
+      if (!mounted) return;
+      final before = ref.read(tournamentProvider);
+      ref.read(tournamentProvider.notifier).startIfNeeded(widget.config);
+      final after = ref.read(tournamentProvider);
+      // Cara kerja Mixed muncul sendiri sekali, saat R1 baru saja dibuat dari Konfigurasi.
+      if (after != null && !identical(before, after) && after.roundCount == 1) showMixedGuideSheet(context, after);
+    });
+    // Waktu berjalan di subjudul — cukup ditik tiap menit.
     _clock = Timer.periodic(const Duration(minutes: 1), (_) => setState(() {}));
   }
 
@@ -40,226 +58,183 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
     super.dispose();
   }
 
-  Future<void> _finish() async {
-    if (!await confirmFinishTournament(context)) return;
-    ref.read(tournamentProvider.notifier).finishNow();
-    if (mounted) context.push('/leaderboard');
+  Future<void> _openMenu(BuildContext anchor, ActiveTournament active) async {
+    final picked = await showMabarMenu<_MenuAction>(
+      anchor,
+      items: [
+        const MabarMenuItem(icon: MabarIcons.info, label: 'Cara kerja Mixed', value: _MenuAction.guide),
+        if (!active.tournament.isFinished)
+          const MabarMenuItem(
+            icon: MabarIcons.flag,
+            label: 'Akhiri turnamen',
+            value: _MenuAction.finish,
+            danger: true,
+            dividerBefore: true,
+          ),
+      ],
+    );
+    if (!mounted) return;
+    switch (picked) {
+      case _MenuAction.guide:
+        await showMixedGuideSheet(context, active);
+      case _MenuAction.finish:
+        if (!await confirmFinishTournament(context)) return;
+        ref.read(tournamentProvider.notifier).finishNow();
+        if (mounted) context.push('/leaderboard');
+      case null:
+    }
   }
 
   void _generateNext() {
     ref.read(tournamentProvider.notifier).generateNextRound();
-    // Langsung pindah ke round yang baru dibuat.
     setState(() => _selectedRound = null);
   }
 
-  Future<void> _cancelLastRound(ActiveTournament active) async {
-    final round = active.roundCount;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: MabarColors.card,
-        title: Text('Batalkan R$round?'),
-        content: Text(
-          'Jadwal R$round dihapus. Tambahkan pemain yang baru datang lewat Peserta, '
-          'lalu tekan "Buat R$round" lagi.',
-          style: const TextStyle(fontSize: 14, color: MabarColors.ink3, height: 1.5),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Batalkan R$round', style: const TextStyle(color: MabarColors.clay)),
-          ),
-        ],
-      ),
+  Future<void> _cancelLastRound(int round) async {
+    final ok = await showMabarConfirm(
+      context,
+      title: 'Batalkan R$round?',
+      message: 'Jadwal R$round dihapus. Tambahkan pemain yang baru datang lewat Kelola pemain, lalu tekan "Buat R$round" lagi.',
+      confirmLabel: 'Batalkan R$round',
+      destructive: true,
     );
-    if (ok != true) return;
+    if (!ok) return;
     ref.read(tournamentProvider.notifier).cancelLastRound();
-    // Null = round terakhir, yang sekarang R sebelumnya.
     setState(() => _selectedRound = null);
   }
 
   @override
   Widget build(BuildContext context) {
     final active = ref.watch(tournamentProvider);
-    if (active == null || active.roundCount == 0) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (active == null || active.roundCount == 0) return const Scaffold(backgroundColor: MabarColors.paper);
+
+    final finished = active.tournament.isFinished;
+    final last = active.roundCount;
+    final selected = (_selectedRound ?? last).clamp(1, last);
+    final onLast = selected == last;
+    final matches = active.matchesOfRound(selected);
+    final played = matches.where((m) => m.status == MatchStatus.done || m.status == MatchStatus.wo).length;
+    final pending = active.matchesOfRound(last).where((m) => m.status == MatchStatus.pending).length;
+    final nextCourts = active.courtsAvailableForRound(last + 1).length;
+    final timeUp = !finished && nextCourts == 0;
+
+    void openScore(MatchGame m) => context.push('/score-input', extra: m.id);
+
+    // Round terakhir: dari pemain aktif sekarang, dibagi menurut slot R(n+1). Round lewat: catatan saat
+    // round itu dibuat.
+    final List<Widget> resting;
+    if (onLast) {
+      final split = EndlessRoundGenerator.restingAfterLastRound(active);
+      resting = [
+        if (split.priority.isNotEmpty)
+          RestingList(names: [for (final p in split.priority) p.name], priorityRound: last + 1),
+        if (split.later.isNotEmpty) RestingList.later(names: [for (final p in split.later) p.name], nextRound: last + 1),
+      ];
+    } else {
+      final ids = active.restingPlayerIdsByRound[selected] ?? const [];
+      resting = [if (ids.isNotEmpty) RestingList(names: [for (final id in ids) active.playerName(id)])];
     }
 
-    final lastRound = active.roundCount;
-    final selected = (_selectedRound ?? lastRound).clamp(1, lastRound);
-    final matches = active.matchesOfRound(selected);
-    final resting = active.restingPlayerIdsByRound[selected] ?? const [];
-
-    final nextRound = lastRound + 1;
-    final courtsLeft = active.courtsAvailableForRound(nextRound);
-    final canGenerate = active.canGenerateNextRound;
+    final Widget primary;
+    if (active.canResume) {
+      primary = MabarButton(
+        label: finished ? 'Lanjutkan turnamen' : 'Tambah jam',
+        icon: MabarIcons.clock,
+        onPressed: () => showResumeTournamentSheet(context, active),
+      );
+    } else if (pending > 0) {
+      primary = MabarButton(
+        label: 'Buat R${last + 1}',
+        meta: '· tunggu $pending match',
+        variant: MabarButtonVariant.wait,
+      );
+    } else {
+      final fewer = nextCourts < active.courtsAvailableForRound(last).length;
+      primary = MabarButton(
+        label: 'Buat R${last + 1}',
+        meta: fewer ? '· $nextCourts court' : null,
+        icon: MabarIcons.plus,
+        onPressed: _generateNext,
+      );
+    }
 
     return Scaffold(
-      backgroundColor: MabarColors.card,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(top: MabarSpacing.x2, bottom: 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: MabarSpacing.x5),
-                child: MabarScreenHeader(
-                  leading: MabarBackButton(label: '', onTap: () => context.pop()),
-                  trailing: active.tournament.isFinished
-                      ? const ScheduleHeaderIcon()
-                      : const MabarStatusBadge(label: 'LIVE', variant: MabarStatusVariant.live),
-                  center: ScheduleHeaderTitle(active: active, selectedRound: selected, showTotalRounds: false),
-                ),
-              ),
-              ScheduleRoundTabs(
-                roundCount: lastRound,
-                selected: selected,
-                currentRound: lastRound,
-                isRoundComplete: active.isRoundComplete,
-                onSelect: (r) => setState(() => _selectedRound = r),
-                showPlaceholderTab: !active.tournament.isFinished,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: MabarSpacing.x5),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ScheduleProgressBar(done: active.playedMatchCount, total: active.matches.length),
-                    if (!active.tournament.isFinished)
-                      MabarInfoBox(
-                        variant: MabarInfoVariant.warning,
-                        icon: MabarIcons.shuffle,
-                        title: 'R$nextRound dibuat setelah skor R$lastRound lengkap',
-                        caption: courtsLeft.length < active.config.courtCount
-                            ? 'Sisa waktu booking: ${courtsLeft.length} dari ${active.config.courtCount} court'
-                            : null,
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: MabarSpacing.x3),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: MabarSpacing.x5),
-                  children: [
-                    for (final m in matches)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: ScheduleMatchCard(
-                          active: active,
-                          match: m,
-                          locked: false,
-                          onTap: () => context.push('/score-input', extra: m.id),
-                        ),
-                      ),
-                    if (resting.isNotEmpty)
-                      ScheduleRestingRow(
-                        label: 'Istirahat',
-                        names: resting.map(active.playerName).join(', '),
-                        hint: selected == lastRound ? '→ Prioritas main di R$nextRound' : null,
-                      ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: MabarSpacing.x5),
-                child: Column(
-                  children: [
-                    if (active.canResume) ...[
-                      _GenerateButton(
-                        label: 'Lanjutkan Turnamen',
-                        icon: MabarIcons.clock,
-                        onPressed: () => showResumeTournamentSheet(context, active),
-                      ),
-                      const SizedBox(height: MabarSpacing.x2),
-                      Text(
-                        active.tournament.isFinished
-                            ? 'Turnamen sudah diakhiri · tambah jam court untuk main lagi'
-                            : 'Waktu booking semua court sudah habis',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 11, color: MabarColors.faint),
-                      ),
-                    ] else if (!active.tournament.isFinished) ...[
-                      _GenerateButton(label: 'Buat R$nextRound', onPressed: canGenerate ? _generateNext : null),
-                      const SizedBox(height: MabarSpacing.x2),
-                      Text(
-                        _generateHint(canGenerate: canGenerate, lastRound: lastRound),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 11, color: MabarColors.faint),
-                      ),
-                    ],
-                    if (active.canCancelLastRound)
-                      TextButton.icon(
-                        onPressed: () => _cancelLastRound(active),
-                        icon: const Icon(MabarIcons.arrowCounterClockwise, size: 16),
-                        label: Text('Batalkan R$lastRound'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: MabarColors.ink3,
-                          textStyle: const TextStyle(fontFamily: MabarType.family, fontSize: 12, fontWeight: FontWeight.w600),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      ),
-                    // Di mode Mixed selalu ada salah satu tombol di atas
-                    // (turnamen yang diakhiri selalu bisa dilanjutkan).
-                    const SizedBox(height: MabarSpacing.x3),
-                    ScheduleFooterActions(
-                      onRanking: () => context.push('/leaderboard'),
-                      onFinish: _finish,
-                      extra: active.tournament.isFinished
-                          ? null
-                          : OutlinedButton.icon(
-                              onPressed: () => showManagePlayersSheet(context),
-                              icon: const Icon(MabarIcons.users, size: 18),
-                              label: Text('Peserta (${active.activePlayers.length})'),
-                            ),
-                    ),
-                  ],
+      backgroundColor: MabarColors.paper,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          MabarAppBar(
+            title: 'Round $selected',
+            subtitle: scheduleSubtitle(active, ref.read(clockProvider)()),
+            onBack: () => context.pop(),
+            actions: [
+              Builder(
+                builder: (anchor) => MabarIconButton(
+                  icon: MabarIcons.dotsThree,
+                  semanticLabel: 'Menu',
+                  onPressed: () => _openMenu(anchor, active),
                 ),
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  static String _generateHint({required bool canGenerate, required int lastRound}) {
-    if (!canGenerate) return 'Isi semua skor R$lastRound dulu';
-    return 'Pemain yang istirahat diprioritaskan di round berikutnya';
-  }
-}
-
-/// `.btn.btn-outlined-brand` — tombol generate round berikutnya.
-class _GenerateButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final VoidCallback? onPressed;
-
-  const _GenerateButton({required this.label, this.icon = MabarIcons.plus, this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    final enabled = onPressed != null;
-    return Opacity(
-      opacity: enabled ? 1 : 0.5,
-      child: SizedBox(
-        width: double.infinity,
-        height: ScheduleFooterActions.height,
-        child: OutlinedButton.icon(
-          onPressed: onPressed,
-          icon: Icon(icon, size: 18),
-          label: Text(label),
-          style: OutlinedButton.styleFrom(
-            backgroundColor: MabarColors.paper,
-            foregroundColor: MabarColors.ink,
-            disabledForegroundColor: MabarColors.ink,
-            side: const BorderSide(color: MabarColors.ink, width: 1.5),
-            minimumSize: const Size.fromHeight(48),
-            textStyle: const TextStyle(fontFamily: MabarType.family, fontSize: 14, fontWeight: FontWeight.w600),
+          RoundTabs(
+            count: last,
+            selected: selected,
+            onSelect: (r) => setState(() => _selectedRound = r),
+            liveRound: !finished && !active.isRoundComplete(last) ? last : null,
+            meta: timeUp ? 'Waktu habis' : '$played/${matches.length} match',
+            metaAlert: timeUp,
           ),
-        ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              children: [
+                for (final (i, m) in matches.indexed) ...[
+                  if (i > 0) const SizedBox(height: 8),
+                  ScheduleMatchRow(
+                    active: active,
+                    match: m,
+                    onTap: () => openScore(m),
+                    onFill: m.status == MatchStatus.pending ? () => openScore(m) : null,
+                  ),
+                ],
+                for (final list in resting) ...[const SizedBox(height: 16), list],
+                // Hanya di tab round terakhir: di tab lain bisa terbaca membatalkan round yang dilihat.
+                if (onLast && active.canCancelLastRound) ...[
+                  const SizedBox(height: 16),
+                  Center(
+                    child: MabarButton(
+                      label: 'Batalkan R$last',
+                      icon: MabarIcons.arrowCounterClockwise,
+                      variant: MabarButtonVariant.ghost,
+                      small: true,
+                      onPressed: () => _cancelLastRound(last),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          MabarActionBar(
+            children: [
+              MabarIconButton(
+                icon: MabarIcons.ranking,
+                semanticLabel: 'Peringkat',
+                solid: true,
+                onPressed: () => context.push('/leaderboard'),
+              ),
+              if (!finished)
+                MabarIconButton(
+                  icon: MabarIcons.users,
+                  semanticLabel: 'Pemain',
+                  solid: true,
+                  count: active.activePlayers.length,
+                  onPressed: () => showManagePlayersSheet(context),
+                ),
+              Expanded(child: primary),
+            ],
+          ),
+        ],
       ),
     );
   }

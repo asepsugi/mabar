@@ -52,9 +52,9 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   (di atas `ScoreEntry`), StandingTable, StatLine, NameListField, ModePicker/CourtSwatch/CourtColorGrid,
   HomePanel/HomeRowIcon/InstallStep, SharePoster (`share/widgets/`, preset pratinjau/Feed/Story, diekspor lewat
   `SharePosterTarget.exportPixelRatio`). Widget lama yang namanya bentrok jadi `LegacyChip`/`LegacyStepper`.
-- **Layar v2 selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi, 04 Pasangan, 05 Jadwal Fixed** (`test/hifi/screens/<alur>_test.dart`, golden semua frame + perilaku).
+- **Layar v2 selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi, 04 Pasangan, 05 Jadwal Fixed, 06 Jadwal Mixed** (`test/hifi/screens/<alur>_test.dart`, golden semua frame + perilaku).
   Pembungkus layar `hifiScreen(...)` di `test/hifi/screens/screen_harness.dart` (tema, safe area 47/34, override
-  provider). Golden dialog/sheet/ketikan/gulir memakai `expectMatchesHifi(..., act: (tester) async {...})`. Layar 06–11
+  provider). Golden dialog/sheet/ketikan/gulir memakai `expectMatchesHifi(..., act: (tester) async {...})`. Layar 07–11
   masih tata letak lama. Layar "Cara Kerja Mixed" sudah dihapus: Konfigurasi Mixed ("Mulai Round 1") langsung push
   `/schedule`. Batas yang tidak tergambar di frame: durasi match maks 180 mnt, booking 1–12 jam per court.
   Pasangan: hasil acak bisa disuntik lewat `PairSetupScreen.random` (test memakai `Random` berskrip supaya sama
@@ -64,7 +64,12 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   (`ScheduleMatchRow`, `scheduleSubtitle`, `pairNames`) untuk Fixed dan Mixed. Golden yang butuh turnamen berjalan
   meng-override `tournamentProvider` dengan controller yang `build()`-nya mengembalikan turnamen itu (config
   `identical`, jadi `startIfNeeded` tidak membuat jadwal baru). Dialog Akhiri = `confirmFinishTournament` →
-  `showMabarConfirm`. Fixed setelah diakhiri: ⋯ mati (menunya kosong).
+  `showMabarConfirm`. Fixed setelah diakhiri: ⋯ mati (menunya kosong). Kedua layar jadwal memanggil
+  `startIfNeeded` lewat `Future.microtask` (Riverpod melarang mengubah provider di `initState`); Mixed
+  memunculkan sheet "Cara kerja Mixed" (`mixed/mixed_guide_sheet.dart`) sekali saat R1 baru dibuat.
+  `schedule_widgets.dart` tinggal `confirmFinishTournament` + `CourtBadge`/`SportBadge` lama (dipakai Input Skor
+  dan sheet Lanjutkan sampai alur 07/08 dirakit ulang). Fixture 06o memakai id turnamen `t-06o-25` karena undian
+  prioritas berseed id turnamen.
   Dialog konfirmasi dipusatkan di layar penuh (`useSafeArea: false`, sesuai `.dialog { top: 50% }`).
 - **Painter lapangan selesai** (langkah 4): `core/widgets/court_painter.dart` — `CourtPainter(t, toward, layout)`, satu
   gambar sudut lapangan untuk banner Beranda **dan** ikon app (jangan bikin gambar lapangan kedua). `t` = posisi garis
@@ -114,7 +119,7 @@ format skor + data app lama tidak dimuat).
 - `lib/features/<screen>/` — satu folder per layar.
 - `lib/core/widgets/mabar_widgets.dart` — komponen lintas layar (header, chip, info box, status badge, tombol primer, dashed border, stat box).
 - `lib/core/widgets/court_painter.dart` + `mabar_ball.dart` — lapangan + bola brand. Dipakai banner Beranda **dan** generator icon aplikasi; jangan bikin salinan kedua.
-- `lib/features/schedule/schedule_widgets.dart` — komponen khusus jadwal, dipakai bareng 6a/6b/7.
+- `lib/features/schedule/widgets/` — komponen jadwal v2 (RoundTabs, RestingList, ScheduleMatchRow), dipakai Fixed dan Mixed.
 - State turnamen: Riverpod `tournamentProvider` (`features/schedule/tournament_controller.dart`) — satu-satunya sumber kebenaran sejak layar jadwal. Sebelum itu data dioper lewat `extra` router.
 
 Konvensi: komentar seperlunya dan dalam bahasa Indonesia, menjelaskan *kenapa*. Nama komponen merujuk kelas CSS mockup (mis. `// .info` / `.share-card`) supaya mudah dicocokkan; untuk kode desain v2 pakai kelas di `design/hifi.html` (mis. `// .bug`, `.rest`) dan nama widget di `design/spec/components.md`.

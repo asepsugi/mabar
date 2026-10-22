@@ -33,7 +33,10 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
   @override
   void initState() {
     super.initState();
-    ref.read(tournamentProvider.notifier).startIfNeeded(widget.config);
+    // Provider tidak boleh diubah selama widget sedang dibangun, jadi turnamen dimulai sesudah frame ini.
+    Future.microtask(() {
+      if (mounted) ref.read(tournamentProvider.notifier).startIfNeeded(widget.config);
+    });
     // Waktu berjalan di subjudul — cukup ditik tiap menit.
     _clock = Timer.periodic(const Duration(minutes: 1), (_) => setState(() {}));
   }
@@ -111,7 +114,7 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
                       const Icon(MabarIcons.lockSimple, size: MabarSize.iconInButton, color: MabarColors.ink3),
                       const SizedBox(width: 8),
                       Text(
-                        'Terbuka setelah semua skor R$current terisi',
+                        'Terbuka setelah semua skor R${selected - 1} terisi',
                         style: MabarType.body.copyWith(fontSize: 14, color: MabarColors.ink3),
                       ),
                     ],
