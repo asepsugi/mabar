@@ -231,6 +231,7 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 - Istirahat: Fixed paling banyak satu pasangan; Mixed di round terakhir dibagi "Istirahat · Prioritas main di R(n+1)"
   dan "Istirahat lagi di R(n+1)".
 - Menu ⋯: Cara kerja Mixed (sheet; muncul otomatis sekali saat R1 dibuat) dan Akhiri turnamen (dialog).
+  Fixed yang sudah diakhiri tidak punya item menu lagi: ikon ⋯ tampil pudar dan tidak bisa diketuk.
 - Mixed: Buat R(n+1) / Batalkan Rn / Pemain (n) / Tambah jam / Lanjutkan turnamen.
 
 ### 5.6 Input Skor & Walkover (07a–07k)

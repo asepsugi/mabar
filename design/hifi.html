@@ -1183,7 +1183,7 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
     <div class="scr">
       <div class="cap"><b>06c</b><span>Turnamen diakhiri</span></div>
       <div class="app">
-        <div class="appbar"><span class="icbtn"><svg class="ic"><use href="#i-back"/></svg></span><div class="t"><h1>Round 5</h1><p>Tennis · Race to 6 · diakhiri</p></div><span class="icbtn"><svg class="ic"><use href="#i-more"/></svg></span></div>
+        <div class="appbar"><span class="icbtn"><svg class="ic"><use href="#i-back"/></svg></span><div class="t"><h1>Round 5</h1><p>Tennis · Race to 6 · diakhiri</p></div><span class="icbtn" style="color:#C3CCD4"><svg class="ic"><use href="#i-more"/></svg></span></div>
         <div class="tabs"><b>R1</b><b>R2</b><b>R3</b><b>R4</b><b class="on">R5</b><span class="meta">1/2 match</span></div>
         <div class="body" style="padding-top:12px">
           <div class="list">
@@ -1196,7 +1196,7 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
       </div>
       <ul>
         <li>Setelah "Akhiri": match kosong jadi "Tidak dimainkan" (tidak bisa diketuk), tidak ada lagi titik live, dan tombol Peringkat jadi tombol utama. Sama untuk turnamen yang semua match-nya selesai.</li>
-        <li>Fixed tidak bisa dilanjutkan, jadi tidak ada "Lanjutkan turnamen".</li>
+        <li>Fixed tidak bisa dilanjutkan, jadi tidak ada "Lanjutkan turnamen".</li><li>Ikon ⋯ tampil pudar dan tidak bisa diketuk: satu-satunya item menu Fixed ("Akhiri turnamen") sudah tidak ada (keputusan host 2026-10-22).</li>
       </ul>
     </div>
 
@@ -1321,7 +1321,10 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
         <div class="body" style="padding-top:12px"><div class="list">
           <div class="bug"><div class="court n" style="--c:#2F8F5B">1</div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Indra · Citra</span></div><div class="team"><i class="w"></i><span class="nm">Joko · Hana</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
           <div class="bug"><div class="court n" style="--c:#C4532D">2</div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Andi · Fajar</span></div><div class="team"><i class="w"></i><span class="nm">Budi · Gina</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
-        </div></div>
+        </div>
+          <div class="rest"><div class="ghead"><span class="glabel">Istirahat · <span class="prio">Prioritas main di R5</span></span></div><div class="names"><span>Dewant R</span><span>Eko M</span></div></div>
+          <div style="display:flex;justify-content:center"><span class="btn btn-ghost btn-sm"><svg class="ic ic-s"><use href="#i-undo"/></svg>Batalkan R4</span></div>
+        </div>
         <div class="actionbar"><span class="icbtn solid"><svg class="ic"><use href="#i-podium"/></svg></span><span class="icbtn solid"><svg class="ic"><use href="#i-people"/></svg><span class="count">10</span></span><span class="btn btn-wait">Buat R5 <span class="meta">· tunggu 2 match</span></span></div>
         <div class="menu">
           <div class="mi"><svg class="ic"><use href="#i-info"/></svg>Cara kerja Mixed</div>
@@ -1342,7 +1345,11 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
         <div class="tabs"><b>R1</b><b>R2</b><b>R3</b><b class="on">R4<i class="live"></i></b><span class="meta">0/2 match</span></div>
         <div class="body" style="padding-top:12px"><div class="list">
           <div class="bug"><div class="court n" style="--c:#2F8F5B">1</div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Indra · Citra</span></div><div class="team"><i class="w"></i><span class="nm">Joko · Hana</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
-        </div></div>
+          <div class="bug"><div class="court n" style="--c:#C4532D">2</div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Andi · Fajar</span></div><div class="team"><i class="w"></i><span class="nm">Budi · Gina</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+        </div>
+          <div class="rest"><div class="ghead"><span class="glabel">Istirahat · <span class="prio">Prioritas main di R5</span></span></div><div class="names"><span>Dewant R</span><span>Eko M</span></div></div>
+          <div style="display:flex;justify-content:center"><span class="btn btn-ghost btn-sm"><svg class="ic ic-s"><use href="#i-undo"/></svg>Batalkan R4</span></div>
+        </div>
         <div class="actionbar"><span class="icbtn solid"><svg class="ic"><use href="#i-podium"/></svg></span><span class="icbtn solid"><svg class="ic"><use href="#i-people"/></svg><span class="count">10</span></span><span class="btn btn-wait">Buat R5 <span class="meta">· tunggu 2 match</span></span></div>
         <div class="scrim"></div>
         <div class="dialog"><h2>Batalkan R4?</h2><p>Jadwal R4 dihapus. Tambahkan pemain yang baru datang lewat Kelola pemain, lalu tekan "Buat R4" lagi.</p><div class="dactions"><span class="txtbtn">Batal</span><span class="txtbtn danger">Batalkan R4</span></div></div>
@@ -1357,6 +1364,14 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
       <div class="app">
         <div class="appbar"><span class="icbtn"><svg class="ic"><use href="#i-back"/></svg></span><div class="t"><h1>Round 1</h1><p>Padel · Americano 21 · 0m dari 2 jam</p></div><span class="icbtn"><svg class="ic"><use href="#i-more"/></svg></span></div>
         <div class="tabs"><b class="on">R1<i class="live"></i></b><span class="meta">0/2 match</span></div>
+        <div class="body" style="padding-top:12px">
+          <div class="list">
+            <div class="bug"><div class="court n" style="--c:#2F8F5B">1</div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Andi · Budi</span></div><div class="team"><i class="w"></i><span class="nm">Citra · Dewant</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+            <div class="bug"><div class="court n" style="--c:#C4532D">2</div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Eko · Fajar</span></div><div class="team"><i class="w"></i><span class="nm">Indra · Joko</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+          </div>
+          <div class="rest"><div class="ghead"><span class="glabel">Istirahat · <span class="prio">Prioritas main di R2</span></span></div><div class="names"><span>Gina R</span><span>Hana T</span></div></div>
+        </div>
+        <div class="actionbar"><span class="icbtn solid"><svg class="ic"><use href="#i-podium"/></svg></span><span class="icbtn solid"><svg class="ic"><use href="#i-people"/></svg><span class="count">10</span></span><span class="btn btn-wait">Buat R2 <span class="meta">· tunggu 2 match</span></span></div>
         <div class="scrim"></div>
         <div class="sheet">
           <span class="grab"></span>
@@ -2184,7 +2199,7 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
         <li>Generator Mixed: undian pemain seri dikunci per round (seed turnamen + nomor round), perlu test baru.</li>
         <li>Input Skor: satu angka besar per tim, keypad sendiri, batas angka per format di keypad.</li>
         <li>Mixed Final setelah diakhiri atau waktu habis dengan round terakhir lengkap; Peringkat M–K–S; Detail Fixed dua nama, Mixed dengan partner; istilah "pemain"; Bagikan status nyata, hitungan pasangan, tema default biru; "1 round (R9)".</li>
-        <li>Ikon app: opsi A di 01j — sudut lapangan tampak atas dari painter Beranda, garis putih 100%, bola di service box.</li><li>Simpanan turnamen membawa versi app yang menulisnya (<code>appVersion</code>, semver); data tanpa versi atau dari skema lama diabaikan, bukan dipaksa dibaca (2026-10-22).</li><li>Gambar Feed/Story (11d, 11f, 11g) memakai line-height 1,4 seperti kartu pratinjau, jadi kaki Feed Ringkas tetap di dalam padding (2026-10-22).</li><li>Keypad: kotak yang sudah penuh atau baru dipilih menerima ketikan berikutnya sebagai pengganti isinya, jadi yang mati hanya angka di atas batas (07a–07g digambar ulang dengan tombol mati); saat ubah skor (07i) semua angka mati sampai kotak diketuk (2026-10-22).</li><li>Tinggi tombol mengikuti niat desain: Lanjutkan di banner 46 pt (01e, 01f), Tambah di Kelola pemain 48 pt sejajar kolom nama (08a, 08b) (2026-10-22).</li><li>Transisi 01g: keyframe 200 ms digambar persis dari aturan (posisi garis 0,37, kaca belum tampak); nama lama hilang di 30% pertama (2026-10-22).</li><li>Data contoh Jadwal Fixed dibetulkan: 06c (R5) jadi Andi · Budi 6–5 Indra · Joko, Citra · Dewant vs Gina · Hana tidak dimainkan, Eko · Fajar istirahat — Indra · Joko sudah istirahat di R2, dan di round-robin 5 pasangan tiap pasangan istirahat tepat sekali. 06d dan 06e dilengkapi match court 2 dan baris Istirahat seperti 06a karena keadaannya sama (2026-10-22).</li><li>Data contoh 01e/01h dibetulkan jadi "Round 4 · 6 dari 8 match" (R4 baru dibuat): "Round 3 · 6 dari 8" mustahil di Mixed 8 pemain karena round berikutnya baru dibuat setelah round terakhir lengkap (2026-10-22).</li>
+        <li>Ikon app: opsi A di 01j — sudut lapangan tampak atas dari painter Beranda, garis putih 100%, bola di service box.</li><li>Simpanan turnamen membawa versi app yang menulisnya (<code>appVersion</code>, semver); data tanpa versi atau dari skema lama diabaikan, bukan dipaksa dibaca (2026-10-22).</li><li>Gambar Feed/Story (11d, 11f, 11g) memakai line-height 1,4 seperti kartu pratinjau, jadi kaki Feed Ringkas tetap di dalam padding (2026-10-22).</li><li>Keypad: kotak yang sudah penuh atau baru dipilih menerima ketikan berikutnya sebagai pengganti isinya, jadi yang mati hanya angka di atas batas (07a–07g digambar ulang dengan tombol mati); saat ubah skor (07i) semua angka mati sampai kotak diketuk (2026-10-22).</li><li>Tinggi tombol mengikuti niat desain: Lanjutkan di banner 46 pt (01e, 01f), Tambah di Kelola pemain 48 pt sejajar kolom nama (08a, 08b) (2026-10-22).</li><li>Transisi 01g: keyframe 200 ms digambar persis dari aturan (posisi garis 0,37, kaca belum tampak); nama lama hilang di 30% pertama (2026-10-22).</li><li>Data contoh Jadwal Fixed dibetulkan: 06c (R5) jadi Andi · Budi 6–5 Indra · Joko, Citra · Dewant vs Gina · Hana tidak dimainkan, Eko · Fajar istirahat — Indra · Joko sudah istirahat di R2, dan di round-robin 5 pasangan tiap pasangan istirahat tepat sekali. 06d dan 06e dilengkapi match court 2 dan baris Istirahat seperti 06a karena keadaannya sama (2026-10-22).</li><li>Frame lapisan (menu, dialog, sheet) menggambar layar di belakangnya persis sesuai keadaan layar itu: 06i dan 06j sama dengan 06h (match court 2, Istirahat, Batalkan R4), 06k menampilkan R1 yang baru dibuat dengan Istirahat dan action bar. Jadwal Fixed yang sudah diakhiri: ⋯ pudar dan tidak bisa diketuk karena menunya kosong (06c) (2026-10-22).</li><li>Data contoh 01e/01h dibetulkan jadi "Round 4 · 6 dari 8 match" (R4 baru dibuat): "Round 3 · 6 dari 8" mustahil di Mixed 8 pemain karena round berikutnya baru dibuat setelah round terakhir lengkap (2026-10-22).</li>
         <li>WO: Race to → pemenang N game; Best of &amp; Americano → rata-rata sendiri, minimal skor menang terkecil (⌊total ÷ 2⌋ + 1); kalah 0; selisih tidak berubah (mengganti "games WO tidak dihitung" di PRD 4.4; perlu test baru di <code>ranking_calculator</code>).</li>
         <li>Komponen lapisan: <code>showMabarConfirm</code> untuk semua dialog konfirmasi, <code>showMabarSheet</code> dengan lima jenis footer.</li>
       </ul>

@@ -109,8 +109,6 @@ void main() {
     );
   });
 
-  // Beda disengaja: ⋯ digambar pudar (mati) karena satu-satunya item menu Fixed hilang setelah diakhiri;
-  // frame menggambarnya aktif. Ditanyakan ke host.
   testWidgets('06c turnamen diakhiri', (tester) async {
     await expectMatchesHifi(tester, screen(ended), '06c');
   });

@@ -33,6 +33,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 - Setelah "Akhiri": match kosong jadi "Tidak dimainkan" (tidak bisa diketuk), tidak ada lagi titik live, dan tombol Peringkat jadi tombol utama. Sama untuk turnamen yang semua match-nya selesai.
 - Fixed tidak bisa dilanjutkan, jadi tidak ada "Lanjutkan turnamen".
+- Ikon ⋯ tampil pudar dan tidak bisa diketuk: satu-satunya item menu Fixed ("Akhiri turnamen") sudah tidak ada (keputusan host 2026-10-22).
 
 ## 06d · Menu ⋯ · Fixed
 

@@ -64,7 +64,7 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   (`ScheduleMatchRow`, `scheduleSubtitle`, `pairNames`) untuk Fixed dan Mixed. Golden yang butuh turnamen berjalan
   meng-override `tournamentProvider` dengan controller yang `build()`-nya mengembalikan turnamen itu (config
   `identical`, jadi `startIfNeeded` tidak membuat jadwal baru). Dialog Akhiri = `confirmFinishTournament` →
-  `showMabarConfirm`. Fixed setelah diakhiri: ⋯ mati (menunya kosong). Kedua layar jadwal memanggil
+  `showMabarConfirm`. Fixed setelah diakhiri: ⋯ pudar dan mati (menunya kosong; keputusan host, 06c). Kedua layar jadwal memanggil
   `startIfNeeded` lewat `Future.microtask` (Riverpod melarang mengubah provider di `initState`); Mixed
   memunculkan sheet "Cara kerja Mixed" (`mixed/mixed_guide_sheet.dart`) sekali saat R1 baru dibuat.
   `schedule_widgets.dart` tinggal `confirmFinishTournament` + `CourtBadge`/`SportBadge` lama (dipakai Input Skor

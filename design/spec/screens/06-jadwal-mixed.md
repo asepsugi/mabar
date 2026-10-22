@@ -39,7 +39,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 ![06i](../../frames/06i.png)
 
-Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `RoundTabs`, `MatchScoreRow`, `MabarMenu`
+Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`, `MabarMenu`
 
 - Isi menu Mixed: "Cara kerja Mixed" → sheet 06k dan "Akhiri turnamen" → dialog 06e.
 - "Batalkan Rn" sengaja tidak ada di menu: syaratnya sama persis dengan tombol di layar (06h), jadi item menu tidak pernah menolong saat tombolnya tidak ada. Satu aksi, satu tempat.
@@ -48,7 +48,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ro
 
 ![06j](../../frames/06j.png)
 
-Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `MabarActionBar`, `RoundTabs`, `MatchScoreRow`, `showMabarSheet`, `showMabarConfirm`
+Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`, `showMabarSheet`, `showMabarConfirm`
 
 - Setelah dibatalkan, layar pindah ke R3. Kredit pemain yang tidak ada di R4 dihitung ulang dari riwayat tanpa R4.
 - Judul, isi ("tekan Buat R*n* lagi"), dan tombol memakai n yang sama: setelah dibatalkan, tombol bawah memang kembali jadi "Buat R*n*".
@@ -57,7 +57,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `M
 
 ![06k](../../frames/06k.png)
 
-Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarGroup / MabarRow`, `RoundTabs`, `showMabarSheet`
+Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`, `showMabarSheet`
 
 - Pengganti layar 05 "Cara Kerja Mixed". Teks Aturan Fairness dan label Estimasi tetap sesuai permintaan host.
 - Baru: muncul otomatis sekali saat R1 pertama kali dibuat, setelah itu lewat menu ⋯.
