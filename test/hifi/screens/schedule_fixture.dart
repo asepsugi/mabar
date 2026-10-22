@@ -37,6 +37,7 @@ ActiveTournament mixedTournament(
   List<String> courtNames = const [],
   Set<String> withdrawn = const {},
   String id = 't-mixed',
+  DateTime? createdAt,
   bool finished = false,
   MatchGame Function(MatchGame m)? adjust,
 }) {
@@ -63,7 +64,7 @@ ActiveTournament mixedTournament(
   return ActiveTournament(
     tournament: Tournament(
       id: id,
-      createdAt: fixtureStart,
+      createdAt: createdAt ?? fixtureStart,
       isFinished: finished,
       config: TournamentConfig(
         sport: sport,

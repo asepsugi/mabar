@@ -1,8 +1,7 @@
 # Paket implementasi desain v2
 
-Desain v2 ("papan skor pinggir lapangan") sudah final dan disetujui host per 2026-10-21. Langkah 1–4 (fondasi,
-logika, komponen, painter) sudah diimplementasi; **langkah 5 (layar) berjalan** — lihat daftar di bawah; layar yang
-belum masih tata letak lama. Folder ini mengubah hi-fi jadi tugas yang bisa dikerjakan dan dicek secara objektif. Aturan produk: `PRD.md`
+Desain v2 ("papan skor pinggir lapangan") sudah final dan disetujui host per 2026-10-21. Langkah 1–5 (fondasi,
+logika, komponen, painter, layar) sudah diimplementasi; semua layar dicek golden terhadap frame. Folder ini mengubah hi-fi jadi tugas yang bisa dikerjakan dan dicek secara objektif. Aturan produk: `PRD.md`
 (v2, sejalan dengan hi-fi).
 
 | Berkas | Isi | Cara diperbarui |
@@ -34,7 +33,7 @@ Kalau hi-fi berubah: jalankan `python3 tool/hifi_extract.py` (butuh Google Chrom
    dan `tool/generate_app_icon.dart` (ikon opsi A di 01j). Ganti `mabar_brand_mark.dart`.
    **Selesai** (2026-10-22): `lib/core/widgets/court_painter.dart`, `features/home/widgets/court_banner.dart`.
 5. **Layar** — satu alur per tugas, urut `screens/01-…` sampai `11-…`.
-   Selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi, 04 Pasangan, 05 Jadwal Fixed, 06 Jadwal Mixed, 07 Kelola pemain & Lanjutkan, 08 Input Skor, 09 Peringkat, 10 Detail (2026-10-22, `test/hifi/screens/`). Berikutnya 11 Bagikan.
+   Selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi, 04 Pasangan, 05 Jadwal Fixed, 06 Jadwal Mixed, 07 Kelola pemain & Lanjutkan, 08 Input Skor, 09 Peringkat, 10 Detail, 11 Bagikan (2026-10-22, `test/hifi/screens/`) — langkah 5 selesai.
 
 Langkah 1–4 paling berisiko (logika + terjemahan CSS→Flutter) dan sebaiknya dikerjakan model yang lebih kuat.
 Langkah 5 bisa dikerjakan model yang lebih murah karena tinggal merakit komponen jadi dan dicek golden.

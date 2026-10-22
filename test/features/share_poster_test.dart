@@ -3,8 +3,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:intl/date_symbol_data_local.dart';
-import 'package:mabar/features/share/share_card.dart';
+import 'package:mabar/features/share/share_content.dart';
+import 'package:mabar/features/share/widgets/share_poster.dart';
 import 'package:mabar/models/models.dart';
 import 'package:mabar/services/ranking/ranking_calculator.dart';
 import 'package:mabar/services/share/result_text_builder.dart';
@@ -57,51 +57,85 @@ List<StandingEntry> _standings(ActiveTournament active) => standingEntries(
       ),
     );
 
-/// Surface test default (800x600) lebih pendek dari poster Story, jadi ukuran
-/// surface disamakan dulu supaya poster tidak ikut terpotong.
-Future<void> _useSurface(WidgetTester tester, SharePosterSize size) async {
-  await tester.binding.setSurfaceSize(size.logicalSize);
-  addTearDown(() => tester.binding.setSurfaceSize(null));
-}
+List<StandingEntry> _fixedStandings(ActiveTournament active, List<Pair> pairs) => standingEntries(
+      standings: RankingCalculator.rank(
+        players: active.config.players,
+        matches: active.matches,
+        method: RankingMethod.totalGames,
+        format: active.config.format,
+      ),
+      fixedPairs: pairs,
+    );
 
 void main() {
-  setUpAll(() => initializeDateFormatting('id'));
-
-  group('ShareSelection', () {
-    test('Ringkas hanya 5 teratas, sisanya dihitung sebagai tersembunyi', () {
+  group('sharePosterData', () {
+    test('Ringkas: 5 teratas + "+n pemain lainnya"; nilai Total Point "poin · %"', () {
       final active = _active(8);
-      final selection = ShareSelection(
-        all: _standings(active),
+      final data = sharePosterData(
+        active: active,
+        entries: _standings(active),
         method: RankingMethod.totalGames,
         format: ShareFormat.ringkas,
       );
-
-      expect(selection.visible, hasLength(ShareSelection.previewCount));
-      expect(selection.hiddenCount, 3);
+      expect(data.rows, hasLength(shareSummaryCount));
+      expect(data.more, '+3 pemain lainnya');
+      expect(data.complete, isFalse);
+      expect((data.rows.first.value, data.rows.first.detail), ('6', 'game · 100%'));
+      expect(data.eyebrow, 'Padel · Mixed · 16 Sep 2026');
+      expect(data.summary, '1 round · 2 match');
     });
 
-    test('Lengkap menampilkan semua pemain', () {
+    test('Lengkap: semua yang bernomor, tanpa "+n"; Win % "100%" + selisih', () {
       final active = _active(8);
-      final selection = ShareSelection(
-        all: _standings(active),
-        method: RankingMethod.totalGames,
+      final data = sharePosterData(
+        active: active,
+        entries: _standings(active),
+        method: RankingMethod.winPercent,
         format: ShareFormat.lengkap,
       );
+      expect(data.rows, hasLength(8));
+      expect(data.more, isNull);
+      expect(data.complete, isTrue);
+      expect((data.rows.first.value, data.rows.first.detail), ('100%', '· +3'));
+    });
 
-      expect(selection.visible, hasLength(8));
-      expect(selection.hiddenCount, 0);
+    test('Fixed menghitung pasangan dan menulis nilai + satuan saja', () {
+      final base = _active(12);
+      final pairs = [
+        for (var i = 0; i < 12; i += 2) Pair(id: 'pair$i', player1Id: 'p$i', player2Id: 'p${i + 1}'),
+      ];
+      final active = ActiveTournament(
+        tournament: base.tournament.copyWith(
+          config: TournamentConfig(
+            sport: SportType.tennis,
+            mode: PartnerMode.fixed,
+            matchDurationMinutes: 20,
+            courts: base.config.courts,
+            players: base.config.players,
+            fixedPairs: pairs,
+          ),
+        ),
+      );
+      final data = sharePosterData(
+        active: active,
+        entries: _fixedStandings(active, pairs),
+        method: RankingMethod.totalGames,
+        format: ShareFormat.ringkas,
+      );
+      expect(data.more, '+1 pasangan lainnya');
+      expect(data.rows.first.names, hasLength(2));
+      expect(data.rows.first.detail, 'game');
     });
   });
 
-  group('ShareResultPoster', () {
-    for (final size in SharePosterSize.values) {
-      final px = '${size.pixelWidth.toInt()}x${size.pixelHeight.toInt()}';
-
-      testWidgets('${size.name} menghasilkan gambar $px px', (tester) async {
-        await _useSurface(tester, size);
-        final active = _active(8);
+  group('gambar ekspor', () {
+    for (final target in [SharePosterTarget.feed, SharePosterTarget.story]) {
+      testWidgets('${target.name} lebarnya 1080 px', (tester) async {
+        final size = target.designSize;
+        await tester.binding.setSurfaceSize(size);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final active = _active(20);
         final key = GlobalKey();
-
         await tester.pumpWidget(
           MediaQuery(
             data: const MediaQueryData(),
@@ -110,59 +144,36 @@ void main() {
               child: Center(
                 child: RepaintBoundary(
                   key: key,
-                  child: ShareResultPoster(
-                    active: active,
-                    standings: _standings(active),
-                    hiddenCount: 0,
-                    method: RankingMethod.totalGames,
-                    theme: ShareTheme.hijau,
+                  child: SizedBox.fromSize(
                     size: size,
+                    child: SharePoster(
+                      data: sharePosterData(
+                        active: active,
+                        entries: _standings(active),
+                        method: RankingMethod.totalGames,
+                        format: ShareFormat.lengkap,
+                      ),
+                      theme: ShareTheme.hijau,
+                      target: target,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
         );
+        // 20 baris tetap muat: kalau meluber, pump melempar overflow.
+        expect(tester.takeException(), isNull);
 
         // Jalur yang sama dipakai ScreenshotController saat share.
-        final boundary =
-            key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+        final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
         late ui.Image image;
         await tester.runAsync(() async {
-          image = await boundary.toImage(pixelRatio: SharePosterSize.pixelRatio);
+          image = await boundary.toImage(pixelRatio: target.exportPixelRatio);
         });
         addTearDown(image.dispose);
-
-        expect(image.width, size.pixelWidth.toInt());
-        expect(image.height, size.pixelHeight.toInt());
-      });
-
-      testWidgets('daftar 20 pemain tetap muat di ${size.name}', (tester) async {
-        await _useSurface(tester, size);
-        final active = _active(20);
-
-        await tester.pumpWidget(
-          MediaQuery(
-            data: const MediaQueryData(),
-            child: Directionality(
-              textDirection: TextDirection.ltr,
-              child: Center(
-                child: ShareResultPoster(
-                  active: active,
-                  standings: _standings(active),
-                  hiddenCount: 0,
-                  method: RankingMethod.totalGames,
-                  theme: ShareTheme.hijau,
-                  size: size,
-                ),
-              ),
-            ),
-          ),
-        );
-
-        // FittedBox mengecilkan isi; kalau meluber, pump melempar overflow.
-        expect(tester.takeException(), isNull);
-        expect(tester.getSize(find.byType(ShareResultPoster)), size.logicalSize);
+        expect(image.width, 1080);
+        expect(image.height, (size.height * target.exportPixelRatio).round());
       });
     }
   });

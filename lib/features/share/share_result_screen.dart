@@ -7,14 +7,19 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
-import '../../core/widgets/mabar_widgets.dart';
+import '../../core/widgets/mabar_controls.dart';
+import '../../core/widgets/mabar_group.dart';
+import '../../core/widgets/mabar_inputs.dart';
+import '../../core/widgets/mabar_layers.dart';
 import '../../models/models.dart';
 import '../../services/share/result_text_builder.dart';
 import '../schedule/tournament_controller.dart';
-import 'share_card.dart';
+import 'share_content.dart';
 import 'share_theme.dart';
+import 'widgets/share_poster.dart';
 
-/// Screen 10 · Bagikan Hasil — preview kartu hasil lalu share sebagai gambar.
+/// Screen 11 · Bagikan — kartu pratinjau, tema, Ringkas/Lengkap; dua gambar (Feed 1:1, Story 9:16)
+/// dibagikan lewat share sheet sistem dengan teks hasil sebagai caption. Tema dan format tidak disimpan.
 class ShareResultScreen extends ConsumerStatefulWidget {
   const ShareResultScreen({super.key});
 
@@ -27,46 +32,35 @@ class _ShareResultScreenState extends ConsumerState<ShareResultScreen> {
   ShareTheme _theme = ShareTheme.biru;
   bool _sharing = false;
 
-  /// Render poster di luar layar. Ukuran logisnya kecil supaya proporsi teks
-  /// sama dengan preview; pixelRatio 3 yang membawanya ke 1080px.
-  Future<XFile> _renderPoster(ActiveTournament active, ShareSelection selection, SharePosterSize size) async {
+  Future<XFile> _render(SharePosterData data, SharePosterTarget target) async {
     final bytes = await ScreenshotController().captureFromWidget(
-      ShareResultPoster(
-        active: active,
-        standings: selection.visible,
-        hiddenCount: selection.hiddenCount,
-        method: selection.method,
-        theme: _theme,
-        size: size,
-      ),
+      SharePoster(data: data, theme: _theme, target: target),
       context: context,
-      targetSize: size.logicalSize,
-      pixelRatio: SharePosterSize.pixelRatio,
+      targetSize: target.designSize,
+      pixelRatio: target.exportPixelRatio,
       delay: const Duration(milliseconds: 60),
     );
-    return XFile.fromData(bytes, name: size.fileName, mimeType: 'image/png');
+    final name = switch (target) {
+      SharePosterTarget.story => 'mabar-story-1080x1920.png',
+      _ => 'mabar-feed-1080x1080.png',
+    };
+    return XFile.fromData(bytes, name: name, mimeType: 'image/png');
   }
 
-  Future<void> _share(ActiveTournament active, ShareSelection selection) async {
+  Future<void> _share(ActiveTournament active, SharePosterData data) async {
     if (_sharing) return;
     setState(() => _sharing = true);
-
-    final text = ResultTextBuilder.build(active: active, standings: selection.all, format: _format);
-
+    final caption = ResultTextBuilder.build(active: active, standings: ref.read(standingEntriesProvider), format: _format);
     try {
-      // Watermark raket harus sudah ter-decode sebelum render off-screen,
-      // kalau tidak posternya keluar tanpa gambar.
+      // Watermark raket harus sudah ter-decode sebelum render di luar layar, kalau tidak posternya tanpa gambar.
       await precacheImage(AssetImage(active.config.sport.assetPath), context);
       if (!mounted) return;
-
-      final posters = [for (final size in SharePosterSize.values) await _renderPoster(active, selection, size)];
-      await Share.shareXFiles(posters, text: text);
+      final files = [for (final t in [SharePosterTarget.feed, SharePosterTarget.story]) await _render(data, t)];
+      await Share.shareXFiles(files, text: caption);
     } catch (_) {
-      // Share sheet tidak tersedia (mis. desktop/web tanpa izin) — salin saja.
-      await Clipboard.setData(ClipboardData(text: text));
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Hasil disalin')));
-      }
+      // Share sheet tidak tersedia (desktop/web tertentu): caption disalin.
+      await Clipboard.setData(ClipboardData(text: caption));
+      if (mounted) showMabarToast(context, 'Hasil disalin');
     } finally {
       if (mounted) setState(() => _sharing = false);
     }
@@ -80,167 +74,114 @@ class _ShareResultScreenState extends ConsumerState<ShareResultScreen> {
   @override
   Widget build(BuildContext context) {
     final active = ref.watch(tournamentProvider);
-    if (active == null) {
-      return const Scaffold(body: Center(child: Text('Belum ada turnamen berjalan')));
-    }
+    if (active == null) return const Scaffold(backgroundColor: MabarColors.paper);
 
-    final selection = ShareSelection(
-      all: ref.watch(standingEntriesProvider),
+    final entries = ref.watch(standingEntriesProvider);
+    final data = sharePosterData(
+      active: active,
+      entries: entries,
       method: ref.watch(rankingMethodProvider),
       format: _format,
     );
+    final config = active.config;
+    final fixed = config.mode == PartnerMode.fixed;
+    final count = entries.where((e) => e.position != null).length;
 
     return Scaffold(
-      backgroundColor: MabarColors.card,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(MabarSpacing.x5, MabarSpacing.x2, MabarSpacing.x5, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              MabarScreenHeader(
-                leading: MabarBackButton(label: 'Peringkat', onTap: () => context.pop()),
-                trailing: MabarStatusBadge(
-                  label: active.isFinal ? 'FINAL' : 'SEMENTARA',
-                  variant: active.isFinal ? MabarStatusVariant.finalized : MabarStatusVariant.live,
+      backgroundColor: MabarColors.paper,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          MabarAppBar(
+            title: 'Bagikan hasil',
+            subtitle: '${config.sport.label} · ${config.mode.label} · ${active.isFinal ? 'akhir' : 'sementara'}',
+            onBack: () => context.pop(),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+              children: [
+                SizedBox(
+                  height: SharePosterTarget.preview.designSize.height,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(MabarRadius.poster),
+                    child: SharePoster(data: data, theme: _theme, target: SharePosterTarget.preview),
+                  ),
                 ),
-              ),
-              const MabarPageTitle(title: 'Bagikan Hasil'),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.only(bottom: MabarSpacing.x3),
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
                   children: [
-                    ShareResultCard(
-                      active: active,
-                      standings: selection.visible,
-                      hiddenCount: selection.hiddenCount,
-                      method: selection.method,
-                      theme: _theme,
-                    ),
-                    const SizedBox(height: 10),
-                    _ThemePicker(selected: _theme, onSelected: (t) => setState(() => _theme = t)),
-                    const SizedBox(height: 14),
-                    const MabarFieldLabel('Format'),
-                    Row(
-                      children: [
-                        for (final f in ShareFormat.values) ...[
-                          Expanded(
-                            child: MabarOptionButton(
-                              label: f.label,
-                              selected: _format == f,
-                              onTap: () => setState(() => _format = f),
-                            ),
-                          ),
-                          if (f != ShareFormat.values.last) const SizedBox(width: MabarSpacing.x2),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: MabarSpacing.x2),
-                    Text(
-                      '${_format == ShareFormat.ringkas ? '${ShareSelection.previewCount} pemain teratas' : 'Semua ${selection.all.length} pemain'}'
-                      ' · gambar untuk IG Feed & Story',
-                      style: TextStyle(fontSize: 11, color: MabarColors.faint, height: 1.5),
-                    ),
+                    for (final t in ShareTheme.values)
+                      _ThemeSwatch(theme: t, selected: t == _theme, onTap: () => setState(() => _theme = t)),
                   ],
                 ),
-              ),
-              _ShareButton(busy: _sharing, onPressed: () => _share(active, selection)),
-              const SizedBox(height: MabarSpacing.x2),
-              OutlinedButton.icon(
+                const SizedBox(height: 14),
+                MabarSection(
+                  note: MabarGroupNote(
+                    '${_format == ShareFormat.ringkas ? '$shareSummaryCount teratas' : 'Semua $count ${fixed ? 'pasangan' : 'pemain'}'}'
+                    ' · gambar Feed 1:1 & Story 9:16',
+                  ),
+                  child: MabarSegmented<ShareFormat>(
+                    options: [for (final f in ShareFormat.values) (f, f.label)],
+                    selected: _format,
+                    onChanged: (f) => setState(() => _format = f),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          MabarActionBar(
+            column: true,
+            children: [
+              _sharing
+                  ? const MabarButton(label: 'Menyiapkan gambar…', icon: MabarIcons.image)
+                  : MabarButton(label: 'Bagikan hasil', icon: MabarIcons.shareNetwork, onPressed: () => _share(active, data)),
+              MabarButton(
+                label: 'Selesai',
+                icon: MabarIcons.house,
+                variant: MabarButtonVariant.secondary,
                 onPressed: _finish,
-                icon: const Icon(MabarIcons.house, size: 16),
-                label: const Text('Selesai'),
-                style: OutlinedButton.styleFrom(foregroundColor: MabarColors.ink2),
-              ),
-              const SizedBox(height: MabarSpacing.x2),
-              const Text(
-                'Hasil turnamen tersimpan otomatis',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 11, color: MabarColors.faint, height: 1.5),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
-/// Pemilih warna latar kartu hasil, tepat di bawah banner preview.
-class _ThemePicker extends StatelessWidget {
-  final ShareTheme selected;
-  final ValueChanged<ShareTheme> onSelected;
-
-  const _ThemePicker({required this.selected, required this.onSelected});
-
-  @override
-  Widget build(BuildContext context) {
-    // Wrap, bukan Row: pilihan warnanya lebih banyak dari satu baris layar.
-    return Wrap(
-      spacing: MabarSpacing.x2,
-      runSpacing: MabarSpacing.x2,
-      children: [
-        for (final theme in ShareTheme.values)
-          _Swatch(theme: theme, selected: theme == selected, onTap: () => onSelected(theme)),
-      ],
-    );
-  }
-}
-
-class _Swatch extends StatelessWidget {
+/// `.theme` — lingkaran gradien tema 30 pt dengan tepi tipis; terpilih = celah paper 3 lalu cincin tinta 2.
+class _ThemeSwatch extends StatelessWidget {
   final ShareTheme theme;
   final bool selected;
   final VoidCallback onTap;
 
-  const _Swatch({required this.theme, required this.selected, required this.onTap});
+  const _ThemeSwatch({required this.theme, required this.selected, required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: 'Warna ${theme.name}',
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 34,
-          height: 34,
-          // Cincin putih memisahkan warna terpilih dari border brand-nya.
-          padding: const EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: MabarColors.card,
-            border: Border.all(color: selected ? MabarColors.ink : MabarColors.line, width: selected ? 2 : 1),
-          ),
-          child: DecoratedBox(
-            decoration: BoxDecoration(shape: BoxShape.circle, gradient: theme.gradient),
-            child: selected ? Icon(MabarIcons.check, size: 14, color: theme.ink) : null,
-          ),
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    selected: selected,
+    label: 'Tema ${theme.name}',
+    child: GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: theme.gradientFor(const Size.square(30)),
+          boxShadow: selected
+              ? const [BoxShadow(color: MabarColors.ink, spreadRadius: 5), BoxShadow(color: MabarColors.paper, spreadRadius: 3)]
+              : null,
         ),
+        // `inset 0 0 0 1px rgba(0,0,0,.08)`; cincin terpilih menggantikannya.
+        foregroundDecoration: selected
+            ? null
+            : BoxDecoration(shape: BoxShape.circle, border: Border.all(color: const Color(0x14000000))),
       ),
-    );
-  }
-}
-
-/// Tombol kirim — memakai share sheet sistem, jadi tujuannya tidak lagi
-/// khusus WhatsApp; ikonnya disamakan dengan tombol Share di layar Peringkat.
-class _ShareButton extends StatelessWidget {
-  final VoidCallback onPressed;
-  final bool busy;
-
-  const _ShareButton({required this.onPressed, required this.busy});
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: busy ? null : onPressed,
-      icon: busy
-          ? const SizedBox.square(
-              dimension: 18,
-              child: CircularProgressIndicator(strokeWidth: 2, color: MabarColors.ink3),
-            )
-          : const Icon(MabarIcons.shareNetwork, size: 18),
-      label: Text(busy ? 'Menyiapkan gambar…' : 'Bagikan Hasil'),
-    );
-  }
+    ),
+  );
 }

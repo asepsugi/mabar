@@ -10,9 +10,9 @@ App Flutter untuk host turnamen mabar tennis/padel (klub, 4–20 pemain, 1 devic
   catatan perilaku, Cakupan. Acuan visual dan perilaku untuk semua pekerjaan UI berikutnya.
 - `design/spec/` — paket implementasi v2. **Mulai dari `design/spec/README.md`** (urutan kerja, aturan golden), lalu
   `tokens.json`, `components.md`, `logic.md` (aturan logika yang berubah + data test), `screens/*.md` (per alur).
-Fondasi, logika, komponen, dan painter lapangan v2 sudah ada di `lib/`; tata letak layar masih desain lama yang
-warnanya dipetakan ke token baru (langkah 5 belum). Hi-fi lama (11 layar, Inter, hijau) ada di git: `git show dae32c9:hifi.html`.
-Bagian "Status" di bawah menggambarkan app yang berjalan sekarang, bukan desain v2.
+Fondasi, logika, komponen, painter lapangan, dan semua layar v2 sudah ada di `lib/` (langkah 1–5, golden per frame
+di `test/hifi/`). Hi-fi lama (11 layar, Inter, hijau) ada di git: `git show dae32c9:hifi.html`.
+Bagian "Status" di bawah: logika, provider, persistensi, dan platform yang berlaku; tampilan mengikuti hi-fi v2.
 
 ## Redesain v2 (final, implementasi bertahap)
 
@@ -51,11 +51,11 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   PairList), `mabar_ball`. Khusus layar di `features/<layar>/widgets/`: RoundTabs, RestingList, ScoreBoard/ScoreKeypad
   (di atas `ScoreEntry`), StandingTable, StatLine, NameListField, ModePicker/CourtSwatch/CourtColorGrid,
   HomePanel/HomeRowIcon/InstallStep, SharePoster (`share/widgets/`, preset pratinjau/Feed/Story, diekspor lewat
-  `SharePosterTarget.exportPixelRatio`). Widget lama yang namanya bentrok jadi `LegacyChip`/`LegacyStepper`.
-- **Layar v2 selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi, 04 Pasangan, 05 Jadwal Fixed, 06 Jadwal Mixed, 07 Kelola pemain & Lanjutkan, 08 Input Skor, 09 Peringkat, 10 Detail** (`test/hifi/screens/<alur>_test.dart`, golden semua frame + perilaku).
+  `SharePosterTarget.exportPixelRatio`).
+- **Layar v2 selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi, 04 Pasangan, 05 Jadwal Fixed, 06 Jadwal Mixed, 07 Kelola pemain & Lanjutkan, 08 Input Skor, 09 Peringkat, 10 Detail, 11 Bagikan — semua layar** (`test/hifi/screens/<alur>_test.dart`, golden semua frame + perilaku).
   Pembungkus layar `hifiScreen(...)` di `test/hifi/screens/screen_harness.dart` (tema, safe area 47/34, override
-  provider). Golden dialog/sheet/ketikan/gulir memakai `expectMatchesHifi(..., act: (tester) async {...})`. Layar 11 (Bagikan)
-  masih tata letak lama. Layar "Cara Kerja Mixed" sudah dihapus: Konfigurasi Mixed ("Mulai Round 1") langsung push
+  provider). Golden dialog/sheet/ketikan/gulir memakai `expectMatchesHifi(..., act: (tester) async {...})`. Tata letak lama sudah
+  habis (`mabar_widgets.dart` dihapus). Layar "Cara Kerja Mixed" sudah dihapus: Konfigurasi Mixed ("Mulai Round 1") langsung push
   `/schedule`. Batas yang tidak tergambar di frame: durasi match maks 180 mnt, booking 1–12 jam per court.
   Pasangan: hasil acak bisa disuntik lewat `PairSetupScreen.random` (test memakai `Random` berskrip supaya sama
   dengan frame); "Ubah pemain" mem-pop dua layar (Pasangan + Konfigurasi) kembali ke Pemain yang masih terisi.
@@ -126,7 +126,7 @@ format skor + data app lama tidak dimuat).
   `services/storage/` bisa menyerialisasinya tanpa services meng-import features.
 - `lib/services/**` — logika murni Dart, **wajib ada test**; tidak boleh diduplikasi di widget.
 - `lib/features/<screen>/` — satu folder per layar.
-- `lib/core/widgets/mabar_widgets.dart` — komponen lintas layar (header, chip, info box, status badge, tombol primer, dashed border, stat box).
+- `lib/core/widgets/` — komponen v2 lintas layar (lihat bagian Redesain v2 → Komponen).
 - `lib/core/widgets/court_painter.dart` + `mabar_ball.dart` — lapangan + bola brand. Dipakai banner Beranda **dan** generator icon aplikasi; jangan bikin salinan kedua.
 - `lib/features/schedule/widgets/` — komponen jadwal v2 (RoundTabs, RestingList, ScheduleMatchRow), dipakai Fixed dan Mixed.
 - State turnamen: Riverpod `tournamentProvider` (`features/schedule/tournament_controller.dart`) — satu-satunya sumber kebenaran sejak layar jadwal. Sebelum itu data dioper lewat `extra` router.
@@ -136,7 +136,7 @@ Konvensi: komentar seperlunya dan dalam bahasa Indonesia, menjelaskan *kenapa*. 
 ## Status: 11 layar selesai + persistensi lokal
 
 > **Saat merakit layar v2:** logika, provider, persistensi, dan aturan platform di bagian ini tetap berlaku. Detail
-> **tampilan** layar lama (ikon Material, gradien, `typeScale`, `ShareResultPoster`, teks versi di bawah Beranda, label
+> **tampilan** layar lama (ikon Material, gradien, `typeScale`, poster lama, teks versi di bawah Beranda, label
 > tombol lama) diganti hi-fi + komponen v2 — kalau bertentangan, hi-fi yang benar. Beranda v2 tidak menampilkan versi
 > (Cakupan → Dihapus); versi app hanya di `appVersion` + simpanan.
 
@@ -182,11 +182,15 @@ Mesin domain yang sudah ada + ter-test (semua `flutter test` lulus, termasuk gol
 
 Metode peringkat yang dipilih host hidup di `rankingMethodProvider`, klasemennya di `standingsProvider`, dan baris siap tampilnya di `standingEntriesProvider` (semuanya di `features/schedule/tournament_controller.dart`) — layar Peringkat, Detail Pemain, dan Share membaca `standingEntriesProvider` yang sama, jadi nomor urutnya tidak pernah berbeda antar layar. Di layar Detail, nama yang ditampilkan diambil dari `config.players` memakai `playerId`, **bukan** dari `entry.standing.player`: satu baris Fixed memuat dua pemain, dan `standing` itu milik anggota yang peringkatnya lebih tinggi.
 
-Tombol kirim di layar Share memakai share sheet sistem (`Icons.share`, label "Bagikan Hasil"), bukan lagi tombol hijau khusus WhatsApp — tujuannya ditentukan host di share sheet, jadi logo WhatsApp-nya dihapus.
+Bagikan (`features/share/share_result_screen.dart`) mengirim **gambar**, bukan cuma teks: `SharePoster` (target Feed
+1080×1080 dan Story 1080×1920, `SharePosterTarget.exportPixelRatio`) di-render lewat `screenshot` lalu dibagikan
+dengan `Share.shareXFiles` lewat share sheet sistem, teks hasil (`ResultTextBuilder`) jadi caption. Gagal share →
+caption disalin + toast "Hasil disalin". Isi poster dari `sharePosterData()` (`share_content.dart`): Ringkas = 5
+teratas + "+n pemain/pasangan lainnya", Lengkap = semua yang bernomor; Fixed menulis nilai + satuan saja, Mixed
+"42 poin · 100%" / "100% · +12". `ShareTheme` punya 10 gradien (6 gelap bertinta putih + 4 lembut bertinta gelap);
+semua warna poster diturunkan dari `theme.ink` — jangan menaruh `Colors.white` langsung. Tema & format tidak disimpan.
 
-Share (`features/share/share_card.dart`) mengirim **gambar**, bukan cuma teks: poster 1080×1080 (IG Feed) dan 1080×1920 (IG Story) di-render lewat `screenshot` lalu dibagikan dengan `Share.shareXFiles`, teks hasil jadi caption. `ShareSelection` menentukan isi kartu/poster: Ringkas = 5 teratas + "+n pemain lainnya", Lengkap = semua pemain. Judul kartunya memakai `Icons.emoji_events_outlined` (piala yang sama dengan header layar Peringkat), bukan emoji 🏆 — emoji ikut font tiap device dan tidak ikut ter-render saat poster dibuat. Warna latarnya dipilih host lewat selector di bawah banner dan dipakai kartu preview sekaligus kedua gambar. `ShareTheme` punya 10 gradien: 6 gelap (tinta putih) + 4 lembut/nude (peach, nude, sage, lilac) yang tintanya gelap. Semua warna teks, garis pemisah, kilau, watermark, dan ikon piala diturunkan dari `theme.ink` — jangan menaruh `Colors.white` langsung di kartu, nanti hilang di tema terang. Catatan layout: tema memberi `height: 1.5` ke body text — baris poster memakai `height: 1.1` supaya `FittedBox` tidak mengecilkannya tanpa perlu. Tiap ukuran punya `typeScale` sendiri (Feed 1.15, Story 1.5) karena kanvas 1:1 jauh lebih pendek; margin tepinya di `SharePosterSize.padding`.
-
-Cara melihat hasil poster tanpa build web: test sekali pakai yang me-render `ShareResultPoster` di `RepaintBoundary` lalu `toImage(pixelRatio: 3)` di dalam `tester.runAsync`, dan simpan PNG-nya. Wajib `loadHifiFonts()` (`test/hifi/hifi_golden.dart`, memuat Archivo + font ikon `PhosphorBold`) dan tema `MabarTheme.light()` — tanpa itu `flutter test` memakai font Ahem dan proporsinya menyesatkan. `Image.asset` memang tidak ikut ter-render di test.
+Cara melihat hasil poster tanpa build web: test sekali pakai yang me-render `SharePoster` di `RepaintBoundary` lalu `toImage(pixelRatio: 3)` di dalam `tester.runAsync`, dan simpan PNG-nya. Wajib `loadHifiFonts()` (`test/hifi/hifi_golden.dart`, memuat Archivo + font ikon `PhosphorBold`) dan tema `MabarTheme.light()` — tanpa itu `flutter test` memakai font Ahem dan proporsinya menyesatkan. `Image.asset` memang tidak ikut ter-render di test.
 
 ## Persistensi lokal
 
