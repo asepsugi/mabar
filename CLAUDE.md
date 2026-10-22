@@ -52,9 +52,9 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   (di atas `ScoreEntry`), StandingTable, StatLine, NameListField, ModePicker/CourtSwatch/CourtColorGrid,
   HomePanel/HomeRowIcon/InstallStep, SharePoster (`share/widgets/`, preset pratinjau/Feed/Story, diekspor lewat
   `SharePosterTarget.exportPixelRatio`). Widget lama yang namanya bentrok jadi `LegacyChip`/`LegacyStepper`.
-- **Layar v2 selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi, 04 Pasangan, 05 Jadwal Fixed, 06 Jadwal Mixed, 07 Kelola pemain & Lanjutkan, 08 Input Skor** (`test/hifi/screens/<alur>_test.dart`, golden semua frame + perilaku).
+- **Layar v2 selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi, 04 Pasangan, 05 Jadwal Fixed, 06 Jadwal Mixed, 07 Kelola pemain & Lanjutkan, 08 Input Skor, 09 Peringkat** (`test/hifi/screens/<alur>_test.dart`, golden semua frame + perilaku).
   Pembungkus layar `hifiScreen(...)` di `test/hifi/screens/screen_harness.dart` (tema, safe area 47/34, override
-  provider). Golden dialog/sheet/ketikan/gulir memakai `expectMatchesHifi(..., act: (tester) async {...})`. Layar 09–11
+  provider). Golden dialog/sheet/ketikan/gulir memakai `expectMatchesHifi(..., act: (tester) async {...})`. Layar 10–11
   masih tata letak lama. Layar "Cara Kerja Mixed" sudah dihapus: Konfigurasi Mixed ("Mulai Round 1") langsung push
   `/schedule`. Batas yang tidak tergambar di frame: durasi match maks 180 mnt, booking 1–12 jam per court.
   Pasangan: hasil acak bisa disuntik lewat `PairSetupScreen.random` (test memakai `Random` berskrip supaya sama
@@ -72,7 +72,9 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   `MabarRowAction` tata letaknya 36 (seperti CSS) dengan area sentuh 44 lewat hit-test yang diperluas.
   Input Skor = `ScoreBoard` + `ScoreKeypad` di atas `ScoreEntry` (skor tersimpan → `ScoreEntry.edit`, "Perbarui
   skor"); feedback Americano menulis selisih ("menang +5"), format lain skornya. Jebakan CSS: dua tombol
-  `flex: 1` / `flex: 2` membagi sisa lebar **setelah** padding tombol (Batal 129, Simpan WO 219), bukan 1:2 murni. Fixture 06o memakai id turnamen `t-06o-25` karena undian
+  `flex: 1` / `flex: 2` membagi sisa lebar **setelah** padding tombol (Batal 129, Simpan WO 219), bukan 1:2 murni.
+  Peringkat: status subjudul dari `rankingStatus()` (`leaderboard_screen.dart`, "Sementara · R3 · 6 dari 6 match" /
+  "Final · 4 round · 7 match"); golden memakai data `ranking_v2_test.dart`, Fixed 09c dengan jadwal yang cocok 10b. Fixture 06o memakai id turnamen `t-06o-25` karena undian
   prioritas berseed id turnamen.
   Dialog konfirmasi dipusatkan di layar penuh (`useSafeArea: false`, sesuai `.dialog { top: 50% }`).
 - **Painter lapangan selesai** (langkah 4): `core/widgets/court_painter.dart` — `CourtPainter(t, toward, layout)`, satu
