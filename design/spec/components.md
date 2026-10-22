@@ -104,7 +104,7 @@ Dipakai di frame: 02a, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04
 Daftar bergaya pengaturan + label dan catatan grup.
 
 Kelas hi-fi: `.group`, `.row`, `.glabel`, `.gnote`  
-Dipakai di frame: 01a, 01b, 01c, 01i, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06f, 06g, 06h, 06k, 06l, 06m, 06n, 06o, 08a, 08b, 08c, 08d, 07j, 10a, 10b, 10c, 11a, 11b, 11e, 11h, 11i
+Dipakai di frame: 01a, 01b, 01c, 01i, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06k, 06l, 06m, 06n, 06o, 08a, 08b, 08c, 08d, 07j, 10a, 10b, 10c, 11a, 11b, 11e, 11h, 11i
 
 ```css
 .glabel { font-size: 13px; font-weight: 700; color: var(--ink-3); padding: 0 4px; margin-bottom: -8px; }
@@ -131,7 +131,7 @@ Dipakai di frame: 01a, 01b, 01c, 01i, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04
 Label grup dengan satu aksi teks atau tag di ujungnya.
 
 Kelas hi-fi: `.ghead`  
-Dipakai di frame: 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06f, 06g, 06h, 06l, 06m, 06n, 06o
+Dipakai di frame: 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06l, 06m, 06n, 06o
 
 ```css
 .rest .ghead { margin: 0; }
@@ -303,7 +303,7 @@ Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06l, 06m, 06
 Yang istirahat di round ini (+ prioritas round berikutnya).
 
 Kelas hi-fi: `.rest`  
-Dipakai di frame: 06a, 06b, 06c, 06f, 06g, 06h, 06l, 06m, 06n, 06o
+Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06l, 06m, 06n, 06o
 
 ```css
 .rest { display: flex; flex-direction: column; gap: 6px; flex: none; }

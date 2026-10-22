@@ -15,6 +15,9 @@ import '../../services/storage/tournament_store.dart';
 /// sudah dibuka; default-nya memori saja supaya test tidak perlu plugin.
 final tournamentStoreProvider = Provider<TournamentStore>((ref) => TournamentStore.memory());
 
+/// Jam sekarang. Di-override test supaya teks yang bergantung jam ("45m dari 2 jam") sama dengan frame.
+final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
+
 /// Sumber kebenaran tunggal untuk turnamen yang sedang jalan.
 class TournamentController extends Notifier<ActiveTournament?> {
   TournamentStore get _store => ref.read(tournamentStoreProvider);
@@ -53,7 +56,7 @@ class TournamentController extends Notifier<ActiveTournament?> {
     state = ActiveTournament(
       tournament: Tournament(
         id: const Uuid().v4(),
-        createdAt: DateTime.now(),
+        createdAt: ref.read(clockProvider)(),
         config: config,
         matches: schedule.matches,
       ),

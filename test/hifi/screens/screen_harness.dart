@@ -17,3 +17,17 @@ Widget hifiScreen(Widget home, {List<Override> overrides = const []}) => Provide
     home: home,
   ),
 );
+
+/// [hifiScreen] dengan router, untuk test perilaku yang berpindah layar.
+Widget hifiRouterScreen(RouterConfig<Object> router, {List<Override> overrides = const []}) => ProviderScope(
+  overrides: overrides,
+  child: MaterialApp.router(
+    debugShowCheckedModeBanner: false,
+    theme: MabarTheme.light(),
+    routerConfig: router,
+    builder: (context, child) => MediaQuery(
+      data: MediaQuery.of(context).copyWith(padding: hifiSafeArea, viewPadding: hifiSafeArea),
+      child: child!,
+    ),
+  ),
+);

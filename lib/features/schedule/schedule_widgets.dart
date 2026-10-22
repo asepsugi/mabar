@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
+import '../../core/widgets/mabar_layers.dart';
 import '../../core/widgets/mabar_widgets.dart';
 import '../../models/models.dart';
 
@@ -550,25 +551,11 @@ class ScheduleFooterActions extends StatelessWidget {
   }
 }
 
-/// Dialog konfirmasi "Selesaikan Turnamen Sekarang".
-Future<bool> confirmFinishTournament(BuildContext context) async {
-  final ok = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      backgroundColor: MabarColors.card,
-      title: const Text('Akhiri turnamen?'),
-      content: const Text(
-        'Match yang belum main tidak dihitung.',
-        style: TextStyle(fontSize: 14, color: MabarColors.ink3, height: 1.5),
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
-        TextButton(
-          onPressed: () => Navigator.pop(ctx, true),
-          child: const Text('Akhiri', style: TextStyle(color: MabarColors.clay)),
-        ),
-      ],
-    ),
-  );
-  return ok ?? false;
-}
+/// Dialog 06e "Akhiri turnamen?" — dipakai Jadwal Fixed dan Mixed.
+Future<bool> confirmFinishTournament(BuildContext context) => showMabarConfirm(
+  context,
+  title: 'Akhiri turnamen?',
+  message: 'Match yang belum main tidak dihitung.',
+  confirmLabel: 'Akhiri',
+  destructive: true,
+);

@@ -52,13 +52,19 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   (di atas `ScoreEntry`), StandingTable, StatLine, NameListField, ModePicker/CourtSwatch/CourtColorGrid,
   HomePanel/HomeRowIcon/InstallStep, SharePoster (`share/widgets/`, preset pratinjau/Feed/Story, diekspor lewat
   `SharePosterTarget.exportPixelRatio`). Widget lama yang namanya bentrok jadi `LegacyChip`/`LegacyStepper`.
-- **Layar v2 selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi, 04 Pasangan** (`test/hifi/screens/<alur>_test.dart`, golden semua frame + perilaku).
+- **Layar v2 selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi, 04 Pasangan, 05 Jadwal Fixed** (`test/hifi/screens/<alur>_test.dart`, golden semua frame + perilaku).
   Pembungkus layar `hifiScreen(...)` di `test/hifi/screens/screen_harness.dart` (tema, safe area 47/34, override
-  provider). Golden dialog/sheet/ketikan/gulir memakai `expectMatchesHifi(..., act: (tester) async {...})`. Layar 05–11
+  provider). Golden dialog/sheet/ketikan/gulir memakai `expectMatchesHifi(..., act: (tester) async {...})`. Layar 06–11
   masih tata letak lama. Layar "Cara Kerja Mixed" sudah dihapus: Konfigurasi Mixed ("Mulai Round 1") langsung push
   `/schedule`. Batas yang tidak tergambar di frame: durasi match maks 180 mnt, booking 1–12 jam per court.
   Pasangan: hasil acak bisa disuntik lewat `PairSetupScreen.random` (test memakai `Random` berskrip supaya sama
   dengan frame); "Ubah pemain" mem-pop dua layar (Pasangan + Konfigurasi) kembali ke Pemain yang masih terisi.
+  Jadwal: `clockProvider` (`tournament_controller.dart`) = jam sekarang, dipakai subjudul "45m dari 2 jam" dan
+  `createdAt`; baris match + subjudul bersama di `features/schedule/widgets/schedule_match_row.dart`
+  (`ScheduleMatchRow`, `scheduleSubtitle`, `pairNames`) untuk Fixed dan Mixed. Golden yang butuh turnamen berjalan
+  meng-override `tournamentProvider` dengan controller yang `build()`-nya mengembalikan turnamen itu (config
+  `identical`, jadi `startIfNeeded` tidak membuat jadwal baru). Dialog Akhiri = `confirmFinishTournament` →
+  `showMabarConfirm`. Fixed setelah diakhiri: ⋯ mati (menunya kosong).
   Dialog konfirmasi dipusatkan di layar penuh (`useSafeArea: false`, sesuai `.dialog { top: 50% }`).
 - **Painter lapangan selesai** (langkah 4): `core/widgets/court_painter.dart` — `CourtPainter(t, toward, layout)`, satu
   gambar sudut lapangan untuk banner Beranda **dan** ikon app (jangan bikin gambar lapangan kedua). `t` = posisi garis
