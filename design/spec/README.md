@@ -34,7 +34,7 @@ Kalau hi-fi berubah: jalankan `python3 tool/hifi_extract.py` (butuh Google Chrom
    dan `tool/generate_app_icon.dart` (ikon opsi A di 01j). Ganti `mabar_brand_mark.dart`.
    **Selesai** (2026-10-22): `lib/core/widgets/court_painter.dart`, `features/home/widgets/court_banner.dart`.
 5. **Layar** — satu alur per tugas, urut `screens/01-…` sampai `11-…`.
-   Selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi, 04 Pasangan, 05 Jadwal Fixed, 06 Jadwal Mixed, 07 Kelola pemain & Lanjutkan (2026-10-22, `test/hifi/screens/`). Berikutnya 08 Input Skor.
+   Selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi, 04 Pasangan, 05 Jadwal Fixed, 06 Jadwal Mixed, 07 Kelola pemain & Lanjutkan, 08 Input Skor (2026-10-22, `test/hifi/screens/`). Berikutnya 09 Peringkat.
 
 Langkah 1–4 paling berisiko (logika + terjemahan CSS→Flutter) dan sebaiknya dikerjakan model yang lebih kuat.
 Langkah 5 bisa dikerjakan model yang lebih murah karena tinggal merakit komponen jadi dan dicek golden.

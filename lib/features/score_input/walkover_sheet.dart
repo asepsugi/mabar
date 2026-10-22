@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme/mabar_icons.dart';
-import '../../core/theme/mabar_theme.dart';
-import '../../core/widgets/mabar_widgets.dart';
+import '../../core/widgets/mabar_controls.dart';
+import '../../core/widgets/mabar_group.dart';
+import '../../core/widgets/mabar_inputs.dart';
+import '../../core/widgets/mabar_layers.dart';
 import '../../models/models.dart';
 
 class WalkoverResult {
@@ -12,241 +13,115 @@ class WalkoverResult {
   const WalkoverResult({required this.loserPairId, this.reason});
 }
 
-/// Screen 7b · bottom sheet "Tandai Walkover".
+/// Sheet 07j "Walkover" — pilih pasangan yang tidak main (lawan menang WO) dan alasan opsional. Membuka
+/// WO yang sudah ada: pilihan dan alasan terisi.
 Future<WalkoverResult?> showWalkoverSheet(
   BuildContext context, {
   required ActiveTournament active,
   required MatchGame match,
 }) {
-  return showModalBottomSheet<WalkoverResult>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: MabarColors.card,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(MabarRadius.sheet)),
-    ),
-    builder: (_) => _WalkoverSheet(active: active, match: match),
+  final court = active.courtById(match.courtId).name;
+  return showMabarSheet<WalkoverResult>(
+    context,
+    title: 'Walkover',
+    subtitle: 'Round ${match.roundNumber} · $court',
+    builder: (_) => _Walkover(active: active, match: match),
   );
 }
 
-class _WalkoverSheet extends StatefulWidget {
+class _Walkover extends StatefulWidget {
   final ActiveTournament active;
   final MatchGame match;
 
-  const _WalkoverSheet({required this.active, required this.match});
+  const _Walkover({required this.active, required this.match});
 
   @override
-  State<_WalkoverSheet> createState() => _WalkoverSheetState();
+  State<_Walkover> createState() => _WalkoverState();
 }
 
-class _WalkoverSheetState extends State<_WalkoverSheet> {
-  String? _loserPairId;
-  WoReason? _reason;
+class _WalkoverState extends State<_Walkover> {
+  late String? _loserPairId = widget.match.woLoserPairId;
+  late WoReason? _reason = widget.match.woReason;
 
-  @override
-  void initState() {
-    super.initState();
-    _loserPairId = widget.match.woLoserPairId;
-    _reason = widget.match.woReason;
-  }
+  String _names(Pair pair, String separator) =>
+      pair.playerIds.map((id) => widget.active.playerName(id).split(' ').first).join(separator);
 
-  Pair get _pair1 => widget.match.pair1;
-  Pair get _pair2 => widget.match.pair2;
-
-  Pair? get _winner {
-    if (_loserPairId == null) return null;
-    return _loserPairId == _pair1.id ? _pair2 : _pair1;
+  /// Nilai menang WO ikut format (PRD 4.4): Race to N → N game; Best of / Americano → rata-rata sendiri,
+  /// minimal skor menang terkecil.
+  String _winnerNote(Pair winner) {
+    final format = widget.active.config.format;
+    final who = '${_names(winner, ' & ')} menang WO dan dapat';
+    return format.method == ScoringMethod.raceTo
+        ? '$who ${format.target} ${format.unit}.'
+        : '$who ${format.unit} rata-rata mereka, minimal ${format.minWinningScore}.';
   }
 
   @override
   Widget build(BuildContext context) {
-    final active = widget.active;
     final match = widget.match;
+    final loser = _loserPairId;
+    final winner = loser == null ? null : (loser == match.pair1.id ? match.pair2 : match.pair1);
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(MabarSpacing.x5, MabarSpacing.x5, MabarSpacing.x5, MabarSpacing.x6),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const MabarGroupLabel('Siapa yang tidak main?'),
+        const SizedBox(height: 8),
+        for (final (i, pair) in [match.pair1, match.pair2].indexed) ...[
+          if (i > 0) const SizedBox(height: 16),
+          MabarOption(
+            label: _names(pair, ' · '),
+            sublabel: loser == pair.id ? 'Kalah WO' : null,
+            selected: loser == pair.id,
+            onTap: () => setState(() => _loserPairId = pair.id),
+          ),
+        ],
+        if (winner != null) ...[const SizedBox(height: 16), MabarGroupNote(_winnerNote(winner))],
+        const SizedBox(height: 16),
+        const MabarGroupLabel('Alasan'),
+        const SizedBox(height: 8),
+        MabarChipWrap(
           children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: MabarSpacing.x4),
-                decoration: BoxDecoration(color: MabarColors.line, borderRadius: BorderRadius.circular(2)),
+            for (final reason in WoReason.values)
+              MabarChip(
+                label: reason.label,
+                selected: _reason == reason,
+                // Ketuk lagi = lepas; alasan lama benar-benar terhapus (MatchGame.asWalkover).
+                onTap: () => setState(() => _reason = _reason == reason ? null : reason),
               ),
-            ),
-            Row(
+          ],
+        ),
+        const SizedBox(height: 16),
+        // `flex: 1` dan `flex: 2` CSS membagi sisa lebar setelah padding 20 + 20 tiap tombol, bukan lebar penuh.
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const gap = 10.0, padding = 40.0;
+            final share = (constraints.maxWidth - gap - 2 * padding) / 3;
+            return Row(
               children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: MabarColors.paper,
-                    borderRadius: BorderRadius.circular(MabarRadius.chip),
+                SizedBox(
+                  width: padding + share,
+                  child: MabarButton(
+                    label: 'Batal',
+                    variant: MabarButtonVariant.secondary,
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  child: const Icon(MabarIcons.user, size: 18, color: MabarColors.clay),
                 ),
-                const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Tandai Walkover',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                        color: MabarColors.ink,
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-                    Text(
-                      'Round ${match.roundNumber} · Match ${match.matchNumberInRound}',
-                      style: const TextStyle(fontSize: 11, color: MabarColors.faint),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Pilih pasangan yang tidak bisa main. Lawan otomatis menang.',
-              style: TextStyle(fontSize: 13, color: MabarColors.ink3, height: 1.5),
-            ),
-            const SizedBox(height: MabarSpacing.x4),
-            for (final pair in [_pair1, _pair2]) ...[
-              _PairOption(
-                label: active.pairLabel(pair),
-                selected: _loserPairId == pair.id,
-                onTap: () => setState(() => _loserPairId = pair.id),
-              ),
-              const SizedBox(height: MabarSpacing.x2),
-            ],
-            const SizedBox(height: 6),
-            if (_winner != null) ...[
-              MabarInfoBox(
-                variant: MabarInfoVariant.success,
-                icon: MabarIcons.trophy,
-                title: '${active.pairLabel(_winner!)} menang WO',
-              ),
-              const SizedBox(height: MabarSpacing.x4),
-            ],
-            const MabarFieldLabel('Alasan (opsional)'),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (final reason in WoReason.values)
-                  LegacyChip(
-                    label: reason.label,
-                    variant: _reason == reason ? LegacyChipVariant.active : LegacyChipVariant.filled,
-                    onTap: () => setState(() => _reason = _reason == reason ? null : reason),
-                  ),
-              ],
-            ),
-            const SizedBox(height: MabarSpacing.x5),
-            Row(
-              children: [
+                const SizedBox(width: gap),
                 Expanded(
-                  child: OutlinedButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-                ),
-                const SizedBox(width: MabarSpacing.x2),
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton(
-                    onPressed: _loserPairId == null
+                  child: MabarButton(
+                    label: 'Simpan WO',
+                    variant: MabarButtonVariant.danger,
+                    onPressed: loser == null
                         ? null
-                        : () => Navigator.pop(context, WalkoverResult(loserPairId: _loserPairId!, reason: _reason)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: MabarColors.clay,
-                      disabledBackgroundColor: MabarColors.clay.withValues(alpha: 0.4),
-                      disabledForegroundColor: Colors.white,
-                    ),
-                    child: const Text('Simpan'),
+                        : () => Navigator.pop(context, WalkoverResult(loserPairId: loser, reason: _reason)),
                   ),
                 ),
               ],
-            ),
-          ],
+            );
+          },
         ),
-      ),
-    );
-  }
-}
-
-class _PairOption extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _PairOption({required this.label, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: selected ? MabarColors.paper : MabarColors.card,
-          border: Border.all(color: selected ? MabarColors.clay : MabarColors.line, width: 2),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 22,
-              height: 22,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: MabarColors.card,
-                border: Border.all(color: selected ? MabarColors.clay : MabarColors.line, width: 2),
-              ),
-              child: selected
-                  ? Container(
-                      width: 10,
-                      height: 10,
-                      decoration: const BoxDecoration(color: MabarColors.clay, shape: BoxShape.circle),
-                    )
-                  : null,
-            ),
-            const SizedBox(width: MabarSpacing.x3),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: MabarColors.ink),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    selected ? 'Kalah WO' : 'Tetap main',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                      color: selected ? MabarColors.clay : MabarColors.faint,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (selected)
-              const Text(
-                'DIPILIH',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: MabarColors.clay,
-                  letterSpacing: 0.5,
-                ),
-              ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 }
