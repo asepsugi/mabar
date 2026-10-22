@@ -90,7 +90,7 @@ class MatchScoreRow extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [_team(top), const SizedBox(height: 8), _team(bottom)],
+                  children: [_line(top), const SizedBox(height: 8), _line(bottom)],
                 ),
               ),
             ),
@@ -106,6 +106,10 @@ class MatchScoreRow extends StatelessWidget {
       child: InkWell(onTap: onTap, child: row),
     );
   }
+
+  /// Satu baris tim setinggi baris CSS (16 × 1,4 = 22,4). Mesin teks membulatkan tinggi baris ke 22, dan di
+  /// riwayat Detail (tanpa tinggi minimal) selisihnya menumpuk 0,8 pt per baris.
+  Widget _line(MatchScoreSide side) => SizedBox(height: 16 * 1.4, child: _team(side));
 
   /// `#A3AEB8` — skor yang kalah.
   static const _lostScore = Color(0xFFA3AEB8);
