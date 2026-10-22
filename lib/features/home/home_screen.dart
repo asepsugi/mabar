@@ -49,8 +49,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         context,
         title: 'Mulai turnamen baru?',
         message:
-            'Turnamen yang sedang berjalan (${active.config.sport.label} · ${active.config.mode.label}, '
-            'Round ${active.currentRound}) akan dihapus.',
+            'Turnamen yang berjalan akan dihapus:\n'
+            '${active.config.sport.label} · ${active.config.mode.label}, Round ${active.currentRound}',
         confirmLabel: 'Hapus & mulai baru',
         destructive: true,
       );
