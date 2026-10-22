@@ -106,4 +106,7 @@ class MabarIcons {
 
   /// `plus-square` — Panduan iPhone: Tambah ke Layar Utama.
   static const plusSquare = IconData(0xed4a, fontFamily: _family);
+
+  /// `square-split-horizontal` — Kelola court (menu ⋯ Mixed): lapangan dengan net.
+  static const squareSplitHorizontal = IconData(0xe870, fontFamily: _family);
 }

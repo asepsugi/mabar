@@ -157,7 +157,7 @@ void main() {
     final holder = await pumpLive(tester, ended, elapsed: const Duration(minutes: 45));
     await tester.tap(find.text('Lanjutkan turnamen'));
     await tester.pumpAndSettle();
-    expect(find.text('Sisa 1j 15m'), findsNWidgets(2));
+    expect(find.text('Sisa 01:15'), findsNWidgets(2));
     expect(find.text('10 match lagi'), findsNothing);
     expect(find.text('match lagi'), findsOneWidget);
     expect(find.text('5 round (R4–R8) · 2 court'), findsOneWidget);

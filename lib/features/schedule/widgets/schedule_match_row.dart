@@ -1,44 +1,41 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/mabar_theme.dart';
+import '../../../core/time_text.dart';
 import '../../../core/widgets/mabar_controls.dart';
 import '../../../core/widgets/match_score_row.dart';
 import '../../../models/models.dart';
 
-/// Subjudul app bar Jadwal: "Tennis · Race to 6 · 45m dari 2 jam" — waktu berjalan sejak mulai dibanding
-/// booking court terpanjang (sesi baru selesai saat court terakhir habis), atau "diakhiri".
-String scheduleSubtitle(ActiveTournament active, DateTime now) {
+/// Subjudul app bar Jadwal: "Tennis · Race to 6", atau "… · diakhiri". Waktu tidak di sini: court bisa mulai di
+/// jam berbeda, jadi sisa booking ditulis di strip court masing-masing ([ScheduleMatchRow]).
+String scheduleSubtitle(ActiveTournament active) {
   final config = active.config;
-  final String time;
-  if (active.tournament.isFinished) {
-    time = 'diakhiri';
-  } else {
-    String span(int minutes) {
-      final h = minutes ~/ 60, m = minutes % 60;
-      return h == 0 ? '${m}m' : (m == 0 ? '${h}j' : '${h}j ${m}m');
-    }
-
-    final elapsed = now.difference(active.tournament.createdAt).inMinutes;
-    final booking = config.courts.map((c) => c.bookingDurationMinutes).reduce((a, b) => a > b ? a : b);
-    time = '${span(elapsed)} dari ${booking % 60 == 0 ? '${booking ~/ 60} jam' : span(booking)}';
-  }
-  return '${config.sport.label} · ${config.format.label} · $time';
+  return '${config.sport.label} · ${config.format.label}${active.tournament.isFinished ? ' · diakhiri' : ''}';
 }
 
 /// Nama depan pasangan dipisah titik tengah: "Andi · Budi" (baris match, Istirahat Fixed).
 String pairNames(ActiveTournament active, Pair pair) =>
     pair.playerIds.map((id) => active.playerName(id).split(' ').first).join(' · ');
 
-/// Satu match di Jadwal sebagai [MatchScoreRow]: strip court bernomor, nama depan pasangan "Andi · Budi",
+/// Satu match di Jadwal sebagai [MatchScoreRow]: strip court bernomor (42 pt), nama depan pasangan "Andi · Budi",
 /// skor / WO / Seri / "Tidak dimainkan". [onTap] null = tidak bisa diketuk (round terkunci, dibatalkan).
-/// [onFill] = tombol "Isi skor" untuk match yang belum diisi.
+/// [onFill] = tombol "Isi skor" untuk match yang belum diisi. Di round yang sedang berjalan strip-nya membawa sisa
+/// booking court itu pada [now].
 class ScheduleMatchRow extends StatelessWidget {
   final ActiveTournament active;
   final MatchGame match;
+  final DateTime now;
   final VoidCallback? onTap;
   final VoidCallback? onFill;
 
-  const ScheduleMatchRow({super.key, required this.active, required this.match, this.onTap, this.onFill});
+  const ScheduleMatchRow({
+    super.key,
+    required this.active,
+    required this.match,
+    required this.now,
+    this.onTap,
+    this.onFill,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +66,10 @@ class ScheduleMatchRow extends StatelessWidget {
     return MatchScoreRow(
       badge: '${courts.indexOf(court) + 1}',
       badgeColor: MabarColors.courtPalette[court.colorIndex],
+      badgeWidth: 42,
+      countdown: match.roundNumber == active.runningRound
+          ? countdownText(active.remainingBookingMinutes(court, now))
+          : null,
       top: side(match.pair1, match.pair1TotalGames),
       bottom: side(match.pair2, match.pair2TotalGames),
       cancelled: cancelled,

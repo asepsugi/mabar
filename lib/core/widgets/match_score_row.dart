@@ -35,6 +35,13 @@ class MatchScoreRow extends StatelessWidget {
 
   /// 19 untuk nomor court, 14 untuk label round ("R5") di riwayat.
   final double badgeFontSize;
+
+  /// 42 di Jadwal (muat kotak jam), 34 di riwayat Detail.
+  final double badgeWidth;
+
+  /// `.court.timed` — hitung mundur sisa booking court ("01:15") di kotak jam tinta 22% di dasar strip; hanya di
+  /// round yang sedang berjalan.
+  final String? countdown;
   final MatchScoreSide top;
   final MatchScoreSide bottom;
   final Widget? trailing;
@@ -50,6 +57,8 @@ class MatchScoreRow extends StatelessWidget {
     required this.badge,
     required this.badgeColor,
     this.badgeFontSize = 19,
+    this.badgeWidth = 34,
+    this.countdown,
     required this.top,
     required this.bottom,
     this.trailing,
@@ -59,8 +68,26 @@ class MatchScoreRow extends StatelessWidget {
     this.onTap,
   });
 
+  /// Tinta 22% di atas warna court: teks putih 13 pt ≥ 5:1 di kesepuluh warna (langsung di warna court, 4 warna
+  /// gagal 4,5:1).
+  static const _clockFill = Color(0x380F1E2C);
+
+  Widget _clock(String text) => Container(
+    height: 26,
+    color: _clockFill,
+    alignment: Alignment.center,
+    child: Text(
+      text,
+      style: MabarType.numM.copyWith(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white, height: 1),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
+    final number = Text(
+      badge,
+      style: MabarType.numM.copyWith(fontSize: badgeFontSize, color: Colors.white, height: 1.4),
+    );
     final end = trailing != null
         ? Padding(padding: const EdgeInsets.only(right: 12), child: trailing)
         : note != null
@@ -76,13 +103,12 @@ class MatchScoreRow extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              width: 34,
+              width: badgeWidth,
               color: cancelled ? MabarColors.off : badgeColor,
               alignment: Alignment.center,
-              child: Text(
-                badge,
-                style: MabarType.numM.copyWith(fontSize: badgeFontSize, color: Colors.white, height: 1.4),
-              ),
+              child: countdown == null
+                  ? number
+                  : Column(children: [Expanded(child: Center(child: number)), _clock(countdown!)]),
             ),
             Expanded(
               child: Padding(

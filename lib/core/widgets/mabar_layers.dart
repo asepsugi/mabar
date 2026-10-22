@@ -20,19 +20,16 @@ Future<T?> showMabarSheet<T>(
   String? subtitle,
   required WidgetBuilder builder,
   WidgetBuilder? footer,
-}) {
-  return showModalBottomSheet<T>(
-    context: context,
-    isScrollControlled: true,
-    useSafeArea: false,
-    builder: (context) => MabarSheet(
-      title: title,
-      subtitle: subtitle,
-      footer: footer?.call(context),
-      child: builder(context),
-    ),
-  );
-}
+}) => showMabarSheetRoute<T>(
+  context,
+  builder: (context) =>
+      MabarSheet(title: title, subtitle: subtitle, footer: footer?.call(context), child: builder(context)),
+);
+
+/// Route bottom sheet [showMabarSheet] untuk sheet yang menyusun [MabarSheet] sendiri, karena judul atau subjudulnya
+/// ikut berubah dengan isinya (pratinjau detail court).
+Future<T?> showMabarSheetRoute<T>(BuildContext context, {required WidgetBuilder builder}) =>
+    showModalBottomSheet<T>(context: context, isScrollControlled: true, useSafeArea: false, builder: builder);
 
 /// Isi [showMabarSheet]; publik supaya golden bisa merender sheet tanpa animasi route.
 class MabarSheet extends StatelessWidget {
@@ -41,12 +38,16 @@ class MabarSheet extends StatelessWidget {
   final Widget child;
   final Widget? footer;
 
+  /// Satu aksi teks di kanan judul ("Hapus" di detail court), seperti WO di app bar Input Skor.
+  final Widget? action;
+
   const MabarSheet({
     super.key,
     required this.title,
     this.subtitle,
     required this.child,
     this.footer,
+    this.action,
   });
 
   @override
@@ -72,18 +73,32 @@ class MabarSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Text(
-              title,
-              style: MabarType.sheetTitle.copyWith(color: MabarColors.ink),
-            ),
-            if (subtitle != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Text(
-                  subtitle!,
-                  style: MabarType.caption.copyWith(fontSize: 14),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: MabarType.sheetTitle.copyWith(color: MabarColors.ink),
+                      ),
+                      if (subtitle != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            subtitle!,
+                            style: MabarType.caption.copyWith(fontSize: 14),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
+                // `margin: -10px -10px 0 0`: tombol 44 pt menjorok ke atas dan ke kanan, sejajar dengan judul.
+                if (action != null) Transform.translate(offset: const Offset(10, -10), child: action),
+              ],
+            ),
             const SizedBox(height: 16),
             Flexible(child: SingleChildScrollView(child: child)),
             if (footer != null) ...[const SizedBox(height: 16), footer!],

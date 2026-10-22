@@ -24,7 +24,6 @@ class KonfigurasiScreen extends StatefulWidget {
 
 class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
   static const _minCourts = 1;
-  static const _maxCourts = 10;
   static const _defaultCourtCount = 2;
   static const _defaultBookingHours = 2;
   static const _maxBookingHours = 12;
@@ -201,7 +200,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
                             trailing: MabarStepper(
                               value: _courts.length,
                               min: _minCourts,
-                              max: _maxCourts,
+                              max: TournamentConfig.maxCourts,
                               onChanged: _setCourtCount,
                             ),
                           ),

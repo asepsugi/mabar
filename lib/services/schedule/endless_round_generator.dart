@@ -2,6 +2,9 @@ import 'dart:math';
 
 import '../../models/models.dart';
 
+/// Kapan court yang baru ditambah atau diubah jamnya dipakai ([EndlessRoundGenerator.courtUse]).
+enum CourtUse { now, nextRound, unused }
+
 /// Hasil generate satu round mode Mixed (endless).
 class EndlessRound {
   final List<MatchGame> matches;
@@ -132,8 +135,77 @@ class EndlessRoundGenerator {
     ).take(slots).map((p) => p.id).toSet();
 
     return (
-      priority: [for (final p in resting) if (next.contains(p.id)) p],
-      later: [for (final p in resting) if (!next.contains(p.id)) p],
+      priority: [
+        for (final p in resting)
+          if (next.contains(p.id)) p,
+      ],
+      later: [
+        for (final p in resting)
+          if (!next.contains(p.id)) p,
+      ],
+    );
+  }
+
+  /// Apa yang terjadi dengan court [courtId] di [active] (sudah berisi court baru atau jam yang diubah) pada [now]
+  /// — Kelola court & detail court, logic.md §10:
+  /// - [CourtUse.now]: round terakhir masih berjalan, court belum punya match di round itu, sisanya muat satu match,
+  ///   dan yang istirahat minimal 4 → satu match baru untuk [players] (4 teratas urutan prioritas R(n+1) di antara
+  ///   yang istirahat, persis daftar "Prioritas main di R…" kalau slotnya 4).
+  /// - [CourtUse.nextRound]: court menambah slot round berikutnya.
+  /// - [CourtUse.unused]: pemain tidak cukup untuk court ini, atau sisanya tidak muat satu match.
+  ///
+  /// [wasAvailable] = court lama yang sebelum diubah sudah muat satu match: mengganti nama atau menambah jamnya tidak
+  /// boleh tiba-tiba membuat match di round yang sedang berjalan.
+  static ({CourtUse use, List<Player> players}) courtUse(
+    ActiveTournament active,
+    String courtId,
+    DateTime now, {
+    bool wasAvailable = false,
+  }) {
+    final court = active.config.courts.firstWhere((c) => c.id == courtId);
+    final fits = active.remainingBookingMinutes(court, now) >= active.config.matchDurationMinutes;
+    final n = active.roundCount;
+    final running = n > 0 && !active.tournament.isFinished && !active.isRoundComplete(n);
+    if (fits && running && !wasAvailable && !active.matchesOfRound(n).any((m) => m.courtId == courtId)) {
+      final playing = {
+        for (final m in active.matchesOfRound(n)) ...[...m.pair1.playerIds, ...m.pair2.playerIds],
+      };
+      final waiting = priorityOrder(
+        players: active.activePlayers,
+        history: active.matches,
+        roundNumber: n + 1,
+        seed: active.drawSeed,
+        matchCredits: active.matchCredits,
+      ).where((p) => !playing.contains(p.id)).toList();
+      if (waiting.length >= 4) return (use: CourtUse.now, players: waiting.take(4).toList());
+    }
+    final available = active.courtsAvailableAt(now);
+    final players = active.activePlayers.length;
+    final adds =
+        fits &&
+        slotsFor(players: players, courts: available.length) >
+            slotsFor(players: players, courts: available.where((c) => c.id != courtId).length);
+    return (use: adds ? CourtUse.nextRound : CourtUse.unused, players: const []);
+  }
+
+  /// Match tambahan di round terakhir untuk court [courtId] (hasil [CourtUse.now]): pasangan disusun dengan penalti
+  /// yang sama dengan [generateRound], nomornya melanjutkan match terakhir di round itu.
+  static MatchGame courtMatch(ActiveTournament active, String courtId, List<Player> players, {Random? random}) {
+    assert(players.length == 4);
+    final n = active.roundCount;
+    final (pair1, pair2) = _bestArrangement(
+      players,
+      _History(active.matches, active.matchCredits),
+      random ?? Random(),
+    ).single;
+    final number = active.matchesOfRound(n).fold(0, (top, m) => max(top, m.matchNumberInRound)) + 1;
+    return MatchGame(
+      id: 'm-r$n-$number',
+      roundNumber: n,
+      matchNumberInRound: number,
+      courtId: courtId,
+      pair1: pair1,
+      pair2: pair2,
     );
   }
 

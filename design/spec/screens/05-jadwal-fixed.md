@@ -10,7 +10,8 @@ Round-robin penuh dibuat sekaligus. Contoh: Tennis, 10 pemain (5 pasangan), 2 co
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`
 
-- Judul = round yang dibuka. Subjudul: olahraga · mode · waktu berjalan dari jam mulai dibanding booking court terpanjang (format "1j 5m", diperbarui tiap menit). Emoji ⏱ dihapus.
+- Judul = round yang dibuka. Subjudul: olahraga · format skor. Waktu tidak lagi di subjudul ("45m dari 2 jam"): sisa booking ditulis per court di kotak jam strip, hitung mundur jam:menit, hanya di round yang sedang dibuka (aturan lengkap 06p). Emoji ⏱ dihapus.
+- Fixed mendapat hitung mundur yang sama, tanpa Kelola court: court hanya bisa ditambah di Mixed (keputusan host 2026-10-22). Jadwal Fixed dibuat lengkap di awal, jadi waktunya hanya informasi.
 - Tab default = round pertama yang masih ada match kosong. Pilihan tab bertahan; tidak pindah otomatis saat round selesai.
 - Progress bar dihapus; "1/2 match" di ujung tab menggantikannya.
 - Baris "Istirahat" hanya muncul kalau jumlah pasangan ganjil: paling banyak satu pasangan bye per round (`byePairIdByRound`), nama depan dipisah titik tengah.

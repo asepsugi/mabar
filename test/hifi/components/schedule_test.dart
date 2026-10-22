@@ -31,12 +31,16 @@ void main() {
           MatchScoreRow(
             badge: '1',
             badgeColor: court1,
+            badgeWidth: 42,
+            countdown: '01:08',
             top: const MatchScoreSide(name: 'Andi · Dewant', scores: ['13'], win: true),
             bottom: const MatchScoreSide(name: 'Citra · Fajar', scores: ['8'], tone: MatchScoreTone.lost),
           ),
           MatchScoreRow(
             badge: '2',
             badgeColor: court2,
+            badgeWidth: 42,
+            countdown: '01:08',
             top: const MatchScoreSide(name: 'Hana · Gina', win: true),
             bottom: const MatchScoreSide(name: 'Eko · Budi', tag: 'WO · Absen'),
           ),
@@ -59,12 +63,16 @@ void main() {
           MatchScoreRow(
             badge: '1',
             badgeColor: court1,
+            badgeWidth: 42,
+            countdown: '01:15',
             top: const MatchScoreSide(name: 'Andi · Budi', scores: ['6'], win: true),
             bottom: const MatchScoreSide(name: 'Citra · Dewant', scores: ['4'], tone: MatchScoreTone.lost),
           ),
           MatchScoreRow(
             badge: '2',
             badgeColor: court2,
+            badgeWidth: 42,
+            countdown: '01:15',
             top: const MatchScoreSide(name: 'Eko · Fajar'),
             bottom: const MatchScoreSide(name: 'Gina · Hana'),
             trailing: MabarButton(label: 'Isi skor', small: true, onPressed: () {}),

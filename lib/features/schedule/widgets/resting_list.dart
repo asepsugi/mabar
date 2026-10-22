@@ -12,16 +12,22 @@ class RestingList extends StatelessWidget {
   final int? priorityRound;
   final bool later;
 
-  const RestingList({super.key, required this.names, this.priorityRound, this.later = false});
+  /// Judul lain untuk daftar nama yang sama bentuknya ("Langsung main di R5" di Kelola court).
+  final String? title;
+
+  const RestingList({super.key, required this.names, this.priorityRound, this.later = false, this.title});
 
   /// Round berikutnya untuk daftar kedua (06o).
   const RestingList.later({super.key, required this.names, required int nextRound})
     : priorityRound = nextRound,
-      later = true;
+      later = true,
+      title = null;
 
   @override
   Widget build(BuildContext context) {
-    final label = later
+    final label = title != null
+        ? Text(title!, style: MabarType.label)
+        : later
         ? Text('Istirahat lagi di R$priorityRound', style: MabarType.label)
         : Text.rich(
             TextSpan(

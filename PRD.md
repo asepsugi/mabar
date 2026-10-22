@@ -1,6 +1,6 @@
 # PRD — Aplikasi Mabar Tennis/Padel (Klub/Komunitas)
 
-**Versi dokumen:** 2.1 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21) dan app **2.1.0**
+**Versi dokumen:** 2.2 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21; Kelola court 2026-10-22) dan app **2.2.0**
 **Platform:** Android + iOS + Web/PWA (1 codebase — Flutter)
 **Target user:** Host mabar klub/komunitas tennis & padel, 4–20 pemain per turnamen, 1 HP host, offline
 
@@ -39,7 +39,8 @@ Aplikasi untuk host turnamen mabar yang:
 - **Match** = 1 laga antar 2 sisi (mis. `Andi · Citra vs Budi · Dewant`).
 - **Round** = 1 batch di mana court dipakai paralel sekali. Fixed: total round = ⌈total match ÷ jumlah court⌉ per
   putaran circle.
-- **Court** = lapangan fisik; 1 match per court per round. Tiap court punya nama, warna, dan durasi booking sendiri.
+- **Court** = lapangan fisik; 1 match per court per round. Tiap court punya nama, warna, jam mulai, dan durasi booking
+  sendiri; di Mixed court bisa ditambah di tengah turnamen (court lain sering baru kosong di jam berikutnya).
 - Istilah UI: istilah olahraga tetap Inggris (court, round, match, set, WO, Win %, Total Point); semua orang disebut
   **pemain** (bukan peserta); Klasemen / Bagikan / Beranda (bukan Ranking / Share / Home); posisi pemain tetap "Peringkat n".
 
@@ -74,6 +75,9 @@ Aplikasi untuk host turnamen mabar yang:
   datang terlambat; host menambah pemain lalu Buat Rn lagi.
 - **Kelola pemain** di tengah turnamen: tambah, keluarkan (pemain tidak dihapus; nama & statistik tetap), kembalikan.
   Aktif minimal 4, maksimal 20.
+- **Kelola court** (menu ⋯, selama belum diakhiri): tambah court, ubah nama/warna/jam lewat detail court (tombol
+  Simpan), hapus court bernomor terakhir yang belum punya skor. Court yang ditambah atau dipesan ulang saat round
+  berjalan langsung dipakai untuk 4 pemain prioritas teratas (keputusan host 2026-10-22). Aturan: `logic.md` §10.
 - **Lanjutkan turnamen** (tambah jam per court 0–6) setelah diakhiri atau waktu booking habis, juga dari Beranda
   untuk turnamen terakhir.
 
@@ -115,8 +119,8 @@ function generateNextRound(activePlayers, history, courts, round):
   istirahat diprioritaskan di round berikutnya.
 - Pemain baru/kembali mendapat **kredit catch-up** = disejajarkan dengan pemain aktif yang paling sedikit main.
   Kredit hanya untuk prioritas jadwal, tidak ikut peringkat.
-- Waktu booking dihitung dari **jam sungguhan** sejak turnamen dimulai (keputusan host 2026-10-22), bukan dari
-  jumlah round × durasi. Court ikut round yang dibuat sekarang kalau sisa booking-nya (booking − menit berjalan)
+- Waktu booking dihitung dari **jam sungguhan** sejak court itu mulai (keputusan host 2026-10-22), bukan dari
+  jumlah round × durasi. Court ikut round yang dibuat sekarang kalau sisa booking-nya (ujung booking − menit berjalan)
   masih muat satu match, jadi round yang selesai lebih cepat dari durasinya menyisakan waktu untuk round tambahan.
 - Court yang waktu booking-nya habis tidak dipakai lagi; kalau semua habis, slot dihitung dari semua court (untuk
   daftar prioritas) dan tombolnya menjadi "Tambah jam".
@@ -126,8 +130,10 @@ function generateNextRound(activePlayers, history, courts, round):
 - Durasi match kelipatan 5 menit (minimal 5). Default Tennis 20 menit, Padel 15 menit; court default 2 × 2 jam.
 - Konfigurasi: ±round = booking terpendek ÷ durasi, match = round × court — perkiraan; jumlah round sebenarnya
   mengikuti jam (3.4). Booking terpendek < durasi → error yang menyebut court penyebabnya.
-- Lanjutkan turnamen: waktu tiap court dihitung dari sekarang kalau booking-nya sudah lewat,
-  `max(booking, menit berjalan) + tambahan`.
+- Lanjutkan turnamen dan detail court: waktu court dihitung dari sekarang kalau booking-nya sudah lewat,
+  `max(ujung booking, sekarang) + tambahan`.
+- Sisa booking ditulis per court sebagai hitung mundur jam:menit ("01:46") di kotak jam strip court (round yang sedang
+  berjalan) dan di subjudul Input Skor; subjudul Jadwal tidak menulis waktu.
   Estimasi dalam jumlah match (rumus di catatan frame 08c, `ActiveTournament.capacityAhead`).
 
 ---
@@ -231,15 +237,18 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 
 ### 5.5 Jadwal Fixed (06a–06e) & Mixed (06f–06o)
 - Tab round yang bisa digeser (tepi dipudarkan), label kanan "x/y match" atau "Waktu habis"; ganti round hanya lewat tab.
-- Baris match bergaya scorebug dengan strip court berwarna; ketuk → Input Skor (juga untuk mengubah).
+- Baris match bergaya scorebug dengan strip court berwarna (42 pt; di round yang sedang berjalan + kotak jam sisa
+  booking court itu); ketuk → Input Skor (juga untuk mengubah).
 - Istirahat: Fixed paling banyak satu pasangan; Mixed di round terakhir dibagi "Istirahat · Prioritas main di R(n+1)"
   dan "Istirahat lagi di R(n+1)".
-- Menu ⋯: Cara kerja Mixed (sheet; muncul otomatis sekali saat R1 dibuat) dan Akhiri turnamen (dialog).
+- Menu ⋯: Kelola court (Mixed), Cara kerja Mixed (sheet; muncul otomatis sekali saat R1 dibuat), dan Akhiri turnamen
+  (dialog).
   Fixed yang sudah diakhiri tidak punya item menu lagi: ikon ⋯ tampil pudar dan tidak bisa diketuk.
 - Mixed: Buat R(n+1) / Batalkan Rn / Pemain (n) / Tambah jam / Lanjutkan turnamen.
 
 ### 5.6 Input Skor & Walkover (07a–07k)
 - Papan skor gelap: satu angka besar per tim, keypad sendiri, pesan validasi, "Perbarui skor" saat mengubah.
+- Subjudul menulis sisa booking court itu untuk match di round yang sedang berjalan ("· sisa 02:00").
 - WO lewat sheet (4.4).
 
 ### 5.7 Klasemen (09a–09f)
@@ -277,9 +286,9 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 | Konfigurasi (+ sheet warna court) | 03a–03e |
 | Pasangan (Fixed) | 04a–04e |
 | Jadwal Fixed | 06a–06e |
-| Jadwal Mixed (+ sheet Cara kerja Mixed) | 06f–06o |
-| Sheet Kelola pemain, sheet Lanjutkan turnamen | 08a–08d |
-| Input Skor + sheet Walkover | 07a–07k |
+| Jadwal Mixed (+ sheet Cara kerja Mixed) | 06f–06t |
+| Sheet Kelola pemain, Lanjutkan turnamen, Kelola court + detail court | 08a–08k |
+| Input Skor + sheet Walkover | 07a–07l |
 | Klasemen | 09a–09f |
 | Detail Pemain | 10a–10c |
 | Bagikan | 11a–11j |
@@ -338,6 +347,8 @@ State teks sederhana tanpa frame: "Halaman tidak ditemukan", "Belum ada turnamen
 5. Timer per match: tidak.
 6. Metode "Kombinasi" dihapus (isinya identik dengan Win %).
 7. Data turnamen app lama tidak dimuat di v2; simpanan membawa versi app (2026-10-22).
+8. Court bisa ditambah di tengah turnamen, hanya Mixed; jam court baru dihitung dari saat ditambah dan court langsung
+   dipakai kalau round sedang berjalan (2026-10-22).
 
 ---
 

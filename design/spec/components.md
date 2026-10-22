@@ -8,7 +8,7 @@
 Judul rata kiri + subjudul fakta, tombol kembali, aksi kanan.
 
 Kelas hi-fi: `.appbar`, `.large-title`  
-Dipakai di frame: 02a, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 08a, 08b, 08c, 08d, 07a, 07b, 07c, 07d, 07e, 07f, 07g, 07h, 07i, 07j, 07k, 09a, 09b, 09c, 09d, 09e, 09f, 10a, 10b, 10c, 11a, 11b, 11c, 11e, 11h, 11i
+Dipakai di frame: 02a, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 06p, 06q, 06r, 06s, 06t, 08a, 08b, 08c, 08d, 08e, 08f, 08g, 08h, 08i, 08j, 08k, 07a, 07b, 07c, 07d, 07e, 07f, 07g, 07h, 07i, 07j, 07k, 07l, 09a, 09b, 09c, 09d, 09e, 09f, 10a, 10b, 10c, 11a, 11b, 11c, 11e, 11h, 11i
 
 ```css
 .appbar { display: flex; align-items: center; gap: 6px; padding: 54px 12px 12px 6px; }
@@ -26,7 +26,7 @@ Dipakai di frame: 02a, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04
 Varian primary · ball · secondary · danger · ghost · wait · off · sm.
 
 Kelas hi-fi: `.btn`  
-Dipakai di frame: 01a, 01b, 01c, 01d, 01e, 01f, 01h, 01i, 02a, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 08a, 08b, 08c, 08d, 07a, 07b, 07c, 07d, 07e, 07f, 07g, 07h, 07i, 07j, 07k, 09a, 09b, 09c, 09d, 09e, 09f, 11a, 11b, 11c, 11e, 11h, 11i
+Dipakai di frame: 01a, 01b, 01c, 01d, 01e, 01f, 01h, 01i, 02a, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 06p, 06q, 06r, 06s, 06t, 08a, 08b, 08c, 08d, 08e, 08f, 08g, 08h, 08i, 08j, 08k, 07a, 07b, 07c, 07d, 07e, 07f, 07g, 07h, 07i, 07j, 07k, 07l, 09a, 09b, 09c, 09d, 09e, 09f, 11a, 11b, 11c, 11e, 11h, 11i
 
 ```css
 .btn { height: 52px; min-height: 52px; border-radius: 12px; padding: 0 20px; font: 700 16px/1 var(--f); display: flex; align-items: center; justify-content: center; gap: 8px; border: 0; flex: 1; min-width: 0; white-space: nowrap; }
@@ -48,7 +48,7 @@ Dipakai di frame: 01a, 01b, 01c, 01d, 01e, 01f, 01h, 01i, 02a, 02b, 02c, 02d, 03
 Aksi teks 44 pt, biru court / clay.
 
 Kelas hi-fi: `.txtbtn`  
-Dipakai di frame: 01h, 02a, 02b, 02c, 02d, 04a, 04b, 04c, 04d, 04e, 06e, 06j, 07a, 07b, 07c, 07d, 07e, 07f, 07g, 07h, 07i, 07j, 07k
+Dipakai di frame: 01h, 02a, 02b, 02c, 02d, 04a, 04b, 04c, 04d, 04e, 06e, 06j, 08h, 07a, 07b, 07c, 07d, 07e, 07f, 07g, 07h, 07i, 07j, 07k, 07l
 
 ```css
 .txtbtn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 44px; padding: 0 10px; font: 700 15px/1 var(--f); color: var(--court); background: none; border: 0; flex: none; white-space: nowrap; }
@@ -64,7 +64,7 @@ Dipakai di frame: 01h, 02a, 02b, 02c, 02d, 04a, 04b, 04c, 04d, 04e, 06e, 06j, 07
 Tombol ikon 44 pt (52 di action bar), opsional angka kecil.
 
 Kelas hi-fi: `.icbtn`  
-Dipakai di frame: 02a, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 08a, 08b, 08c, 08d, 07a, 07b, 07c, 07d, 07e, 07f, 07g, 07h, 07i, 07j, 07k, 09a, 09b, 09c, 09d, 09e, 09f, 10a, 10b, 10c, 11a, 11b, 11c, 11e, 11h, 11i
+Dipakai di frame: 02a, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 06p, 06q, 06r, 06s, 06t, 08a, 08b, 08c, 08d, 08e, 08f, 08g, 08h, 08i, 08j, 08k, 07a, 07b, 07c, 07d, 07e, 07f, 07g, 07h, 07i, 07j, 07k, 07l, 09a, 09b, 09c, 09d, 09e, 09f, 10a, 10b, 10c, 11a, 11b, 11c, 11e, 11h, 11i
 
 ```css
 .icbtn { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: var(--ink-2); background: transparent; border: 0; padding: 0; position: relative; flex: none; }
@@ -90,7 +90,7 @@ Dipakai di frame: 08a, 08b
 Bilah tombol menempel di bawah, garis tipis di atas, safe area 34.
 
 Kelas hi-fi: `.actionbar`  
-Dipakai di frame: 02a, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 08a, 08b, 08c, 08d, 09a, 09b, 09c, 09d, 09e, 09f, 11a, 11b, 11c, 11e, 11h, 11i
+Dipakai di frame: 02a, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 06p, 06q, 06r, 06s, 06t, 08a, 08b, 08c, 08d, 08e, 08f, 08g, 08h, 08i, 08j, 08k, 09a, 09b, 09c, 09d, 09e, 09f, 11a, 11b, 11c, 11e, 11h, 11i
 
 ```css
 .actionbar { margin-top: auto; padding: 12px 16px 34px; display: flex; gap: 10px; background: var(--paper); border-top: 1px solid var(--line); flex: none; }
@@ -104,7 +104,7 @@ Dipakai di frame: 02a, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04
 Daftar bergaya pengaturan + label dan catatan grup.
 
 Kelas hi-fi: `.group`, `.row`, `.glabel`, `.gnote`  
-Dipakai di frame: 01a, 01b, 01c, 01i, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 08a, 08b, 08c, 08d, 07j, 10a, 10b, 10c, 11a, 11b, 11c, 11e, 11h, 11i
+Dipakai di frame: 01a, 01b, 01c, 01i, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 06p, 06q, 06r, 06s, 06t, 08a, 08b, 08c, 08d, 08e, 08f, 08g, 08h, 08i, 08j, 08k, 07j, 10a, 10b, 10c, 11a, 11b, 11c, 11e, 11h, 11i
 
 ```css
 .glabel { font-size: 13px; font-weight: 700; color: var(--ink-3); padding: 0 4px; margin-bottom: -8px; }
@@ -131,7 +131,7 @@ Dipakai di frame: 01a, 01b, 01c, 01i, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04
 Label grup dengan satu aksi teks atau tag di ujungnya.
 
 Kelas hi-fi: `.ghead`  
-Dipakai di frame: 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 08a, 08c, 08d
+Dipakai di frame: 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 06p, 06q, 06r, 06s, 06t, 08a, 08c, 08d, 08e, 08f, 08g, 08h, 08i, 08j, 08k
 
 ```css
 .rest .ghead { margin: 0; }
@@ -160,7 +160,7 @@ Dipakai di frame: 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 09a, 09b, 09
 Stepper − angka + dengan lebar angka tetap 60.
 
 Kelas hi-fi: `.stepper`  
-Dipakai di frame: 03a, 03b, 03c, 03d, 03e, 08c, 08d
+Dipakai di frame: 03a, 03b, 03c, 03d, 03e, 08c, 08d, 08e, 08f, 08g, 08h, 08i, 08j, 08k
 
 ```css
 .stepper { display: flex; align-items: center; gap: 4px; flex: none; }
@@ -175,7 +175,7 @@ Dipakai di frame: 03a, 03b, 03c, 03d, 03e, 08c, 08d
 Kotak isian.
 
 Kelas hi-fi: `.field`, `.inline-field`, `.ph`, `.caret`  
-Dipakai di frame: 02a, 02c, 03a, 03b, 03c, 03d, 03e, 08a, 08b
+Dipakai di frame: 02a, 02c, 03a, 03b, 03c, 03d, 03e, 08a, 08b, 08e, 08f, 08g, 08h, 08i, 08j, 08k
 
 ```css
 .field { background: var(--card); border-radius: 12px; box-shadow: inset 0 0 0 1.5px var(--line); padding: 14px 16px; font-size: 16px; min-width: 0; }
@@ -184,6 +184,7 @@ Dipakai di frame: 02a, 02c, 03a, 03b, 03c, 03d, 03e, 08a, 08b
 .ph { color: var(--faint); }
 .caret { display: inline-block; width: 2px; height: 1.1em; background: var(--court); vertical-align: -3px; margin-left: 1px; }
 .inline-field { flex: 1; min-width: 0; height: 40px; border-radius: 9px; background: var(--paper); display: flex; align-items: center; padding: 0 12px; font-size: 16px; }
+.sheet .inline-field { background: var(--card); }
 ```
 
 ## `NameListField`
@@ -255,7 +256,7 @@ Dipakai di frame: 04b, 04e, 07j
 Tab round + label kanan; .strip bisa digeser dengan fade di tepi.
 
 Kelas hi-fi: `.tabs`  
-Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 08a, 08b, 08c, 08d
+Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 06p, 06q, 06r, 06s, 06t, 08a, 08b, 08c, 08d, 08e, 08f, 08g, 08h, 08i, 08j, 08k
 
 ```css
 .tabs { display: flex; align-items: flex-end; gap: 22px; padding: 0 16px; border-bottom: 1px solid var(--line); flex: none; }
@@ -276,7 +277,7 @@ Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06
 Satu match gaya scorebug.
 
 Kelas hi-fi: `.list`, `.bug`, `.team`  
-Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 08a, 08b, 08c, 08d, 10a, 10b
+Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 06p, 06q, 06r, 06s, 06t, 08a, 08b, 08c, 08d, 08e, 08f, 08g, 08h, 08i, 08j, 08k, 10a, 10b
 
 ```css
 .list { display: flex; flex-direction: column; gap: 8px; }
@@ -296,6 +297,10 @@ Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06
 .bug.cancelled .team { color: var(--faint); text-decoration: line-through; }
 .bug.cancelled .court { background: #C3CCD4; }
 .bug .note-r { align-self: center; margin-right: 14px; font-size: 13px; color: var(--ink-3); }
+.bug.wide { grid-template-columns: 42px minmax(0, 1fr) auto; }
+.bug .court.timed { display: grid; grid-template-rows: minmax(0, 1fr) 26px; place-items: stretch; }
+.bug .court.timed > span { display: grid; place-items: center; }
+.bug .court.timed .cd { font-size: 13px; font-weight: 700; line-height: 1; background: rgba(15,30,44,.22); }
 ```
 
 ## `RestingList`
@@ -303,7 +308,7 @@ Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06
 Yang istirahat di round ini (+ prioritas round berikutnya).
 
 Kelas hi-fi: `.rest`  
-Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 08a, 08c, 08d
+Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 06p, 06q, 06r, 06s, 06t, 08a, 08c, 08d, 08e, 08f, 08g, 08h, 08i, 08j, 08k
 
 ```css
 .rest { display: flex; flex-direction: column; gap: 6px; flex: none; }
@@ -319,7 +324,7 @@ Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06
 Papan skor + keypad sendiri.
 
 Kelas hi-fi: `.board`, `.bhead`, `.brow`, `.cell`, `.feedback`, `.keypad`, `.key`, `.setctl`  
-Dipakai di frame: 07a, 07b, 07c, 07d, 07e, 07f, 07g, 07h, 07i, 07j, 07k
+Dipakai di frame: 07a, 07b, 07c, 07d, 07e, 07f, 07g, 07h, 07i, 07j, 07k, 07l
 
 ```css
 .board { margin: 4px 16px 0; background: var(--ink); color: #fff; border-radius: 16px; overflow: hidden; flex: none; }
@@ -396,9 +401,10 @@ Dipakai di frame: 10a, 10b, 10c
 Bottom sheet (lima jenis footer).
 
 Kelas hi-fi: `.sheet`, `.grab`, `.scrim`, `.opt`  
-Dipakai di frame: 01h, 01i, 03e, 04d, 06e, 06j, 06k, 08a, 08b, 08c, 08d, 07j
+Dipakai di frame: 01h, 01i, 03e, 04d, 06e, 06j, 06k, 08a, 08b, 08c, 08d, 08e, 08f, 08g, 08h, 08i, 08j, 08k, 07j
 
 ```css
+.sheet .inline-field { background: var(--card); }
 .scrim { position: absolute; inset: 0; background: rgba(15,30,44,.46); }
 .sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--card); border-radius: 22px 22px 0 0; padding: 8px 16px 34px; display: flex; flex-direction: column; gap: 16px; max-height: 92%; }
 .grab { width: 38px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto; flex: none; }
@@ -527,7 +533,7 @@ Dipakai di frame: 03a, 03b, 03c, 03d, 03e
 Lingkaran warna court.
 
 Kelas hi-fi: `.swatches`, `.swatch`, `.dot`  
-Dipakai di frame: 03a, 03b, 03c, 03d, 03e, 08c, 08d
+Dipakai di frame: 03a, 03b, 03c, 03d, 03e, 08c, 08d, 08e, 08f, 08g, 08h, 08i, 08j, 08k
 
 ```css
 .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; }

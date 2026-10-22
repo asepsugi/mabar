@@ -1,9 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/minute_ticker.dart';
 import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_controls.dart';
@@ -28,7 +27,7 @@ class ScheduleFixedScreen extends ConsumerStatefulWidget {
 class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
   /// Pilihan tab bertahan; tidak pindah otomatis saat round selesai.
   int? _selectedRound;
-  Timer? _clock;
+  MinuteTicker? _clock;
 
   @override
   void initState() {
@@ -37,8 +36,14 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
     Future.microtask(() {
       if (mounted) ref.read(tournamentProvider.notifier).startIfNeeded(widget.config);
     });
-    // Waktu berjalan di subjudul — cukup ditik tiap menit.
-    _clock = Timer.periodic(const Duration(minutes: 1), (_) => setState(() {}));
+    // Kotak jam di strip court mengikuti jam sungguhan: ditik di setiap pergantian menit sejak turnamen dimulai.
+    _clock = MinuteTicker(
+      clock: ref.read(clockProvider),
+      origin: () => ref.read(tournamentProvider)?.tournament.createdAt,
+      onTick: () {
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   @override
@@ -83,7 +88,7 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
         children: [
           MabarAppBar(
             title: 'Round $selected',
-            subtitle: scheduleSubtitle(active, ref.read(clockProvider)()),
+            subtitle: scheduleSubtitle(active),
             onBack: () => context.pop(),
             actions: [
               Builder(
@@ -131,6 +136,7 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
                         ScheduleMatchRow(
                           active: active,
                           match: m,
+                          now: ref.read(clockProvider)(),
                           onTap: locked ? null : () => openScore(m),
                           onFill: locked || m.status != MatchStatus.pending ? null : () => openScore(m),
                         ),

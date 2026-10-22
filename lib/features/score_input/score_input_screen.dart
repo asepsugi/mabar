@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/minute_ticker.dart';
 import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
+import '../../core/time_text.dart';
 import '../../core/widgets/mabar_controls.dart';
 import '../../models/models.dart';
 import '../../services/scoring/score_entry.dart';
@@ -23,6 +25,26 @@ class ScoreInputScreen extends ConsumerStatefulWidget {
 
 class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
   ScoreEntry? _entry;
+  MinuteTicker? _clock;
+
+  @override
+  void initState() {
+    super.initState();
+    // Sisa booking court di subjudul mengikuti jam sungguhan, sama dengan kotak jam di Jadwal.
+    _clock = MinuteTicker(
+      clock: ref.read(clockProvider),
+      origin: () => ref.read(tournamentProvider)?.tournament.createdAt,
+      onTick: () {
+        if (mounted) setState(() {});
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _clock?.cancel();
+    super.dispose();
+  }
 
   /// Skor tersimpan (juga skor lama match WO) dibuka terisi, belum ada kotak aktif sampai diketuk.
   ScoreEntry _initial(ActiveTournament active, MatchGame match) => match.sets.isEmpty
@@ -62,14 +84,25 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
       null => null,
     };
 
+    // Sisa booking court ini, hanya untuk match di round yang sedang berjalan; kurang dari satu match → clay.
+    final court = active.courtById(match.courtId);
+    String? left;
+    var short = false;
+    if (match.roundNumber == active.runningRound) {
+      final minutes = active.remainingBookingMinutes(court, ref.read(clockProvider)());
+      left = minutes > 0 ? 'sisa ${countdownText(minutes)}' : 'waktu habis';
+      short = minutes < active.config.matchDurationMinutes;
+    }
+
     return Scaffold(
       backgroundColor: MabarColors.paper,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           MabarAppBar(
-            title: active.courtById(match.courtId).name,
-            subtitle: 'Round ${match.roundNumber} · ${active.config.format.label}',
+            title: court.name,
+            subtitle: 'Round ${match.roundNumber} · ${active.config.format.label}${left != null && !short ? ' · $left' : ''}',
+            subtitleAlert: short ? left : null,
             onBack: () => context.pop(),
             actions: [
               MabarTextButton(label: 'WO', tone: MabarTextTone.danger, onPressed: () => _walkover(active, match)),

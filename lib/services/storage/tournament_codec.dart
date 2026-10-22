@@ -77,6 +77,8 @@ class TournamentCodec {
           'name': court.name,
           'colorIndex': court.colorIndex,
           'bookingDurationMinutes': court.bookingDurationMinutes,
+          // Opsional: court dari Konfigurasi mulai bersama turnamen (0); simpanan 2.1 tetap terbaca.
+          if (court.startMinute != 0) 'startMinute': court.startMinute,
         },
     ],
     'players': [
@@ -124,6 +126,7 @@ class TournamentCodec {
           name: c['name'] as String,
           colorIndex: c['colorIndex'] as int,
           bookingDurationMinutes: c['bookingDurationMinutes'] as int,
+          startMinute: c['startMinute'] as int? ?? 0,
         ),
     ],
     players: [for (final p in j['players'] as List) Player(id: p['id'] as String, name: p['name'] as String)],

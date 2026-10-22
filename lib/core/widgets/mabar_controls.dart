@@ -388,6 +388,9 @@ class MabarActionBar extends StatelessWidget {
 class MabarAppBar extends StatelessWidget {
   final String title;
   final String? subtitle;
+
+  /// Bagian akhir subjudul yang ditulis clay ("sisa 00:12" di Input Skor), setelah " · ".
+  final String? subtitleAlert;
   final VoidCallback? onBack;
   final List<Widget> actions;
   final bool scrolled;
@@ -396,6 +399,7 @@ class MabarAppBar extends StatelessWidget {
     super.key,
     required this.title,
     this.subtitle,
+    this.subtitleAlert,
     this.onBack,
     this.actions = const [],
     this.scrolled = false,
@@ -415,7 +419,18 @@ class MabarAppBar extends StatelessWidget {
             if (subtitle != null)
               Padding(
                 padding: const EdgeInsets.only(top: 2),
-                child: Text(subtitle!, style: MabarType.caption, maxLines: 1, overflow: TextOverflow.ellipsis),
+                child: Text.rich(
+                  TextSpan(
+                    text: subtitle,
+                    children: [
+                      if (subtitleAlert != null)
+                        TextSpan(text: ' · $subtitleAlert', style: const TextStyle(color: MabarColors.clay)),
+                    ],
+                  ),
+                  style: MabarType.caption,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
           ],
         ),

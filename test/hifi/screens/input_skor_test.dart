@@ -23,9 +23,13 @@ void main() {
   ActiveTournament round2() => mixedTournament([mixedR1, r2], sport: SportType.tennis, format: race6);
   ActiveTournament round3(ScoreFormat format) => mixedTournament([mixedR1, mixedR2, r3], format: format);
 
+  // Jam frame: Round 2 = 06a (45 menit berjalan, sisa 01:15), Round 3 = 06f (40 menit, sisa 01:20).
+  Override clock(ActiveTournament active) =>
+      clockProvider.overrideWithValue(() => fixtureStart.add(Duration(minutes: active.roundCount == 2 ? 45 : 40)));
+
   Widget screen(ActiveTournament active, String matchId) => hifiScreen(
     ScoreInputScreen(matchId: matchId),
-    overrides: [tournamentProvider.overrideWith(() => LoadedTournament(active))],
+    overrides: [tournamentProvider.overrideWith(() => LoadedTournament(active)), clock(active)],
   );
 
   Future<void> type(WidgetTester tester, List<int> digits) async {
@@ -91,7 +95,7 @@ void main() {
       ],
     );
     await tester.pumpWidget(
-      hifiRouterScreen(router, overrides: [tournamentProvider.overrideWith(() => LoadedTournament(active))]),
+      hifiRouterScreen(router, overrides: [tournamentProvider.overrideWith(() => LoadedTournament(active)), clock(active)]),
     );
     router.push('/score-input', extra: matchId);
     await tester.pumpAndSettle();

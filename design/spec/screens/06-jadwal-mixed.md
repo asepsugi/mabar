@@ -2,7 +2,7 @@
 
 > Dihasilkan `tool/hifi_extract.py` dari `design/hifi.html`. Jangan diedit langsung.
 
-Round dibuat satu per satu. Contoh: Padel, Americano 21, 10 pemain, 2 court, jadi tiap round dua orang istirahat. Kotak kuning "R… dibuat setelah skor R… lengkap" dihapus; alasannya ada di tombol.
+Round dibuat satu per satu. Contoh: Padel, Americano 21, 10 pemain, 2 court, jadi tiap round dua orang istirahat. Court bisa ditambah di tengah turnamen (06p–06t, sheet 08e–08k); sisa booking tiap court ada di kotak jam strip-nya. Kotak kuning "R… dibuat setelah skor R… lengkap" dihapus; alasannya ada di tombol.
 
 ## 06f · Round berjalan
 
@@ -41,7 +41,8 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`, `MabarMenu`
 
-- Isi menu Mixed: "Cara kerja Mixed" → sheet 06k dan "Akhiri turnamen" → dialog 06e.
+- Isi menu Mixed: "Kelola court" → sheet 08e, "Cara kerja Mixed" → sheet 06k, dan "Akhiri turnamen" → dialog 06e.
+- "Kelola court" di menu, bukan di layar, supaya Jadwal tidak bertambah elemen. Namanya sejajar dengan Kelola pemain karena court juga diubah dan dihapus di sana. Ikon `square-split-horizontal` (lapangan dengan net). Ada selama turnamen belum diakhiri, termasuk saat court sudah 10 (sheet-nya lalu hanya berisi daftar).
 - "Batalkan Rn" sengaja tidak ada di menu: syaratnya sama persis dengan tombol di layar (06h), jadi item menu tidak pernah menolong saat tombolnya tidak ada. Satu aksi, satu tempat.
 
 ## 06j · Dialog · batalkan round
@@ -69,7 +70,8 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`
 
-- `canResume` tanpa "Akhiri": semua court sudah tidak muat round berikutnya. "Buat R9" diganti "Tambah jam" → sheet 08c.
+- `canResume` tanpa "Akhiri": semua court sudah tidak muat round berikutnya. "Buat R9" diganti "Tambah jam" → sheet 08c. Kotak jam di strip berhenti di "00:00".
+- Court baru dari Kelola court (08f) atau jam tambahan lewat detail court (08j) juga mengembalikan "Buat R9".
 - Begitu round terakhir di sini lengkap, Klasemen dan Bagikan menyebutnya Final / "Klasemen akhir" (09f), tanpa perlu Akhiri.
 - Baru: tab menulis "Waktu habis" (clay). Kotak kuning lama yang tetap menulis "0 dari 2 court" tidak muncul lagi.
 - 8 tab tidak muat: baris tab digeser sampai round terakhir rapat di kanan, dan tab yang terpotong di kiri dipudarkan sebagai tanda masih ada round sebelumnya. Interaksi lengkapnya di 06n.
@@ -81,7 +83,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`
 
 - Mixed yang sudah diakhiri bisa dilanjutkan: "Lanjutkan turnamen" → sheet 08c. Match "Tidak dimainkan" kembali bisa diisi setelah dilanjutkan.
-- Tombol Pemain disembunyikan setelah diakhiri. Menu ⋯ hanya berisi "Cara kerja Mixed".
+- Tombol Pemain disembunyikan setelah diakhiri. Menu ⋯ hanya berisi "Cara kerja Mixed": Kelola court juga hilang, jam ditambah lewat Lanjutkan. Strip tanpa kotak jam.
 - Kalimat "Turnamen sudah diakhiri · tambah jam court untuk main lagi" diringkas ke subjudul "diakhiri".
 
 ## 06n · Banyak round · melihat round awal
@@ -110,3 +112,51 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 - Yang istirahat lebih banyak dari slot round berikutnya (12 orang, R4 hanya 8 slot = 4 × court), jadi daftarnya dibagi dua: yang pasti main di R4 di bawah judul "Istirahat · Prioritas main di R4" (bagian prioritas bertinta gelap, bukan biru court supaya tidak terbaca sebagai tautan), dan sisanya di daftar kedua "Istirahat lagi di R4" yang lebih pudar. Kalau semua yang istirahat kebagian slot, hanya daftar pertama yang tampil (06f–06h).
 - Isi kedua daftar dihitung dengan urutan yang sama persis dengan generator: jumlah main (termasuk kredit), lalu yang paling lama istirahat. Pemain yang seri diundi dengan undian yang dikunci per round (seed turnamen + nomor round), bukan diacak saat "Buat R4" ditekan. Jadi hasil Buat R4 selalu sama dengan daftar ini.
 - Daftar dihitung ulang langsung kalau host menambah/mengeluarkan pemain (sheet 08a) atau jumlah court yang masih punya waktu berubah. Pemain yang baru ditambahkan langsung masuk salah satu daftar; yang keluar hilang dari keduanya.
+
+## 06p · Mulai dengan 1 court
+
+![06p](../../frames/06p.png)
+
+Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`
+
+- Contoh: mabar mulai 19.00 dengan Court 1 saja (booking 2 jam, sampai 21.00). 10 pemain: tiap round 4 main, 6 istirahat. Sekarang 20.02.
+- Subjudul tidak lagi menulis waktu ("53m dari 2 jam"): court bisa mulai di jam berbeda, jadi waktunya ditulis di strip court masing-masing.
+- Hitung mundur = booking − menit sejak **court itu** mulai, format jam:menit ("02:00", "00:58"), diperbarui tiap menit, berhenti di "00:00". Titik dua = durasi; jam dinding tetap ditulis dengan titik ("20.02").
+- Hanya di round yang sedang berjalan (Mixed: round terakhir; Fixed: round yang dibuka) selama turnamen belum diakhiri. Round lain: strip hanya nomor (06t).
+
+## 06q · Court 2 langsung dipakai di R5
+
+![06q](../../frames/06q.png)
+
+Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`
+
+- Hitung mundur di kotak jam tinta 22% di dasar strip (dipilih host 2026-10-22, B). Teks putih kecil langsung di warna court (A) gagal 4,5:1 di 4 dari 10 warna, termasuk hijau Court 1 (4,0); di atas kotak ≥ 5,0 di kesepuluh warna.
+- Match baru masuk R5 sebagai match ke-2 di Court 2 ("0/2 match"). R6 baru bisa dibuat setelah kedua match selesai, jadi Court 1 menunggu sebentar di akhir round: konsekuensi "langsung dipakai".
+- Istirahat dihitung ulang dengan 2 court (8 slot di R6). Batalkan R5 menghapus kedua match; Court 2 tetap ada.
+- Nomor court = urutan court ditambahkan, tidak pernah bergeser.
+
+## 06r · Court 1 hampir habis · R8 tinggal 1 court
+
+![06r](../../frames/06r.png)
+
+Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`
+
+- Pukul 20.48: Court 1 "00:12", kurang dari durasi 15 mnt, jadi tidak ikut R8; tombolnya "Buat R8 · 1 court" (aturan 06g). Court 2 "01:14".
+- Strip tidak diberi warna peringatan: warna court bisa mirip clay (Court 2 terracotta), dan tombol Buat sudah menyebut jumlah court-nya.
+
+## 06s · Court 1 habis · lanjut di Court 2
+
+![06s](../../frames/06s.png)
+
+Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`
+
+- Pukul 21.04, lanjutan 06r tanpa Court 3. Court 1 sudah habis dan tidak punya match di R9, jadi tidak tampil di layar; terlihat di Kelola court ("2 court · 1 habis", baris "19.00–21.00 · waktu habis").
+- Strip tetap memakai nomor court-nya (2). Tanpa Court 2, sesi ini sudah berhenti jam 21.00 (06l).
+
+## 06t · Round lewat · strip tanpa hitung mundur
+
+![06t](../../frames/06t.png)
+
+Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`
+
+- Round yang sudah lewat hanya menulis nomor court: sisa waktu adalah keadaan sekarang, bukan milik R3. Lebar strip tetap 42 supaya pindah tab tidak menggeser nama.

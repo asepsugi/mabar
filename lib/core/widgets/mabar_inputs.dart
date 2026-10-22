@@ -242,6 +242,9 @@ class MabarField extends StatelessWidget {
   final String? hint;
   final bool error;
   final bool inline;
+
+  /// Latar kolom: inline paper di grup putih (03a), card di grup sheet yang berlatar paper (Kelola court).
+  final Color fillColor;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final List<TextInputFormatter>? inputFormatters;
@@ -263,7 +266,8 @@ class MabarField extends StatelessWidget {
     this.onSubmitted,
     this.autofocus = false,
     this.textCapitalization = TextCapitalization.none,
-  }) : inline = false;
+  }) : inline = false,
+       fillColor = MabarColors.card;
 
   const MabarField.inline({
     super.key,
@@ -277,6 +281,7 @@ class MabarField extends StatelessWidget {
     this.onSubmitted,
     this.autofocus = false,
     this.textCapitalization = TextCapitalization.none,
+    this.fillColor = MabarColors.paper,
   }) : inline = true,
        error = false;
 
@@ -314,7 +319,7 @@ class MabarField extends StatelessWidget {
         hintText: hint,
         isDense: true,
         filled: true,
-        fillColor: inline ? MabarColors.paper : MabarColors.card,
+        fillColor: fillColor,
         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: (height - _lineHeight) / 2),
         border: rest,
         enabledBorder: rest,

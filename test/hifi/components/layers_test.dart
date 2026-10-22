@@ -97,6 +97,7 @@ void main() {
         at: at,
         child: MabarMenu<int>(
           items: const [
+            MabarMenuItem(icon: MabarIcons.squareSplitHorizontal, label: 'Kelola court', value: 2),
             MabarMenuItem(icon: MabarIcons.info, label: 'Cara kerja Mixed', value: 0),
             MabarMenuItem(icon: MabarIcons.flag, label: 'Akhiri turnamen', value: 1, danger: true, dividerBefore: true),
           ],

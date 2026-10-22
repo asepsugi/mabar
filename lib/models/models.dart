@@ -185,13 +185,27 @@ class Court {
   final int colorIndex; // 0-9 index ke MabarColors.courtPalette
   final int bookingDurationMinutes;
 
-  const Court({required this.id, required this.name, required this.colorIndex, required this.bookingDurationMinutes});
+  /// Menit sejak turnamen dimulai saat booking court ini mulai: 0 untuk court dari Konfigurasi, menit berjalan untuk
+  /// court yang ditambah di tengah turnamen atau dipesan ulang setelah habis (Kelola court, logic.md §10).
+  final int startMinute;
 
-  Court copyWith({String? name, int? colorIndex, int? bookingDurationMinutes}) => Court(
+  const Court({
+    required this.id,
+    required this.name,
+    required this.colorIndex,
+    required this.bookingDurationMinutes,
+    this.startMinute = 0,
+  });
+
+  /// Ujung booking, dalam menit sejak turnamen dimulai.
+  int get endMinute => startMinute + bookingDurationMinutes;
+
+  Court copyWith({String? name, int? colorIndex, int? bookingDurationMinutes, int? startMinute}) => Court(
     id: id,
     name: name ?? this.name,
     colorIndex: colorIndex ?? this.colorIndex,
     bookingDurationMinutes: bookingDurationMinutes ?? this.bookingDurationMinutes,
+    startMinute: startMinute ?? this.startMinute,
   );
 }
 
@@ -322,6 +336,9 @@ class TournamentConfig {
     this.fixedPairs,
     this.format = ScoreFormat.standard,
   });
+
+  /// Batas court di Konfigurasi dan Kelola court.
+  static const maxCourts = 10;
 
   /// Langkah stepper durasi; durasi selalu kelipatannya.
   static const durationStep = 5;
@@ -475,8 +492,8 @@ class ActiveTournament {
 
   Court courtById(String id) => config.courts.firstWhere((c) => c.id == id, orElse: () => config.courts.first);
 
-  /// Menit yang sudah berjalan sejak turnamen dimulai, menurut jam sungguhan. Booking dihitung dari awal
-  /// turnamen, jadi round yang selesai lebih cepat dari durasinya menyisakan waktu untuk round tambahan.
+  /// Menit yang sudah berjalan sejak turnamen dimulai, menurut jam sungguhan. Booking court dihitung dari jam
+  /// mulainya, jadi round yang selesai lebih cepat dari durasinya menyisakan waktu untuk round tambahan.
   int elapsedMinutes(DateTime now) => max(0, now.difference(tournament.createdAt).inMinutes);
 
   /// Court yang sisa booking-nya pada [now] masih muat satu match penuh — dipakai round yang dibuat sekarang.
@@ -492,9 +509,70 @@ class ActiveTournament {
       (roundCount == 0 || isRoundComplete(roundCount)) &&
       courtsAvailableAt(now).isNotEmpty;
 
-  /// Sisa waktu booking [court] pada [now].
-  int remainingBookingMinutes(Court court, DateTime now) =>
-      max(0, court.bookingDurationMinutes - elapsedMinutes(now));
+  /// Sisa waktu booking [court] pada [now], dari jam mulai court itu sendiri.
+  int remainingBookingMinutes(Court court, DateTime now) => max(0, court.endMinute - elapsedMinutes(now));
+
+  /// [court] ditambah [minutes]: `max(ujung booking, sekarang) + tambahan` (Lanjutkan 08c, detail court 08j–08k).
+  /// Court yang sudah habis dipesan ulang mulai sekarang, jadi jendelanya ditulis ulang ("21.04–22.04").
+  Court extendedBy(Court court, int minutes, DateTime now) => remainingBookingMinutes(court, now) > 0
+      ? court.copyWith(bookingDurationMinutes: court.bookingDurationMinutes + minutes)
+      : court.copyWith(startMinute: elapsedMinutes(now), bookingDurationMinutes: minutes);
+
+  /// Round yang sedang berjalan, tempat hitung mundur sisa booking tampil (strip court, subjudul Input Skor):
+  /// Mixed round terakhir, Fixed round yang sedang dibuka. Null setelah diakhiri.
+  int? get runningRound {
+    if (tournament.isFinished || matches.isEmpty) return null;
+    return config.mode == PartnerMode.mixed ? roundCount : currentRound;
+  }
+
+  /// Mixed: Kelola court (menu ⋯) ada selama turnamen belum diakhiri.
+  bool get canManageCourts => config.mode == PartnerMode.mixed && !tournament.isFinished;
+
+  /// Hapus court (detail court, 08h): hanya court bernomor terakhir — nomor court = urutannya, menghapus court di
+  /// tengah menggeser nomor court lain, termasuk di match lama — yang belum punya match selesai/WO, dan bukan
+  /// satu-satunya court.
+  bool canRemoveCourt(String courtId) =>
+      canManageCourts &&
+      config.courts.length > 1 &&
+      config.courts.last.id == courtId &&
+      !matches.any((m) => m.courtId == courtId && (m.status == MatchStatus.done || m.status == MatchStatus.wo)) &&
+      // Round yang isinya hanya match di court ini dibatalkan lewat "Batalkan R…", bukan lewat hapus court.
+      matchesOfRound(roundCount).any((m) => m.courtId != courtId);
+
+  /// Court baru dari Kelola court: nama kosong = "Court n", booking mulai sekarang ([now]).
+  Court newCourt({
+    required String id,
+    required String name,
+    required int colorIndex,
+    required int bookingMinutes,
+    required DateTime now,
+  }) => Court(
+    id: id,
+    name: name.trim().isEmpty ? 'Court ${config.courts.length + 1}' : name.trim(),
+    colorIndex: colorIndex,
+    bookingDurationMinutes: bookingMinutes,
+    startMinute: elapsedMinutes(now),
+  );
+
+  /// [court] menggantikan court ber-id sama, atau ditambahkan di akhir (nomornya berikutnya).
+  ActiveTournament withCourt(Court court) {
+    final courts = config.courts;
+    final replace = courts.any((c) => c.id == court.id);
+    return copyWith(
+      tournament: tournament.copyWith(
+        config: config.copyWith(
+          courts: replace ? [for (final c in courts) c.id == court.id ? court : c] : [...courts, court],
+        ),
+      ),
+    );
+  }
+
+  /// Pratinjau detail court: panjang booking [hours] jam. Court yang masih berjalan tetap memakai jam mulainya; yang
+  /// sudah habis (stepper mulai 0) dipesan ulang mulai sekarang, sama dengan Lanjutkan.
+  Court withBookingHours(Court court, int hours, DateTime now) {
+    if (remainingBookingMinutes(court, now) > 0) return court.copyWith(bookingDurationMinutes: hours * 60);
+    return hours == 0 ? court : court.copyWith(startMinute: elapsedMinutes(now), bookingDurationMinutes: hours * 60);
+  }
 
   /// Perkiraan round & match yang masih muat kalau tiap court ditambah [extraMinutes] (per court id),
   /// untuk sheet Lanjutkan turnamen (08c). Round jalan selama masih ada satu court, jadi jumlah round

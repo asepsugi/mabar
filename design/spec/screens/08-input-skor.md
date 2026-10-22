@@ -10,7 +10,7 @@ Papan skor gelap dengan satu angka besar per tim untuk ketiga format, dan keypad
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `ScoreBoard / ScoreKeypad`
 
-- Header: nama court sebagai judul, subjudul round · format. "ROUND 1 · MATCH 1", badge court, ikon olahraga, dan chip metode skor dihapus.
+- Header: nama court sebagai judul, subjudul round · format · sisa booking court itu (07l). "ROUND 1 · MATCH 1", badge court, ikon olahraga, dan chip metode skor dihapus.
 - Race to tidak mengisi otomatis: skor lawan harus diketik karena bisa berapa saja di bawah target.
 - WO di kanan atas → sheet 07j.
 
@@ -108,3 +108,12 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `S
 - Kombinasi baru dicek setelah dua kotak terisi: 6 sah atau tidak tergantung lawan (6–5 sah, 6–6 tidak; pesannya di 07d).
 - Tombol sengaja tidak dimatikan berdasarkan isi kotak lawan. Contoh: host salah ketik 6–4 padahal 4–6; kalau angka dimatikan karena isi lawan, host harus mengubah kotak lawan dulu baru bisa mengoreksi.
 - Race to 9: batasnya 9, jadi semua angka satu digit dan kotak langsung penuh.
+
+## 07l · Input Skor · sisa waktu court
+
+![07l](../../frames/07l.png)
+
+Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `ScoreBoard / ScoreKeypad`
+
+- Contoh court yang baru ditambah (06q). Subjudul menulis sisa court ini dengan format yang sama dengan strip: "Round 5 · Americano 21 · sisa 02:00"; 07a–07k memakai aturan yang sama.
+- Hanya untuk match di round yang sedang berjalan (Mixed: round terakhir; Fixed: round yang dibuka), termasuk saat mengubah skornya (07i), selama turnamen belum diakhiri. Match di round yang sudah lewat: subjudul tanpa sisa. Sisa kurang dari satu durasi match: "sisa 00:12" clay; sudah lewat: "waktu habis" clay. Skor tetap bisa disimpan.

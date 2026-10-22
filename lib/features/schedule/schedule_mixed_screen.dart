@@ -1,15 +1,15 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/minute_ticker.dart';
 import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_controls.dart';
 import '../../core/widgets/mabar_layers.dart';
 import '../../models/models.dart';
 import '../../services/schedule/endless_round_generator.dart';
+import 'mixed/manage_courts_sheet.dart';
 import 'mixed/manage_players_sheet.dart';
 import 'mixed/mixed_guide_sheet.dart';
 import 'mixed/resume_tournament_sheet.dart';
@@ -19,7 +19,7 @@ import 'widgets/resting_list.dart';
 import 'widgets/round_tabs.dart';
 import 'widgets/schedule_match_row.dart';
 
-enum _MenuAction { guide, finish }
+enum _MenuAction { courts, guide, finish }
 
 /// Screen 06 · Jadwal Mixed — round dibuat satu per satu. Tab default = round terakhir; tombol bawah
 /// selalu untuk round berikutnya dan menulis alasannya kalau belum bisa.
@@ -34,7 +34,7 @@ class ScheduleMixedScreen extends ConsumerStatefulWidget {
 class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
   /// Null = round terakhir; kembali ke sana setelah Buat/Batalkan.
   int? _selectedRound;
-  Timer? _clock;
+  MinuteTicker? _clock;
 
   @override
   void initState() {
@@ -48,8 +48,15 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
       // Cara kerja Mixed muncul sendiri sekali, saat R1 baru saja dibuat dari Konfigurasi.
       if (after != null && !identical(before, after) && after.roundCount == 1) showMixedGuideSheet(context, after);
     });
-    // Waktu berjalan di subjudul, dan "Waktu habis" mengikuti jam sungguhan — cukup ditik tiap menit.
-    _clock = Timer.periodic(const Duration(minutes: 1), (_) => setState(() {}));
+    // Kotak jam di strip court, daftar Prioritas, dan "Waktu habis" mengikuti jam sungguhan: ditik di setiap
+    // pergantian menit sejak turnamen dimulai.
+    _clock = MinuteTicker(
+      clock: ref.read(clockProvider),
+      origin: () => ref.read(tournamentProvider)?.tournament.createdAt,
+      onTick: () {
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   @override
@@ -62,6 +69,8 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
     final picked = await showMabarMenu<_MenuAction>(
       anchor,
       items: [
+        if (active.canManageCourts)
+          const MabarMenuItem(icon: MabarIcons.squareSplitHorizontal, label: 'Kelola court', value: _MenuAction.courts),
         const MabarMenuItem(icon: MabarIcons.info, label: 'Cara kerja Mixed', value: _MenuAction.guide),
         if (!active.tournament.isFinished)
           const MabarMenuItem(
@@ -75,6 +84,8 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
     );
     if (!mounted) return;
     switch (picked) {
+      case _MenuAction.courts:
+        await showManageCourtsSheet(context);
       case _MenuAction.guide:
         await showMixedGuideSheet(context, active);
       case _MenuAction.finish:
@@ -167,7 +178,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
         children: [
           MabarAppBar(
             title: 'Round $selected',
-            subtitle: scheduleSubtitle(active, now),
+            subtitle: scheduleSubtitle(active),
             onBack: () => context.pop(),
             actions: [
               Builder(
@@ -196,6 +207,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
                   ScheduleMatchRow(
                     active: active,
                     match: m,
+                    now: now,
                     onTap: () => openScore(m),
                     onFill: m.status == MatchStatus.pending ? () => openScore(m) : null,
                   ),

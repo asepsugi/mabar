@@ -64,8 +64,10 @@ void main() {
 
     // Court 1 sudah habis sejak R1; +1 jam tetap berarti 6 round lagi, bukan 4.
     controller.resume({'c1': 60});
-    final courts = {for (final c in read().config.courts) c.id: c.bookingDurationMinutes};
-    expect(courts, {'c1': 90, 'c2': 30});
+    final ends = {for (final c in read().config.courts) c.id: c.endMinute};
+    expect(ends, {'c1': 90, 'c2': 30});
+    // Dipesan ulang mulai sekarang (menit 30), jendelanya "19.30–20.30", bukan disambung dari 19.10.
+    expect(read().config.courts.first.startMinute, 30);
     expect(read().canResume(now), isFalse);
 
     controller.generateNextRound();

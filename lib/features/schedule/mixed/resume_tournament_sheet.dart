@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/mabar_icons.dart';
 import '../../../core/theme/mabar_theme.dart';
+import '../../../core/time_text.dart';
 import '../../../core/widgets/mabar_controls.dart';
 import '../../../core/widgets/mabar_group.dart';
 import '../../../core/widgets/mabar_inputs.dart';
@@ -23,13 +24,6 @@ Future<bool> showResumeTournamentSheet(BuildContext context, ActiveTournament so
     builder: (_) => _ResumeTournament(source: source, archived: archived),
   );
   return resumed ?? false;
-}
-
-/// 200 → "3j 20m", 60 → "1j", 45 → "45m".
-String _duration(int minutes) {
-  final h = minutes ~/ 60, m = minutes % 60;
-  if (h == 0) return '${m}m';
-  return m == 0 ? '${h}j' : '${h}j ${m}m';
 }
 
 class _ResumeTournament extends ConsumerStatefulWidget {
@@ -90,7 +84,8 @@ class _ResumeTournamentState extends ConsumerState<_ResumeTournament> {
                 () {
                   final remaining = _source.remainingBookingMinutes(c, now);
                   final extra = _extraHours[c.id] ?? 0;
-                  final left = remaining > 0 ? 'Sisa ${_duration(remaining)}' : 'Waktu habis';
+                  // Format sama dengan kotak jam di strip court: "Sisa 00:45", "→ 01:00".
+                  final left = remaining > 0 ? 'Sisa ${countdownText(remaining)}' : 'Waktu habis';
                   return MabarRow(
                     padded: true,
                     leading: CourtSwatch(color: MabarColors.courtPalette[c.colorIndex], number: i + 1),
@@ -98,7 +93,7 @@ class _ResumeTournamentState extends ConsumerState<_ResumeTournament> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(c.name, style: MabarType.body.copyWith(fontWeight: FontWeight.w600, color: MabarColors.ink)),
-                        Text(extra == 0 ? left : '$left → ${_duration(remaining + extra * 60)}', style: MabarType.caption),
+                        Text(extra == 0 ? left : '$left → ${countdownText(remaining + extra * 60)}', style: MabarType.caption),
                       ],
                     ),
                     trailing: MabarStepper(

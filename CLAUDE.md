@@ -37,7 +37,7 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
     `ButtonStyle.textStyle`, judul dialog, dan isi snackbar **mengganti** gaya tema (tidak di-merge), jadi `TextStyle`
     tanpa keluarga di situ jatuh ke Roboto/SF. Semua slot `TextTheme` menulis `letterSpacing: 0` + `height`, kalau
     tidak geometri Material 3 ikut masuk.
-  - `mabar_icons.dart` — `MabarIcons`, 31 ikon Phosphor Bold hi-fi sebagai `IconData` konstan dari
+  - `mabar_icons.dart` — `MabarIcons`, 32 ikon Phosphor Bold hi-fi sebagai `IconData` konstan dari
     `assets/fonts/Phosphor-Bold.ttf` (`@phosphor-icons/web@2.1.1`, MIT; codepoint dari `style.css`-nya). Paket
     `phosphor_flutter` **tidak** dipakai: tidak dirawat sejak 2024 dan gagal dikompilasi karena `IconData` sekarang
     `final class`. Jangan menambah `Icons.*` Material; ikon baru = konstanta baru di sini.
@@ -52,16 +52,21 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   (di atas `ScoreEntry`), StandingTable, StatLine, NameListField, ModePicker/CourtSwatch/CourtColorGrid,
   HomePanel/HomeRowIcon/InstallStep, SharePoster (`share/widgets/`, preset pratinjau/Feed/Story, diekspor lewat
   `SharePosterTarget.exportPixelRatio`).
-- **Layar v2 selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi, 04 Pasangan, 05 Jadwal Fixed, 06 Jadwal Mixed, 07 Kelola pemain & Lanjutkan, 08 Input Skor, 09 Peringkat, 10 Detail, 11 Bagikan — semua layar** (`test/hifi/screens/<alur>_test.dart`, golden semua frame + perilaku).
+- **Layar v2 selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi, 04 Pasangan, 05 Jadwal Fixed, 06 Jadwal Mixed, 07 Pemain, court & lanjutkan, 08 Input Skor, 09 Peringkat, 10 Detail, 11 Bagikan — semua layar** (`test/hifi/screens/<alur>_test.dart`, golden semua frame + perilaku).
   Pembungkus layar `hifiScreen(...)` di `test/hifi/screens/screen_harness.dart` (tema, safe area 47/34, override
   provider). Golden dialog/sheet/ketikan/gulir memakai `expectMatchesHifi(..., act: (tester) async {...})`. Tata letak lama sudah
   habis (`mabar_widgets.dart` dihapus). Layar "Cara Kerja Mixed" sudah dihapus: Konfigurasi Mixed ("Mulai Round 1") langsung push
   `/schedule`. Batas yang tidak tergambar di frame: durasi match maks 180 mnt, booking 1–12 jam per court.
   Pasangan: hasil acak bisa disuntik lewat `PairSetupScreen.random` (test memakai `Random` berskrip supaya sama
   dengan frame); "Ubah pemain" mem-pop dua layar (Pasangan + Konfigurasi) kembali ke Pemain yang masih terisi.
-  Jadwal: `clockProvider` (`tournament_controller.dart`) = jam sekarang, dipakai subjudul "45m dari 2 jam" dan
+  Jadwal: `clockProvider` (`tournament_controller.dart`) = jam sekarang, dipakai hitung mundur court dan
   `createdAt`; baris match + subjudul bersama di `features/schedule/widgets/schedule_match_row.dart`
-  (`ScheduleMatchRow`, `scheduleSubtitle`, `pairNames`) untuk Fixed dan Mixed. Golden yang butuh turnamen berjalan
+  (`ScheduleMatchRow`, `scheduleSubtitle`, `pairNames`) untuk Fixed dan Mixed. Subjudul tanpa waktu; strip court 42 pt
+  (`MatchScoreRow.badgeWidth`, Detail tetap 34) dan di round berjalan (`ActiveTournament.runningRound`) membawa kotak jam
+  sisa booking court itu (`countdown`, "01:15", `core/time_text.dart`: ":" durasi, "20.02" jam dinding). Layar Jadwal
+  dan Input Skor ditik lewat `core/minute_ticker.dart` di pergantian menit sejak `createdAt` (bukan `Timer.periodic`,
+  yang bisa tertinggal 59 detik dari hasil Buat R…). Golden bertoleransi 2% piksel, jadi teks hitung mundur dicek
+  dengan `find.text` terpisah, dan test layar yang menampilkan sisa wajib meng-override `clockProvider`. Golden yang butuh turnamen berjalan
   meng-override `tournamentProvider` dengan controller yang `build()`-nya mengembalikan turnamen itu (config
   `identical`, jadi `startIfNeeded` tidak membuat jadwal baru). Dialog Akhiri = `confirmFinishTournament` →
   `showMabarConfirm`. Fixed setelah diakhiri: ⋯ pudar dan mati (menunya kosong; keputusan host, 06c). Kedua layar jadwal memanggil
@@ -119,7 +124,7 @@ logika/desain atau data lama tidak kompatibel (`schemaVersion` naik → selalu M
 kompatibel; PATCH = perbaikan bug/teks/visual kecil tanpa mengubah perilaku yang disepakati. Versi + `appVersion`
 dinaikkan di commit yang membawa perubahan ke `main` (tiap push = deploy web), kategori tertinggi yang menang, `BUILD`
 naik tiap rilis. Sebut kategorinya di pesan commit/PR (`[minor]`). Branch `redesain-v2-spec` = 2.0.0 (MAJOR: redesain +
-format skor + data app lama tidak dimuat).
+format skor + data app lama tidak dimuat); 2.2.0 (MINOR) = Kelola court.
 
 ## Arsitektur
 
@@ -182,6 +187,17 @@ Mesin domain yang sudah ada + ter-test (semua `flutter test` lulus, termasuk gol
   `copyWith` supaya `format` tidak hilang.
 - `MatchGame.withScore` / `asWalkover` menimpa match sepenuhnya: skor di match WO membuang sisa WO, dan alasan WO yang
   dilepas benar-benar hilang (`copyWith` tidak bisa mengosongkan field).
+- **Kelola court** (Mixed, menu ⋯, keputusan host 2026-10-22; `design/spec/logic.md` §10; tes
+  `test/services/court_manage_test.dart`, `court_availability_test.dart`, golden `test/hifi/screens/kelola_court_test.dart`):
+  `Court.startMinute` = menit sejak `createdAt` saat booking court mulai (Konfigurasi 0; kunci simpanan opsional →
+  simpanan 2.1 tetap terbaca), sisa = `endMinute − elapsed`. Sheet `features/schedule/mixed/manage_courts_sheet.dart`:
+  daftar court + court baru (`TournamentController.addCourt`), ketuk → detail court (sheet aksi, Simpan →
+  `updateCourt`; stepper = panjang booking, court habis mulai 0 dan dipesan ulang dari sekarang lewat
+  `withBookingHours`/`extendedBy`, sama dengan Lanjutkan). Kapan court dipakai = `EndlessRoundGenerator.courtUse`:
+  round berjalan + court tanpa match + istirahat ≥ 4 → langsung main (`courtMatch`, 4 teratas `priorityOrder(n+1)`);
+  court lama yang sudah muat tidak pernah tiba-tiba dipakai (`wasAvailable`). Hapus (`removeCourt`) hanya court bernomor
+  terakhir tanpa skor dan bukan satu-satunya — nomor court = urutannya. Fixture `courtTournament` (id `t-court-329705`
+  dipilih supaya undian seri sama dengan frame).
 - `ActiveTournament.capacityAhead` (sheet Lanjutkan) mengembalikan `fewerCourtsFrom` = round tambahan saat court yang
   main di round pertamanya habis; court yang sejak awal tidak dapat tambahan bukan "berkurang" (bug lama).
 - `share/result_text_builder.dart` — teks share ringkas/lengkap (tiap baris memuat total point, satuan ikut format, "Peringkat Akhir"/"Sementara" dari `isFinal`).
@@ -229,10 +245,11 @@ Seluruh MVP PRD sudah jalan, termasuk bagian 5 (Penyimpanan Data).
   Muncul kalau `ActiveTournament.canResume(now)` (sudah "Akhiri" atau waktu booking semua court habis) di layar Jadwal,
   dan dari kartu "Turnamen terakhir" di Beranda untuk slot `lastFinished` (`lastFinishedProvider`, diset sinkron
   oleh `close()` supaya Beranda tidak menunggu tulisan ke device). Jam ditambah **per court** karena sering cuma
-  sebagian court yang bisa diperpanjang, dan dihitung dari sekarang: `max(booking, menit berjalan) + tambahan`
-  — court yang waktunya sudah lama habis tetap dapat jam penuh. Match `cancelled` (hanya dibuat oleh "Akhiri")
+  sebagian court yang bisa diperpanjang, dan dihitung dari sekarang: `max(ujung booking, sekarang) + tambahan`
+  (`ActiveTournament.extendedBy`; court yang habis dipesan ulang, `startMinute` = sekarang) — court yang waktunya sudah
+  lama habis tetap dapat jam penuh. Match `cancelled` (hanya dibuat oleh "Akhiri")
   kembali `pending`. Estimasi di sheet = `ActiveTournament.capacityAhead` dalam **jumlah match** (bukan round: round jalan
-  selama masih ada satu court, jadi cuma mengikuti court terpanjang dan tambahan di court lain tidak kelihatan). Header Jadwal menampilkan booking court **terpanjang** karena sesi baru selesai saat court terakhir habis.
+  selama masih ada satu court, jadi cuma mengikuti court terpanjang dan tambahan di court lain tidak kelihatan).
 - Slot aktif cuma satu, jadi memilih jenis permainan di Home saat ada turnamen berjalan memunculkan
   konfirmasi dulu ("Buang & Mulai Baru").
 - Belum ikut disimpan: `rankingMethodProvider` — setelah resume, metode peringkat kembali ke

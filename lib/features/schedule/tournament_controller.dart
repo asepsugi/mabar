@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -194,6 +193,92 @@ class TournamentController extends Notifier<ActiveTournament?> {
     ),
   };
 
+  /// Mixed: tambah court di tengah turnamen (Kelola court, 08e–08g). Booking-nya mulai sekarang; court langsung
+  /// dipakai kalau round terakhir masih berjalan dan cukup yang istirahat (logic.md §10).
+  void addCourt({required String name, required int colorIndex, required int bookingMinutes}) {
+    final current = state;
+    final courts = current?.config.courts ?? const <Court>[];
+    if (current == null || !current.canManageCourts || courts.length >= TournamentConfig.maxCourts) return;
+    final now = ref.read(clockProvider)();
+    final court = current.newCourt(
+      id: const Uuid().v4(),
+      name: name,
+      colorIndex: colorIndex,
+      bookingMinutes: bookingMinutes,
+      now: now,
+    );
+    _placeCourt(current.withCourt(court), court.id, now);
+  }
+
+  /// Detail court (08h–08k, tombol Simpan): [court] menggantikan court ber-id sama. Court yang sebelumnya tidak muat
+  /// satu match lalu jadi muat saat round berjalan (dipesan ulang) langsung dipakai, sama dengan court baru.
+  void updateCourt(Court court) {
+    final current = state;
+    if (current == null || !current.canManageCourts) return;
+    final now = ref.read(clockProvider)();
+    final before = current.courtById(court.id);
+    final wasAvailable = current.remainingBookingMinutes(before, now) >= current.config.matchDurationMinutes;
+    _placeCourt(current.withCourt(court), court.id, now, wasAvailable: wasAvailable);
+  }
+
+  /// Hapus court (08h): match yang belum dimainkan di court itu ikut dihapus dan pemainnya kembali istirahat.
+  bool removeCourt(String courtId) {
+    final current = state;
+    if (current == null || !current.canRemoveCourt(courtId)) return false;
+    final n = current.roundCount;
+    final removed = [
+      for (final m in current.matches)
+        if (m.courtId == courtId) m,
+    ];
+    final freed = [
+      for (final m in removed) ...[...m.pair1.playerIds, ...m.pair2.playerIds],
+    ];
+    final next = _withCourts(current, [
+      for (final c in current.config.courts)
+        if (c.id != courtId) c,
+    ]);
+    state = next.copyWith(
+      tournament: next.tournament.copyWith(
+        matches: [
+          for (final m in next.matches)
+            if (m.courtId != courtId) m,
+        ],
+      ),
+      resting: freed.isEmpty
+          ? null
+          : {
+              ...next.restingPlayerIdsByRound,
+              n: [...?next.restingPlayerIdsByRound[n], ...freed],
+            },
+    );
+    return true;
+  }
+
+  static ActiveTournament _withCourts(ActiveTournament active, List<Court> courts) => active.copyWith(
+    tournament: active.tournament.copyWith(config: active.config.copyWith(courts: courts)),
+  );
+
+  void _placeCourt(ActiveTournament next, String courtId, DateTime now, {bool wasAvailable = false}) {
+    final use = EndlessRoundGenerator.courtUse(next, courtId, now, wasAvailable: wasAvailable);
+    if (use.use != CourtUse.now) {
+      state = next;
+      return;
+    }
+    final match = EndlessRoundGenerator.courtMatch(next, courtId, use.players);
+    final n = next.roundCount;
+    final playing = {for (final p in use.players) p.id};
+    state = next.copyWith(
+      tournament: next.tournament.copyWith(matches: [...next.matches, match]),
+      resting: {
+        ...next.restingPlayerIdsByRound,
+        n: [
+          for (final id in next.restingPlayerIdsByRound[n] ?? const <String>[])
+            if (!playing.contains(id)) id,
+        ],
+      },
+    );
+  }
+
   void _update(Tournament Function(Tournament) change) {
     final current = state;
     if (current == null) return;
@@ -244,13 +329,9 @@ class TournamentController extends Notifier<ActiveTournament?> {
     final now = ref.read(clockProvider)();
     if (from == null && !current.canResume(now)) return;
 
-    final used = current.elapsedMinutes(now);
     final courts = [
       for (final c in current.config.courts)
-        if ((extraMinutes[c.id] ?? 0) > 0)
-          c.copyWith(bookingDurationMinutes: max(c.bookingDurationMinutes, used) + extraMinutes[c.id]!)
-        else
-          c,
+        if ((extraMinutes[c.id] ?? 0) > 0) current.extendedBy(c, extraMinutes[c.id]!, now) else c,
     ];
 
     state = current.copyWith(
