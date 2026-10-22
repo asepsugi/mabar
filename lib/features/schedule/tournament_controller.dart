@@ -140,9 +140,11 @@ class TournamentController extends Notifier<ActiveTournament?> {
     if (name == null) return 'Nama tidak boleh kosong';
     final taken = current.config.players.where((p) => p.name.toLowerCase() == name.toLowerCase());
     if (taken.isNotEmpty) {
-      return current.withdrawnPlayerIds.contains(taken.first.id)
-          ? '$name sudah ada — pakai "Kembalikan" di bawah'
-          : '$name sudah ada di daftar';
+      // Nama yang tertulis di daftar, bukan ketikan host ("andi p" → "Andi P sudah ada").
+      final existing = taken.first;
+      return current.withdrawnPlayerIds.contains(existing.id)
+          ? '${existing.name} sudah ada — pakai "Kembalikan" di bawah'
+          : '${existing.name} sudah ada di daftar';
     }
     if (current.activePlayers.length >= maxPlayers) return 'Maksimal $maxPlayers pemain aktif';
 

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '../theme/mabar_icons.dart';
 import '../theme/mabar_theme.dart';
@@ -291,32 +292,61 @@ class MabarRowAction extends StatelessWidget {
     return Semantics(
       button: true,
       enabled: !off,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onPressed,
-        child: SizedBox(
-          height: MabarSize.iconButton,
-          child: Center(
-            widthFactor: 1,
-            // Tepi `inset box-shadow` tidak memakan tempat: foregroundDecoration, bukan border dekorasi (yang
-            // oleh Container ditambahkan ke padding).
-            child: Container(
-              height: MabarSize.rowAction,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(color: off ? Colors.transparent : MabarColors.card, borderRadius: radius),
-              foregroundDecoration: BoxDecoration(borderRadius: radius, border: Border.all(color: MabarColors.line)),
-              child: Text(
-                label,
-                style: MabarType.body.copyWith(fontSize: 14, fontWeight: FontWeight.w600, height: 1, color: color),
-                maxLines: 1,
-                softWrap: false,
-              ),
+      // Tata letak 36 seperti CSS (baris dua tingkat tidak ikut meninggi), area sentuh tetap 44.
+      child: _TouchOutset(
+        vertical: (MabarSize.iconButton - MabarSize.rowAction) / 2,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onPressed,
+          // Tepi `inset box-shadow` tidak memakan tempat: foregroundDecoration, bukan border dekorasi (yang
+          // oleh Container ditambahkan ke padding).
+          child: Container(
+            height: MabarSize.rowAction,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(color: off ? Colors.transparent : MabarColors.card, borderRadius: radius),
+            foregroundDecoration: BoxDecoration(borderRadius: radius, border: Border.all(color: MabarColors.line)),
+            child: Text(
+              label,
+              style: MabarType.body.copyWith(fontSize: 14, fontWeight: FontWeight.w600, height: 1, color: color),
+              maxLines: 1,
+              softWrap: false,
             ),
           ),
         ),
       ),
     );
+  }
+}
+
+/// Memperluas area sentuh anaknya [vertical] pt ke atas dan bawah tanpa memperbesar tata letaknya.
+class _TouchOutset extends SingleChildRenderObjectWidget {
+  final double vertical;
+
+  const _TouchOutset({required this.vertical, required super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderTouchOutset(vertical);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderTouchOutset renderObject) => renderObject.vertical = vertical;
+}
+
+class _RenderTouchOutset extends RenderProxyBox {
+  double vertical;
+
+  _RenderTouchOutset(this.vertical);
+
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (!Rect.fromLTRB(0, -vertical, size.width, size.height + vertical).contains(position)) return false;
+    // Ketukan di luar kotak diteruskan sebagai ketukan di tepi terdekatnya.
+    final inside = Offset(position.dx, position.dy.clamp(0, size.height));
+    if (hitTestChildren(result, position: inside)) {
+      result.add(BoxHitTestEntry(this, position));
+      return true;
+    }
+    return false;
   }
 }
 

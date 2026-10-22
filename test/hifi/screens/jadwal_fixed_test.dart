@@ -8,17 +8,8 @@ import 'package:mabar/features/schedule/tournament_controller.dart';
 import 'package:mabar/models/models.dart';
 
 import '../hifi_golden.dart';
+import 'schedule_fixture.dart';
 import 'screen_harness.dart';
-
-/// Turnamen yang sudah berjalan, seperti hasil resume: layar menerima config yang sama persis (identical),
-/// jadi `startIfNeeded` tidak membuat jadwal baru.
-class _Loaded extends TournamentController {
-  final ActiveTournament active;
-  _Loaded(this.active);
-
-  @override
-  ActiveTournament? build() => active;
-}
 
 /// Golden layar penuh Jadwal Fixed, frame 06a–06e. Tennis Race to 6, 10 pemain (5 pasangan), 2 court × 2 jam,
 /// mulai 45 menit lalu. Jadwal round-robin sah (tiap pasangan istirahat sekali):
@@ -90,7 +81,7 @@ void main() {
     return hifiScreen(
       ScheduleFixedScreen(config: active.config),
       overrides: [
-        tournamentProvider.overrideWith(() => _Loaded(active)),
+        tournamentProvider.overrideWith(() => LoadedTournament(active)),
         clockProvider.overrideWithValue(() => start.add(const Duration(minutes: 45))),
       ],
     );
@@ -159,7 +150,7 @@ void main() {
         ),
       ],
     );
-    await tester.pumpWidget(hifiRouterScreen(router, overrides: [tournamentProvider.overrideWith(() => _Loaded(active))]));
+    await tester.pumpWidget(hifiRouterScreen(router, overrides: [tournamentProvider.overrideWith(() => LoadedTournament(active))]));
     await tester.pumpAndSettle();
   }
 

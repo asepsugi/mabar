@@ -309,6 +309,7 @@ class MabarField extends StatelessWidget {
       // `.caret`: 2 pt, setinggi 1,1 em — lebih pendek dari tinggi baris.
       cursorHeight: 16 * 1.1,
       cursorWidth: 2,
+      cursorColor: error ? MabarColors.clay : null,
       decoration: InputDecoration(
         hintText: hint,
         isDense: true,

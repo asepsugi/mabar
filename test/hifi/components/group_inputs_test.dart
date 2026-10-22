@@ -123,9 +123,10 @@ void main() {
   });
 
   testWidgets('MabarRowAction di grup sheet: netral, pulihkan, baris pudar (08a)', (tester) async {
-    final label = hifiRect('08a', 'glabel');
+    final label = hifiRect('08a', 'glabel', text: '10 pemain aktif · 1 keluar');
     final group = hifiRect('08a', 'group');
-    final region = Rect.fromLTRB(group.left, label.top, group.right, group.bottom);
+    // Daftar 11 baris digulir di dalam sheet; yang terlihat berhenti di atas padding bawah sheet (34).
+    final region = Rect.fromLTRB(group.left, label.top, group.right, 844 - 34);
     Widget row(String name) => MabarRow(title: name, trailing: MabarRowAction(label: 'Keluarkan', onPressed: () {}));
     await expectRegionMatchesHifi(
       tester,
@@ -153,7 +154,7 @@ void main() {
                 ),
                 trailing: MabarRowAction(label: 'Kembalikan', restore: true, onPressed: () {}),
               ),
-              row('Eko M'),
+              for (final n in ['Eko M', 'Fajar K', 'Gina R', 'Hana T', 'Indra W', 'Joko S']) row(n),
             ],
           ),
         ),

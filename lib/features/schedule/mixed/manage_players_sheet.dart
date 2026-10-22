@@ -1,34 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/theme/mabar_icons.dart';
 import '../../../core/theme/mabar_theme.dart';
-import '../../../core/widgets/mabar_widgets.dart';
+import '../../../core/widgets/mabar_controls.dart';
+import '../../../core/widgets/mabar_group.dart';
+import '../../../core/widgets/mabar_inputs.dart';
+import '../../../core/widgets/mabar_layers.dart';
 import '../tournament_controller.dart';
 
-/// Bottom sheet "Kelola Peserta" mode Mixed — tambah, keluarkan, atau
-/// kembalikan pemain tanpa mengulang turnamen. Tidak ada di mockup; gayanya
-/// mengikuti sheet WO (screen 7b).
+/// Sheet 08a "Kelola pemain" (Mixed) — tambah, keluarkan, atau kembalikan pemain tanpa mengulang
+/// turnamen; berlaku mulai round berikutnya. Keluarkan langsung tanpa konfirmasi: bisa dibatalkan lewat
+/// Kembalikan, dan skornya tetap dihitung.
 Future<void> showManagePlayersSheet(BuildContext context) {
-  return showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: MabarColors.card,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(MabarRadius.sheet)),
-    ),
-    builder: (_) => const _ManagePlayersSheet(),
+  final next = (ProviderScope.containerOf(context).read(tournamentProvider)?.roundCount ?? 0) + 1;
+  return showMabarSheet<void>(
+    context,
+    title: 'Kelola pemain',
+    subtitle: 'Berlaku mulai R$next',
+    builder: (_) => const _ManagePlayers(),
   );
 }
 
-class _ManagePlayersSheet extends ConsumerStatefulWidget {
-  const _ManagePlayersSheet();
+class _ManagePlayers extends ConsumerStatefulWidget {
+  const _ManagePlayers();
 
   @override
-  ConsumerState<_ManagePlayersSheet> createState() => _ManagePlayersSheetState();
+  ConsumerState<_ManagePlayers> createState() => _ManagePlayersState();
 }
 
-class _ManagePlayersSheetState extends ConsumerState<_ManagePlayersSheet> {
+class _ManagePlayersState extends ConsumerState<_ManagePlayers> {
   final _name = TextEditingController();
   String? _error;
 
@@ -52,177 +52,92 @@ class _ManagePlayersSheetState extends ConsumerState<_ManagePlayersSheet> {
     if (active == null) return const SizedBox.shrink();
 
     final activeCount = active.activePlayers.length;
+    final withdrawn = active.withdrawnPlayerIds;
     final canWithdraw = activeCount > 4;
+    final small = MabarType.caption.copyWith(color: MabarColors.ink3);
 
-    return Padding(
-      // Sheet ikut naik saat keyboard muncul.
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: SafeArea(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.85),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(MabarSpacing.x5, MabarSpacing.x5, MabarSpacing.x5, MabarSpacing.x6),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: MabarSpacing.x4),
-                    decoration: BoxDecoration(color: MabarColors.line, borderRadius: BorderRadius.circular(2)),
-                  ),
-                ),
-                Row(
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: MabarColors.paper,
-                        borderRadius: BorderRadius.circular(MabarRadius.chip),
-                      ),
-                      child: const Icon(MabarIcons.users, size: 18, color: MabarColors.ink),
-                    ),
-                    const SizedBox(width: 10),
-                    Column(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: MabarField(
+                controller: _name,
+                error: _error != null,
+                textCapitalization: TextCapitalization.words,
+                textInputAction: TextInputAction.done,
+                // Enter = Tambah; isian tetap fokus untuk nama berikutnya.
+                onSubmitted: (_) => _add(),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Sama tinggi dengan kolom nama di sebelahnya.
+            MabarButton(label: 'Tambah', expand: false, height: 48, onPressed: _add),
+          ],
+        ),
+        if (_error != null) ...[
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(_error!, style: small.copyWith(color: MabarColors.clay, fontWeight: FontWeight.w600)),
+          ),
+        ] else ...[
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              'Pemain baru langsung ikut main. Jumlah match mengikuti pemain yang paling jarang main. '
+              'Total Point tertinggal; Win % lebih adil untuk pemain baru.',
+              style: small,
+            ),
+          ),
+        ],
+        const SizedBox(height: 16),
+        MabarSection(
+          header: MabarGroupLabel(
+            withdrawn.isEmpty ? '$activeCount pemain aktif' : '$activeCount pemain aktif · ${withdrawn.length} keluar',
+          ),
+          child: MabarGroup(
+            color: MabarColors.paper,
+            children: [
+              for (final p in active.config.players)
+                if (withdrawn.contains(p.id))
+                  MabarRow(
+                    padded: true,
+                    titleWidget: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Kelola Peserta',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
-                            color: MabarColors.ink,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
                         Text(
-                          '$activeCount pemain aktif · berlaku mulai R${active.roundCount + 1}',
-                          style: const TextStyle(fontSize: 11, color: MabarColors.faint),
+                          p.name,
+                          style: MabarType.body.copyWith(color: MabarColors.faint, decoration: TextDecoration.lineThrough),
                         ),
+                        const Text('Keluar · skornya tetap dihitung', style: MabarType.caption),
                       ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: MabarSpacing.x4),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _name,
-                        textCapitalization: TextCapitalization.words,
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => _add(),
-                        decoration: InputDecoration(hintText: 'Nama pemain baru', errorText: _error),
-                      ),
+                    trailing: MabarRowAction(
+                      label: 'Kembalikan',
+                      restore: true,
+                      onPressed: () => setState(() => _error = _controller.reinstatePlayer(p.id)),
                     ),
-                    const SizedBox(width: MabarSpacing.x2),
-                    ElevatedButton(
-                      onPressed: _add,
-                      // Tema memberi lebar minimum tak hingga (tombol full-width); di dalam Row harus dibatasi.
-                      style: ElevatedButton.styleFrom(minimumSize: const Size(0, 48)),
-                      child: const Text('Tambah'),
+                  )
+                else
+                  MabarRow(
+                    title: p.name,
+                    trailing: MabarRowAction(
+                      label: 'Keluarkan',
+                      onPressed: canWithdraw ? () => _controller.withdrawPlayer(p.id) : null,
                     ),
-                  ],
-                ),
-                const SizedBox(height: MabarSpacing.x3),
-                const MabarInfoBox(
-                  variant: MabarInfoVariant.neutral,
-                  icon: MabarIcons.info,
-                  title: 'Pemain baru langsung ikut main',
-                  caption:
-                      'Jumlah match mengikuti pemain yang paling jarang main. '
-                      'Total Point tertinggal; Win % lebih adil untuk pemain baru.',
-                ),
-                const SizedBox(height: MabarSpacing.x4),
-                MabarFieldLabel('Peserta (${active.config.players.length})'),
-                Flexible(
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: [
-                      for (final p in active.config.players)
-                        _PlayerRow(
-                          name: p.name,
-                          withdrawn: active.withdrawnPlayerIds.contains(p.id),
-                          canWithdraw: canWithdraw,
-                          onWithdraw: () => _controller.withdrawPlayer(p.id),
-                          onReinstate: () => setState(() => _error = _controller.reinstatePlayer(p.id)),
-                        ),
-                    ],
                   ),
-                ),
-                if (!canWithdraw)
-                  const Padding(
-                    padding: EdgeInsets.only(top: MabarSpacing.x2),
-                    child: Text('Butuh minimal 4 pemain', style: TextStyle(fontSize: 11, color: MabarColors.faint)),
-                  ),
-              ],
-            ),
+            ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _PlayerRow extends StatelessWidget {
-  final String name;
-  final bool withdrawn;
-  final bool canWithdraw;
-  final VoidCallback onWithdraw;
-  final VoidCallback onReinstate;
-
-  const _PlayerRow({
-    required this.name,
-    required this.withdrawn,
-    required this.canWithdraw,
-    required this.onWithdraw,
-    required this.onReinstate,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: MabarColors.line)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: withdrawn ? MabarColors.faint : MabarColors.ink,
-                    decoration: withdrawn ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-                if (withdrawn)
-                  const Text(
-                    'Keluar · skornya tetap dihitung',
-                    style: TextStyle(fontSize: 11, color: MabarColors.faint),
-                  ),
-              ],
-            ),
-          ),
-          if (withdrawn)
-            TextButton(onPressed: onReinstate, child: const Text('Kembalikan'))
-          else
-            TextButton(
-              onPressed: canWithdraw ? onWithdraw : null,
-              style: TextButton.styleFrom(foregroundColor: MabarColors.clay),
-              child: const Text('Keluarkan'),
-            ),
+        if (!canWithdraw) ...[
+          const SizedBox(height: 16),
+          Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: Text('Butuh minimal 4 pemain', style: small)),
         ],
-      ),
+      ],
     );
   }
 }

@@ -8,7 +8,7 @@ Dua sheet yang hanya ada di Mixed: mengubah daftar pemain di tengah turnamen, da
 
 ![08a](../../frames/08a.png)
 
-Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarRowAction`, `MabarGroup / MabarRow`, `MabarField`, `RoundTabs`, `showMabarSheet`
+Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarRowAction`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `MabarField`, `RoundTabs`, `MatchScoreRow`, `RestingList`, `showMabarSheet`
 
 - Dibuka dari tombol Pemain di action bar. Sheet naik bersama keyboard; daftar scroll di dalam.
 - Jumlah ditulis sekali, di label daftar: aktif · keluar. Dulu subjudul menulis "10 pemain aktif" dan label "Peserta (11)": dua istilah dan dua angka untuk daftar yang sama.
@@ -22,7 +22,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarRowAction`, `Ma
 
 ![08b](../../frames/08b.png)
 
-Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarRowAction`, `MabarGroup / MabarRow`, `MabarField`, `RoundTabs`, `showMabarSheet`
+Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarRowAction`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarField`, `RoundTabs`, `MatchScoreRow`, `showMabarSheet`
 
 - Pesan error lain: "Nama tidak boleh kosong" · "Eko M sudah ada — pakai "Kembalikan" di bawah" (nama pemain yang keluar) · "Maksimal 20 pemain aktif" (saat Tambah atau Kembalikan).
 - Aktif ≤ 4: semua "Keluarkan" mati.
@@ -31,7 +31,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarRowAction`, `Ma
 
 ![08c](../../frames/08c.png)
 
-Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarGroup / MabarRow`, `MabarStepper`, `RoundTabs`, `showMabarSheet`, `CourtColorPicker`
+Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `MabarStepper`, `RoundTabs`, `MatchScoreRow`, `RestingList`, `showMabarSheet`, `CourtColorPicker`
 
 - Dibuka dari 06l, 06m, atau Beranda 01a / 01c. Tambahan jam per court 0–6, dihitung dari akhir round terakhir: `max(booking, round × durasi) + tambahan`.
 - Keterangan per court: "Waktu habis", atau "Sisa 45m" kalau masih ada sisa yang tidak cukup untuk satu round (turnamen diakhiri lebih awal, 06m, atau durasi yang tidak membagi habis jam booking, mis. 25 mnt). Setelah ditambah: "→ 1j". Format durasi "3j 20m", "1j", "45m".
@@ -45,7 +45,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarGroup / MabarRo
 
 ![08d](../../frames/08d.png)
 
-Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarGroup / MabarRow`, `MabarStepper`, `RoundTabs`, `showMabarSheet`, `CourtColorPicker`
+Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `MabarStepper`, `RoundTabs`, `MatchScoreRow`, `RestingList`, `showMabarSheet`, `CourtColorPicker`
 
 - Tombol mati selama estimasi 0 match dan tidak ada match "Tidak dimainkan".
 - Kalau turnamen diakhiri sebelum waktunya habis, estimasi langsung > 0 tanpa menambah jam dan tombol aktif.

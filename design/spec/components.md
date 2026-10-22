@@ -90,7 +90,7 @@ Dipakai di frame: 08a, 08b
 Bilah tombol menempel di bawah, garis tipis di atas, safe area 34.
 
 Kelas hi-fi: `.actionbar`  
-Dipakai di frame: 02a, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 09a, 09b, 09c, 09d, 09e, 09f, 11a, 11b, 11c, 11e, 11h, 11i
+Dipakai di frame: 02a, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 08a, 08b, 08c, 08d, 09a, 09b, 09c, 09d, 09e, 09f, 11a, 11b, 11c, 11e, 11h, 11i
 
 ```css
 .actionbar { margin-top: auto; padding: 12px 16px 34px; display: flex; gap: 10px; background: var(--paper); border-top: 1px solid var(--line); flex: none; }
@@ -131,7 +131,7 @@ Dipakai di frame: 01a, 01b, 01c, 01i, 02b, 02c, 02d, 03a, 03b, 03c, 03d, 03e, 04
 Label grup dengan satu aksi teks atau tag di ujungnya.
 
 Kelas hi-fi: `.ghead`  
-Dipakai di frame: 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o
+Dipakai di frame: 04a, 04b, 04c, 04d, 04e, 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 08a, 08c, 08d
 
 ```css
 .rest .ghead { margin: 0; }
@@ -276,7 +276,7 @@ Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06
 Satu match gaya scorebug.
 
 Kelas hi-fi: `.list`, `.bug`, `.team`  
-Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 10a, 10b
+Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 08a, 08b, 08c, 08d, 10a, 10b
 
 ```css
 .list { display: flex; flex-direction: column; gap: 8px; }
@@ -303,7 +303,7 @@ Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06
 Yang istirahat di round ini (+ prioritas round berikutnya).
 
 Kelas hi-fi: `.rest`  
-Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o
+Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06m, 06n, 06o, 08a, 08c, 08d
 
 ```css
 .rest { display: flex; flex-direction: column; gap: 6px; flex: none; }

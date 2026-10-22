@@ -129,7 +129,7 @@ void main() {
 
   test('nama duplikat ditolak, termasuk milik pemain yang sudah keluar', () {
     controller.startIfNeeded(_mixedConfig(6));
-    expect(controller.addPlayer('pemain 1'), contains('sudah ada'));
+    expect(controller.addPlayer('pemain 1'), 'Pemain 1 sudah ada di daftar');
     controller.withdrawPlayer('p2');
     expect(controller.addPlayer('Pemain 2'), contains('Kembalikan'));
     expect(controller.addPlayer('   '), isNotNull);
