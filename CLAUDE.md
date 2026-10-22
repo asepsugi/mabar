@@ -52,10 +52,11 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   (di atas `ScoreEntry`), StandingTable, StatLine, NameListField, ModePicker/CourtSwatch/CourtColorGrid,
   HomePanel/HomeRowIcon/InstallStep, SharePoster (`share/widgets/`, preset pratinjau/Feed/Story, diekspor lewat
   `SharePosterTarget.exportPixelRatio`). Widget lama yang namanya bentrok jadi `LegacyChip`/`LegacyStepper`.
-- **Layar v2 selesai: 01 Beranda, 02 Pemain** (`test/hifi/screens/<alur>_test.dart`, golden semua frame + perilaku).
+- **Layar v2 selesai: 01 Beranda, 02 Pemain, 03 Konfigurasi** (`test/hifi/screens/<alur>_test.dart`, golden semua frame + perilaku).
   Pembungkus layar `hifiScreen(...)` di `test/hifi/screens/screen_harness.dart` (tema, safe area 47/34, override
-  provider). Golden dialog/sheet/ketikan/gulir memakai `expectMatchesHifi(..., act: (tester) async {...})`. Layar 03–11
-  masih tata letak lama.
+  provider). Golden dialog/sheet/ketikan/gulir memakai `expectMatchesHifi(..., act: (tester) async {...})`. Layar 04–11
+  masih tata letak lama. Layar "Cara Kerja Mixed" sudah dihapus: Konfigurasi Mixed ("Mulai Round 1") langsung push
+  `/schedule`. Batas yang tidak tergambar di frame: durasi match maks 180 mnt, booking 1–12 jam per court.
   Dialog konfirmasi dipusatkan di layar penuh (`useSafeArea: false`, sesuai `.dialog { top: 50% }`).
 - **Painter lapangan selesai** (langkah 4): `core/widgets/court_painter.dart` — `CourtPainter(t, toward, layout)`, satu
   gambar sudut lapangan untuk banner Beranda **dan** ikon app (jangan bikin gambar lapangan kedua). `t` = posisi garis
@@ -117,7 +118,7 @@ Konvensi: komentar seperlunya dan dalam bahasa Indonesia, menjelaskan *kenapa*. 
 > tombol lama) diganti hi-fi + komponen v2 — kalau bertentangan, hi-fi yang benar. Beranda v2 tidak menampilkan versi
 > (Cakupan → Dihapus); versi app hanya di `appVersion` + simpanan.
 
-Alur penuh jalan: Home → Peserta → Konfigurasi → Pasangan (Fixed) / Mode Endless (Mixed) → Jadwal 6a/6b → Input Skor + sheet WO → Peringkat → Detail Pemain → Share.
+Alur penuh jalan: Home → Peserta → Konfigurasi → Pasangan (Fixed) / langsung (Mixed) → Jadwal 6a/6b → Input Skor + sheet WO → Peringkat → Detail Pemain → Share.
 
 Mesin domain yang sudah ada + ter-test (semua `flutter test` lulus, termasuk golden komponen di `test/hifi/`; `flutter analyze` bersih kecuali 2 info lint lama di `models.dart`):
 - `pairing/player_name_parser.dart` — parser textarea nama.
@@ -186,7 +187,7 @@ Seluruh MVP PRD sudah jalan, termasuk bagian 5 (Penyimpanan Data).
   satu-satunya jalan masuknya, dan dia mengoper `active.config` apa adanya karena `startIfNeeded`
   membandingkan config dengan `identical` — kalau config-nya disalin, jadwalnya akan diregenerate.
   Karena menambah pemain mengganti `state.config`, controller juga mengingat `_startedFrom` (config
-  awal yang masih dipegang layar konfirmasi Mixed di belakang jadwal); dua-duanya dianggap turnamen yang sama.
+  awal yang masih dipegang layar Konfigurasi di belakang jadwal); dua-duanya dianggap turnamen yang sama.
 - `close()` (tombol "Selesai" di layar Share) memindahkan turnamen ke slot `lastFinished`,
   tidak menghapusnya, sesuai PRD. Future-nya dikembalikan supaya test bisa menunggu tulisannya.
 - **Lanjutkan Turnamen** (Mixed saja; Fixed sengaja tidak — keputusan host): `TournamentController.resume`

@@ -40,7 +40,7 @@ class TournamentController extends Notifier<ActiveTournament?> {
   /// dengan config yang sama sudah jalan (mis. screen di-rebuild).
   void startIfNeeded(TournamentConfig config) {
     // Dua-duanya perlu: config di state berganti kalau host menambah pemain,
-    // sementara layar konfirmasi Mixed di belakangnya masih memegang config awal.
+    // sementara layar Konfigurasi di belakangnya masih memegang config awal.
     if (state != null && (identical(state!.config, config) || identical(_startedFrom, config))) {
       return;
     }

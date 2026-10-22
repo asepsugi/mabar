@@ -63,7 +63,7 @@ void main() {
     expect(zaki.name, 'Zaki');
     expect(after.activePlayers, hasLength(10));
 
-    // Layar konfirmasi Mixed masih memegang config awal; masuk lagi lewat sana
+    // Layar Konfigurasi masih memegang config awal; masuk lagi lewat sana
     // tidak boleh membuat turnamen baru.
     controller.startIfNeeded(config);
     expect(read().tournament.id, before.tournament.id);

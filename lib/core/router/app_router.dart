@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/home/home_screen.dart';
 import '../../features/konfigurasi/konfigurasi_screen.dart';
-import '../../features/mixed_confirm/mixed_confirm_screen.dart';
 import '../../features/pair_setup/pair_setup_screen.dart';
 import '../../features/detail_player/detail_player_screen.dart';
 import '../../features/leaderboard/leaderboard_screen.dart';
@@ -35,10 +34,6 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/pair-setup',
       builder: (_, state) => PairSetupScreen(config: state.extra as TournamentConfig),
-    ),
-    GoRoute(
-      path: '/mixed-confirm',
-      builder: (_, state) => MixedConfirmScreen(config: state.extra as TournamentConfig),
     ),
     GoRoute(
       path: '/schedule',

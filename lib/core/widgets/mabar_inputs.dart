@@ -64,7 +64,8 @@ class MabarSegmented<T> extends StatelessWidget {
 
 /// `.stepper` — − angka + dengan lebar angka tetap 60, supaya tombol di semua baris satu grup sejajar
 /// satu kolom. Di batas, tombolnya pudar dan tidak bisa ditekan. Angka bisa diketuk untuk diketik;
-/// ketikan dirapikan [normalizeTyped] (bawaan: dikembalikan ke batas terdekat).
+/// ketikan dirapikan [normalizeTyped] (bawaan: dikembalikan ke batas terdekat). [error] = angka clay
+/// (nilai penyebab error di catatan grup, 03d).
 class MabarStepper extends StatefulWidget {
   final int value;
   final int min;
@@ -75,6 +76,7 @@ class MabarStepper extends StatefulWidget {
   final String? unit;
   final ValueChanged<int> onChanged;
   final int Function(int typed)? normalizeTyped;
+  final bool error;
 
   const MabarStepper({
     super.key,
@@ -85,6 +87,7 @@ class MabarStepper extends StatefulWidget {
     this.step = 1,
     this.unit,
     this.normalizeTyped,
+    this.error = false,
   });
 
   @override
@@ -184,7 +187,7 @@ class _MabarStepperState extends State<MabarStepper> {
                           ),
                       ],
                     ),
-                    style: _number,
+                    style: widget.error ? _number.copyWith(color: MabarColors.clay) : _number,
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     softWrap: false,
