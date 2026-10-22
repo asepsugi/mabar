@@ -113,21 +113,19 @@ void main() {
   });
 
   group('skor akhir', () {
-    test('Race to 6: diterima 6–0, 6–5, 7–5, 7–6 (7–6 = tie-break), di kedua sisi', () {
-      for (final (a, b) in [(6, 0), (6, 5), (7, 5), (7, 6), (0, 6), (5, 7)]) {
+    test('Race to 6 murni: diterima 6–0 sampai 6–5, di kedua sisi', () {
+      for (final (a, b) in [(6, 0), (6, 5), (0, 6), (5, 6)]) {
         expect(ScoreRules.judge(race6, a, b), isA<ScoreWin>(), reason: '$a–$b');
       }
-      expect((ScoreRules.judge(race6, 7, 6) as ScoreWin).tieBreak, isTrue);
-      expect((ScoreRules.judge(race6, 7, 5) as ScoreWin).tieBreak, isFalse);
       final win = ScoreRules.judge(race6, 4, 6) as ScoreWin;
       expect((win.winnerSide, win.winnerScore, win.loserScore), (2, 6, 4));
     });
 
     test('Race to 6: ditolak dengan pesan frame 07d', () {
-      expect(_message(race6, 6, 6), '6–6 belum selesai. Isi skor akhir, mis. 7–6');
+      expect(_message(race6, 6, 6), 'Hanya satu tim yang bisa mencapai 6');
       expect(_message(race6, 5, 3), 'Belum ada yang sampai 6');
-      for (final (a, b) in [(7, 3), (7, 4), (7, 7)]) {
-        expect(_message(race6, a, b), 'Skor akhir race to 6: 6–0 sampai 6–5, atau 7–5 / 7–6', reason: '$a–$b');
+      for (final (a, b) in [(7, 5), (7, 6), (7, 3)]) {
+        expect(_message(race6, a, b), 'Skor akhir race to 6: 6–0 sampai 6–5', reason: '$a–$b');
       }
     });
 
@@ -142,12 +140,13 @@ void main() {
   });
 
   group('keypad', () {
-    test('Race to 6 kosong: 8 dan 9 mati (07a, 07k)', () {
-      expect(_keys(ScoreEntry.start(race6)), [0, 1, 2, 3, 4, 5, 6, 7]);
+    test('Race to 6 kosong: 7–9 mati (07a, 07k)', () {
+      expect(_keys(ScoreEntry.start(race6)), [0, 1, 2, 3, 4, 5, 6]);
     });
 
-    test('Race to 9: setelah "1" hanya 0 yang aktif', () {
-      expect(_keys(ScoreEntry.start(race9).type(1)), [0]);
+    test('Race to 9: satu digit, semua angka aktif dan "1" langsung penuh', () {
+      expect(_keys(ScoreEntry.start(race9)), [for (var d = 0; d <= 9; d++) d]);
+      expect(ScoreEntry.start(race9).type(1).active, 2);
     });
 
     test('Americano 21: setelah "2" hanya 0 dan 1, lawan terisi otomatis (07h)', () {
@@ -163,7 +162,7 @@ void main() {
     test('kotak penuh: ketikan berikutnya mengganti isi, yang mati hanya angka di atas batas (07b, 07e, 07g)', () {
       final race = _typeAll(ScoreEntry.start(race6), [6, 4]);
       expect(race.active, 2);
-      expect(_keys(race), [0, 1, 2, 3, 4, 5, 6, 7]);
+      expect(_keys(race), [0, 1, 2, 3, 4, 5, 6]);
       expect(race.type(5).side2, 5);
 
       final best = ScoreEntry.start(bestOf5).type(3);
@@ -178,13 +177,11 @@ void main() {
     });
 
     test('Race to: digit penuh → kursor pindah ke kotak lawan yang kosong; 0 tidak diberi digit kedua', () {
-      final afterSeven = ScoreEntry.start(race6).type(7);
-      expect((afterSeven.side1, afterSeven.active), (7, 2));
+      final afterSix = ScoreEntry.start(race6).type(6);
+      expect((afterSix.side1, afterSix.active), (6, 2));
       final afterZero = ScoreEntry.start(race6).type(0);
       expect((afterZero.side1, afterZero.active), (0, 2));
-      // Race to 9 (maks 10): setelah "4" tidak ada digit lagi, setelah "1" masih bisa jadi 10.
       expect(ScoreEntry.start(race9).type(4).active, 2);
-      expect(ScoreEntry.start(race9).type(1).active, 1);
     });
 
     test('Race to tidak mengisi otomatis; kombinasi dicek setelah dua kotak terisi', () {
@@ -197,12 +194,12 @@ void main() {
       expect(_typeAll(ScoreEntry.start(race6), [6, 4]).score?.side2, 4);
     });
 
-    test('tombol tidak dimatikan karena isi lawan: 6–4 dikoreksi jadi 7–5 tanpa menghapus', () {
+    test('tombol tidak dimatikan karena isi lawan: 6–4 dikoreksi jadi 4–6 tanpa menghapus', () {
       var e = _typeAll(ScoreEntry.start(race6), [6, 4]);
       e = e.select(1);
-      expect(e.canType(7), isTrue);
-      e = e.type(7).select(2).type(5);
-      expect((e.side1, e.side2), (7, 5));
+      expect(e.canType(4), isTrue);
+      e = e.type(4).select(2).type(6);
+      expect((e.side1, e.side2), (4, 6));
       expect(e.verdict, isA<ScoreWin>());
     });
 

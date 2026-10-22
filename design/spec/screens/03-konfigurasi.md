@@ -12,7 +12,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 - Default kedua olahraga: Race to 6, durasi 20 mnt (Padel 15 mnt), 2 court × 2 jam.
 - Durasi match selalu kelipatan 5 menit (minimal 5): stepper ±5, dan angka yang diketik langsung dibulatkan ke kelipatan 5 terdekat.
-- Race to N: siapa duluan menang N game. Target 2–9 (4 = gaya Fast4, 6 = satu set, 8 = pro set). Skor akhir yang diterima: N lawan 0..N−1, atau N+1 lawan N−1/N untuk set yang wajib selisih 2 dan tie-break (7–5, 7–6).
+- Race to N: siapa duluan menang N game. Target 2–9 (4 = gaya Fast4, 6 = satu set, 8 = pro set). Skor akhir yang diterima: N lawan 0..N−1; match langsung selesai begitu satu tim mencapai N (di dalam game tetap 15–30–40). Tidak ada 7–5 / 7–6 (keputusan host 2026-10-22).
 - Kartu mode: ilustrasi dari ikon Phosphor (`user` + `equals` / `shuffle` + `user`), ukuran orang identik, warna ikut teks. Deskripsi sama-sama satu baris. Isi rata tengah: dua kartu simetris dengan isi pendek, jadi tidak menyisakan ruang kosong di kanan.
 - Stepper di semua baris sejajar satu kolom (lebar angka tetap 60 pt), termasuk baris court yang punya lingkaran warna dan kolom nama; kolom nama yang menyesuaikan.
 - Lingkaran warna di tiap court: ketuk → sheet 03e. Nama kosong jadi "Court n". Jumlah court 1–10; court baru ikut urutan palet, 2 jam.

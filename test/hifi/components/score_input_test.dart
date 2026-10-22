@@ -40,7 +40,7 @@ void main() {
     ('07a', ScoreEntry.start(race6)),
     // Kotak penuh: angka berikutnya mengganti isi, jadi yang mati hanya angka di atas batas.
     ('07b', typed(race6, [6, 4])),
-    ('07c', typed(race6, [7, 6])),
+    ('07c', typed(race6, [6, 5])),
     ('07d', typed(race6, [6, 6])),
     ('07e', typed(bestOf5, [3])),
     ('07f', typed(bestOf6, [3])),

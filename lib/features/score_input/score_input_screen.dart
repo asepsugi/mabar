@@ -53,11 +53,10 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
     final score = entry.score;
     final verdict = entry.verdict;
     final feedback = switch (verdict) {
-      ScoreWin(:final winnerSide, :final winnerScore, :final loserScore, :final tieBreak) =>
+      ScoreWin(:final winnerSide, :final winnerScore, :final loserScore) =>
         '${team(winnerSide == 1 ? match.pair1 : match.pair2)} menang '
             // Americano: total tetap, jadi yang berarti selisihnya.
-            '${active.config.format.method == ScoringMethod.americano ? '+${winnerScore - loserScore}' : '$winnerScore–$loserScore'}'
-            '${tieBreak ? ' (tie-break)' : ''}',
+            '${active.config.format.method == ScoringMethod.americano ? '+${winnerScore - loserScore}' : '$winnerScore–$loserScore'}',
       ScoreDraw() => 'Seri',
       ScoreInvalid(:final message) => message,
       null => null,

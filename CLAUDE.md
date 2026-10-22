@@ -168,7 +168,7 @@ Mesin domain yang sudah ada + ter-test (semua `flutter test` lulus, termasuk gol
 - `ranking/ranking_calculator.dart` → `standingEntries()` — mengubah klasemen per pemain jadi baris tampilan. Mode Fixed: pasangan tidak pernah berganti sehingga statistik kedua anggotanya identik, jadi dua baris kembar digabung jadi satu baris "Andi + Budi" yang mengambil posisi anggota terbaiknya. Mode Mixed: satu baris per pemain, urutan `rank()` tidak diubah. Pemain sisa (jumlah ganjil) tetap tampil sendiri. `StandingEntry.position`: statistik identik (poin, selisih, W–L–D) → nomor sama (1, 1, 3); baris yang belum main dipindah ke belakang dengan `position == null` (grup "Belum main"). Peringkat, Detail, Bagikan, dan caption memakai nomor ini — jangan menomori dengan indeks.
 - `ActiveTournament.isFinal` — status Final/Sementara: diakhiri, Fixed semua match terisi, Mixed waktu booking habis + round terakhir lengkap (bukan tiap round lengkap). `playedRoundCount` = jumlah round yang punya match selesai/WO ("5 round · 10 match").
 - **Format skor** (`TournamentConfig.format` = `ScoreFormat(method, target)`; tes `test/services/score_format_test.dart`):
-  Race to N (2–9, default 6 — default kedua olahraga), Best of N (1–15, default 5), Americano N (2–99, default 21).
+  Race to N (2–9, default 6 — default kedua olahraga; murni: skor akhir N lawan 0..N−1, tanpa 7–5/7–6), Best of N (1–15, default 5), Americano N (2–99, default 21).
   Semua disimpan sebagai **satu `SetScore`**, jadi ranking/share/codec tidak bercabang; Best of & Americano mengisi
   lawan `N − x`; seri hanya kalau N genap (`canDraw`, juga penentu kolom D). Aturan sah + pesan frame 07d/07h di
   `services/scoring/score_entry.dart` (`ScoreRules.judge`), begitu juga keypad v2 (`ScoreEntry`: batas per kotak

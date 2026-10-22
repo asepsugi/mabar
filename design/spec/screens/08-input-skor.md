@@ -23,13 +23,13 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `S
 - Pemenang ditandai bola di kolom tetap di kiri nama (10 pt), sejajar tengah dengan dua baris nama. Kolom ini ada di kedua tim (kosong kalau belum/tidak menang), jadi dua baris nama selalu rata dan nama tidak bergeser saat bola muncul. Tim yang kalah dipudarkan, seperti baris Jadwal. Nama 20/700.
 - Simpan → kembali ke Jadwal tanpa toast.
 
-## 07c · Race to 6 · tie-break
+## 07c · Race to 6 · selisih satu game
 
 ![07c](../../frames/07c.png)
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `ScoreBoard / ScoreKeypad`
 
-- Untuk komunitas yang memakai aturan set standar (wajib selisih 2, tie-break di 6–6): 7–5 dan 7–6 diterima. Race to murni berhenti di 6–5; keduanya sah tanpa pengaturan tambahan.
+- Race to N murni: match langsung selesai begitu satu tim mencapai N, jadi menang selisih satu game (6–5) sah. Tidak ada 7–5 / 7–6 dan tidak ada tie-break: itu skor set standar (wajib selisih 2), format lain (keputusan host 2026-10-22).
 
 ## 07d · Race to 6 · belum selesai
 
@@ -37,8 +37,8 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `S
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `ScoreBoard / ScoreKeypad`
 
-- Pesan lain: "Belum ada yang sampai 6" (mis. 5–3), "Skor akhir race to 6: 6–0 sampai 6–5, atau 7–5 / 7–6" (mis. 7–3, 7–4). Angka 8 ke atas tidak bisa diketik sama sekali (07k).
-- Yang sah di atas target hanya target + 1 dengan lawan target − 1 atau target (7–5, 7–6). 7–5 tetap sah walau selisihnya 2: di set biasa, dari 5–5 pemenang harus unggul 2 game.
+- Pesan lain: "Belum ada yang sampai 6" (mis. 5–3), "Skor akhir race to 6: 6–0 sampai 6–5" (skor di atas 6, hanya dari data lama). Angka 7 ke atas tidak bisa diketik sama sekali (07k).
+- Kedua tim tidak bisa sama-sama mencapai target: match sudah selesai saat tim pertama mencapainya (keputusan host 2026-10-22).
 - Satu sisi terisi, sisi lain kosong: Simpan mati tanpa pesan (sedang mengetik).
 
 ## 07e · Best of 5
@@ -103,8 +103,8 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `M
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `ScoreBoard / ScoreKeypad`
 
-- Isi satu kotak paling tinggi target + 1 (7), jadi tombol 8 dan 9 mati. Kalau tidak ada angka lagi yang mungkin (satu digit sudah penuh), kursor pindah sendiri ke kotak lawan yang masih kosong.
-- Kotak yang sudah penuh (tidak ada digit lagi yang bisa ditambahkan di belakangnya) menerima ketikan berikutnya sebagai pengganti isinya, begitu juga kotak yang baru dipilih. Jadi yang mati hanya angka di atas batas: Race to 6 berisi "4" → 8 dan 9 mati (07b), Best of 5 berisi "3" → 6–9 mati (07e), Americano 21 berisi "13" → semua aktif (07g); "2" di Americano 21 belum penuh, jadi hanya 0 dan 1 (07h). Keputusan host 2026-10-22.
-- Kombinasi baru dicek setelah dua kotak terisi, karena 7 sah atau tidak tergantung lawan (7–5 sah, 7–3 tidak; pesannya di 07d).
-- Tombol sengaja tidak dimatikan berdasarkan isi kotak lawan. Contoh: host salah ketik 6–4 padahal 7–5; kalau 7 dimatikan karena lawan masih 4, host harus mengubah kotak lawan dulu baru bisa mengetik 7.
-- Race to 9: batasnya 10, jadi setelah "1" hanya 0 yang aktif.
+- Isi satu kotak paling tinggi target (6), jadi tombol 7–9 mati. Kalau tidak ada angka lagi yang mungkin (satu digit sudah penuh), kursor pindah sendiri ke kotak lawan yang masih kosong.
+- Kotak yang sudah penuh (tidak ada digit lagi yang bisa ditambahkan di belakangnya) menerima ketikan berikutnya sebagai pengganti isinya, begitu juga kotak yang baru dipilih. Jadi yang mati hanya angka di atas batas: Race to 6 berisi "4" → 7–9 mati (07b), Best of 5 berisi "3" → 6–9 mati (07e), Americano 21 berisi "13" → semua aktif (07g); "2" di Americano 21 belum penuh, jadi hanya 0 dan 1 (07h). Keputusan host 2026-10-22.
+- Kombinasi baru dicek setelah dua kotak terisi: 6 sah atau tidak tergantung lawan (6–5 sah, 6–6 tidak; pesannya di 07d).
+- Tombol sengaja tidak dimatikan berdasarkan isi kotak lawan. Contoh: host salah ketik 6–4 padahal 4–6; kalau angka dimatikan karena isi lawan, host harus mengubah kotak lawan dulu baru bisa mengoreksi.
+- Race to 9: batasnya 9, jadi semua angka satu digit dan kotak langsung penuh.

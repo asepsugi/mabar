@@ -39,7 +39,7 @@ extension PartnerModeX on PartnerMode {
 
 /// Format skor satu match, dipilih host di Konfigurasi (`design/spec/logic.md` §1).
 enum ScoringMethod {
-  /// Siapa duluan menang N game. Sah: N lawan 0..N−1, atau N+1 lawan N−1/N (7–5, 7–6). Tidak pernah seri.
+  /// Siapa duluan menang N game, match langsung selesai. Sah: N lawan 0..N−1. Tidak pernah seri.
   raceTo,
 
   /// Main tepat N game; seri kalau N genap dan skornya sama.
@@ -114,8 +114,9 @@ class ScoreFormat {
   /// Best of & Americano: total kedua sisi tetap, jadi sisi lawan terisi otomatis `N − x`.
   bool get fillsOpponent => method == ScoringMethod.bestOf || method == ScoringMethod.americano;
 
-  /// Isi satu kotak skor paling tinggi segini: Race to N → N+1 (7–5, 7–6), lainnya N.
-  int get maxPerSide => method == ScoringMethod.raceTo ? target + 1 : target;
+  /// Isi satu kotak skor paling tinggi N: Race to N berhenti begitu satu tim mencapai N, Best of / Americano
+  /// tidak bisa melebihi total.
+  int get maxPerSide => target;
 
   /// Skor menang terkecil Best of / Americano: ⌊N ÷ 2⌋ + 1 (Americano 21 → 11, 24 → 13; Best of 5 → 3).
   int get minWinningScore => target ~/ 2 + 1;

@@ -38,7 +38,7 @@ void main() {
   for (final (frame, digits) in [
     ('07a', <int>[]),
     ('07b', [6, 4]),
-    ('07c', [7, 6]),
+    ('07c', [6, 5]),
     ('07d', [6, 6]),
     // "4" sudah penuh (8 dan 9 mati), kursor pindah sendiri ke kotak Gina·Hana.
     ('07k', [4]),
@@ -116,16 +116,16 @@ void main() {
   testWidgets('Ubah skor: angka mati sampai kotak diketuk; ketikan pertama mengganti isi', (tester) async {
     await pumpRouted(tester, round2(), 'r2c1');
     expect(find.text('Perbarui skor'), findsOneWidget);
-    await type(tester, [7]);
+    await type(tester, [5]);
     expect(find.text('Andi & Budi menang 6–4'), findsOneWidget, reason: 'belum ada kotak aktif');
-    await tester.tap(find.descendant(of: find.byType(ScoreBoard), matching: find.text('6')));
-    await tester.pump();
-    await type(tester, [7]);
-    expect(find.text('Skor akhir race to 6: 6–0 sampai 6–5, atau 7–5 / 7–6'), findsOneWidget);
     await tester.tap(find.descendant(of: find.byType(ScoreBoard), matching: find.text('4')));
     await tester.pump();
-    await type(tester, [5]);
-    expect(find.text('Andi & Budi menang 7–5'), findsOneWidget);
+    await type(tester, [6]);
+    expect(find.text('Hanya satu tim yang bisa mencapai 6'), findsOneWidget);
+    await tester.tap(find.descendant(of: find.byType(ScoreBoard), matching: find.text('6')).first);
+    await tester.pump();
+    await type(tester, [3]);
+    expect(find.text('Citra & Dewant menang 6–3'), findsOneWidget);
   });
 
   testWidgets('Americano: mengetik di sisi lawan menimpa nilai otomatis', (tester) async {

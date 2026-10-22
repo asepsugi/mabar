@@ -13,10 +13,7 @@ class ScoreWin extends ScoreVerdict {
   final int winnerScore;
   final int loserScore;
 
-  /// Race to N yang berakhir N+1 lawan N (7–6): ditulis "(tie-break)".
-  final bool tieBreak;
-
-  const ScoreWin({required this.winnerSide, required this.winnerScore, required this.loserScore, this.tieBreak = false});
+  const ScoreWin({required this.winnerSide, required this.winnerScore, required this.loserScore});
 }
 
 /// Skor sah dan seri — hanya mungkin di format yang [ScoreFormat.canDraw].
@@ -37,15 +34,13 @@ class ScoreRules {
     final n = format.target;
     switch (format.method) {
       case ScoringMethod.raceTo:
+        // Race to N murni: match selesai begitu satu tim mencapai N, jadi skor akhir N lawan 0..N−1.
         final high = side1 > side2 ? side1 : side2;
         final low = side1 > side2 ? side2 : side1;
-        if (side1 == side2 && side1 == n) return ScoreInvalid('$n–$n belum selesai. Isi skor akhir, mis. ${n + 1}–$n');
+        if (side1 == side2 && side1 == n) return ScoreInvalid('Hanya satu tim yang bisa mencapai $n');
         if (high < n) return ScoreInvalid('Belum ada yang sampai $n');
-        final valid = (high == n && low < n) || (high == n + 1 && (low == n - 1 || low == n));
-        if (!valid) {
-          return ScoreInvalid('Skor akhir race to $n: $n–0 sampai $n–${n - 1}, atau ${n + 1}–${n - 1} / ${n + 1}–$n');
-        }
-        return _win(side1, side2, tieBreak: high == n + 1 && low == n);
+        if (high > n || low >= n) return ScoreInvalid('Skor akhir race to $n: $n–0 sampai $n–${n - 1}');
+        return _win(side1, side2);
       case ScoringMethod.bestOf:
       case ScoringMethod.americano:
         if (side1 + side2 != n) return ScoreInvalid('Total ${format.unit} harus $n');
@@ -53,9 +48,9 @@ class ScoreRules {
     }
   }
 
-  static ScoreWin _win(int side1, int side2, {bool tieBreak = false}) => side1 > side2
-      ? ScoreWin(winnerSide: 1, winnerScore: side1, loserScore: side2, tieBreak: tieBreak)
-      : ScoreWin(winnerSide: 2, winnerScore: side2, loserScore: side1, tieBreak: tieBreak);
+  static ScoreWin _win(int side1, int side2) => side1 > side2
+      ? ScoreWin(winnerSide: 1, winnerScore: side1, loserScore: side2)
+      : ScoreWin(winnerSide: 2, winnerScore: side2, loserScore: side1);
 }
 
 /// Isi papan skor Input Skor: dua kotak (sisi 1 = `pair1`, 2 = `pair2`), kotak aktif, dan aturan keypad
@@ -91,7 +86,7 @@ class ScoreEntry {
   static int _other(int side) => side == 1 ? 2 : 1;
 
   /// Tombol angka [digit] aktif kalau hasilnya tidak melewati [ScoreFormat.maxPerSide]. Sengaja tidak
-  /// melihat isi kotak lawan (koreksi 6–4 → 7–5 harus bisa tanpa mengubah lawan dulu).
+  /// melihat isi kotak lawan (koreksi 6–4 → 4–6 harus bisa tanpa mengubah lawan dulu).
   bool canType(int digit) {
     final side = active;
     if (side == null) return false;

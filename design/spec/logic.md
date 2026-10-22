@@ -14,7 +14,7 @@ Implementasi: `ScoringMethod` + `ScoreFormat` (`lib/models/models.dart`), aturan
 
 | Format | Parameter | Default | Skor sah | Seri |
 |---|---|---|---|---|
-| Race to N game | N = 2–9 | 6 (kedua olahraga) | N lawan 0..N−1, atau N+1 lawan N−1 / N (7–5, 7–6) | tidak pernah |
+| Race to N game | N = 2–9 | 6 (kedua olahraga) | N lawan 0..N−1 (murni: selesai begitu satu tim mencapai N; tanpa 7–5/7–6, keputusan host 2026-10-22) | tidak pernah |
 | Best of N game | N = 1–15 | 5 | a + b = N | kalau N genap dan a = b |
 | Americano N poin | N = 2–99 | 21 | a + b = N | kalau N genap dan a = b |
 
@@ -28,7 +28,7 @@ Implementasi: `ScoringMethod` + `ScoreFormat` (`lib/models/models.dart`), aturan
 
 Implementasi: `ScoreEntry` (`score_entry.dart`).
 
-- Isi satu kotak tidak bisa melebihi: Race to N → N+1 · Best of N → N · Americano → total. Tombol angka yang
+- Isi satu kotak tidak bisa melebihi: Race to N → N · Best of N → N · Americano → total. Tombol angka yang
   akan melewatinya mati.
 - Digit ditambahkan di belakang isi kotak selama masih ada digit yang muat. **Kotak yang sudah penuh** (tidak ada digit
   lagi yang bisa ditambahkan; 0 selalu penuh) **atau baru dipilih** (ketuk kotak, →, pindah otomatis) menerima ketikan
@@ -36,13 +36,13 @@ Implementasi: `ScoreEntry` (`score_entry.dart`).
   Setelah digit membuat kotak penuh, kursor pindah ke kotak lawan kalau kotak itu kosong.
 - Belum ada kotak aktif (skor tersimpan dibuka, 07i): semua angka mati sampai salah satu kotak diketuk (atau →).
 - Kombinasi dicek setelah dua kotak terisi (pesan di frame 07d/07e/07h). **Tombol tidak dimatikan berdasarkan
-  isi kotak lawan** (koreksi 6–4 → 7–5 harus bisa tanpa mengubah lawan dulu).
+  isi kotak lawan** (koreksi 6–4 → 4–6 harus bisa tanpa mengubah lawan dulu).
 - Best of dan Americano: mengisi satu sisi mengisi sisi lain dengan N − x.
 
-Data test: Race to 6 → kosong: 8 dan 9 mati; "1" di Race to 9 → hanya 0 aktif; Americano 21 → setelah "2" hanya 0 dan 1;
-Race to 6 berisi "4" (07b) → 8 dan 9 mati; Best of 5 berisi "3" (07e) → 6–9 mati; Americano 21 berisi "13" (07g) → semua
+Data test: Race to 6 → kosong: 7–9 mati; Race to 9 → satu digit, semua aktif; Americano 21 → setelah "2" hanya 0 dan 1;
+Race to 6 berisi "4" (07b) → 7–9 mati; Best of 5 berisi "3" (07e) → 6–9 mati; Americano 21 berisi "13" (07g) → semua
 aktif; 07i → semua mati.
-Diterima: 6–0, 6–5, 7–5, 7–6. Ditolak: 6–6 ("belum selesai"), 5–3 ("belum ada yang sampai 6"), 7–3, 7–4.
+Diterima: 6–0 … 6–5. Ditolak: 6–6 ("Hanya satu tim yang bisa mencapai 6"), 5–3 ("Belum ada yang sampai 6"), 7–5 / 7–6 / 7–3.
 
 ## 3. Walkover (menggantikan "games WO tidak dihitung", PRD 4.4)
 

@@ -137,12 +137,12 @@ untuk tennis maupun padel.
 
 | Format | Arti | N | Skor akhir sah | Seri |
 |--------|------|---|----------------|------|
-| **Race to N** (default 6) | Duluan N game | 2–9 | N lawan 0…N−1, atau N+1 lawan N−1 / N (7–5, 7–6 = tie-break) | Tidak |
+| **Race to N** (default 6) | Duluan N game | 2–9 | N lawan 0…N−1 (match selesai begitu satu tim mencapai N; tanpa 7–5/7–6) | Tidak |
 | **Best of N** (default 5) | Main tepat N game | 1–15 | Jumlah = N | Kalau N genap |
 | **Americano N** (default 21) | Poin reli, total tetap | 2–99 | Jumlah = N | Kalau N genap |
 
 - Best of & Americano: mengisi satu sisi otomatis mengisi lawan `N − x`.
-- Keypad sendiri: tombol angka yang membuat isi kotak melebihi batas format mati (Race to N: N+1; Best of N: N;
+- Keypad sendiri: tombol angka yang membuat isi kotak melebihi batas format mati (Race to N: N; Best of N: N;
   Americano: total). Tombol tidak melihat isi kotak lawan. Kotak yang sudah penuh atau baru dipilih menerima ketikan
   berikutnya sebagai pengganti isinya; saat mengubah skor tersimpan, angka mati sampai salah satu kotak diketuk
   (keputusan host 2026-10-22). Pesan validasi persis seperti frame 07d/07h.
