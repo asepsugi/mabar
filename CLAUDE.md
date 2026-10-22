@@ -337,7 +337,9 @@ meng-unregister dirinya, jadi offline ditangani `web/sw.js` sendiri (cache-first
 `tool/build_web.sh` membangun dengan `--no-web-resources-cdn` (CanvasKit dari server sendiri, bukan gstatic) lalu
 mengisi daftar precache + versi di `sw.js`; `canvaskit/` sengaja tidak di-precache (beberapa varian ~5MB) dan
 ter-cache saat dipakai. Daftar precache berisi URL: nama aset yang di-encode Flutter di disk (`Archivo%5Bwdth,wght%5D.ttf`)
-ditulis dengan `%25`; satu URL 404 saja menggagalkan `cache.addAll` dan service worker tidak pernah ter-install. Setelah
+ditulis dengan `%25`; satu URL 404 saja menggagalkan `cache.addAll` dan service worker tidak pernah ter-install. Precache
+diambil dengan `cache: 'reload'`: tanpa itu cache versi baru bisa berisi file lama dari HTTP cache browser (pernah
+terjadi 2026-10-23: app lokal tertahan di build sebelum Race to murni). Setelah
 build, cek semua URL di `PRECACHE` mengembalikan 200. `web/flutter_bootstrap.js` memanggil `load()` tanpa `serviceWorkerSettings` — kalau
 SW Flutter didaftarkan, scope-nya sama dan ia mencopot `sw.js`. Offline sudah diuji: server dimatikan, reload, app tetap jalan.
 Update: `sw.js` baru terunduh di background saat app dibuka; pada pembukaan **berikutnya** `index.html` mengaktifkannya

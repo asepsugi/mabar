@@ -7,8 +7,12 @@ const CACHE = `mabar-${VERSION}`;
 // Semua file app di-precache saat install, supaya layar yang belum pernah dibuka (dan gambarnya)
 // tetap jalan offline di lapangan. Pengecualian: canvaskit/ punya beberapa varian ~5MB per browser,
 // jadi hanya varian yang benar-benar diunduh browser yang disimpan, lewat cache saat fetch.
+// `cache: 'reload'` wajib: tanpa itu addAll boleh mengambil dari HTTP cache browser (Pages max-age=600,
+// server lokal heuristik dari Last-Modified), jadi cache versi baru berisi main.dart.js/index.html lama
+// dan app tertahan di build lama sampai sw.js berikutnya.
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)));
+  const fresh = PRECACHE.map((url) => new Request(url, { cache: 'reload' }));
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(fresh)));
 });
 
 // Tidak skipWaiting otomatis: satu sesi tidak boleh mencampur main.dart.js lama dengan aset baru.
