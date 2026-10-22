@@ -185,7 +185,8 @@ Metode peringkat yang dipilih host hidup di `rankingMethodProvider`, klasemennya
 Bagikan (`features/share/share_result_screen.dart`) mengirim **gambar**, bukan cuma teks: `SharePoster` (target Feed
 1080×1080 dan Story 1080×1920, `SharePosterTarget.exportPixelRatio`) di-render lewat `screenshot` lalu dibagikan
 dengan `Share.shareXFiles` lewat share sheet sistem, teks hasil (`ResultTextBuilder`) jadi caption. Gagal share →
-caption disalin + toast "Hasil disalin". Isi poster dari `sharePosterData()` (`share_content.dart`): Ringkas = 5
+caption disalin + toast "Hasil disalin" (selalu 19 pt di atas action bar: `showMabarToast(bottom:)` diisi tinggi
+action bar dua tombol). Isi poster dari `sharePosterData()` (`share_content.dart`): Ringkas = 5
 teratas + "+n pemain/pasangan lainnya", Lengkap = semua yang bernomor; Fixed menulis nilai + satuan saja, Mixed
 "42 poin · 100%" / "100% · +12". `ShareTheme` punya 10 gradien (6 gelap bertinta putih + 4 lembut bertinta gelap);
 semua warna poster diturunkan dari `theme.ink` — jangan menaruh `Colors.white` langsung. Tema & format tidak disimpan.

@@ -416,11 +416,13 @@ class MabarMenu<T> extends StatelessWidget {
 }
 
 /// `.toast` — pesan singkat bertinta di atas action bar (hanya "Hasil disalin", 11c), hilang sendiri.
-/// Diletakkan 19 pt di atas action bar: 84 + safe area bawah (minimal 12) dari bawah layar.
+/// Diletakkan 19 pt di atas action bar: bawaannya 84 + safe area bawah (minimal 12) dari bawah layar, untuk
+/// action bar satu tombol; layar dengan action bar lain memberi [bottom] (tinggi action bar + 19).
 void showMabarToast(
   BuildContext context,
   String message, {
   IconData icon = MabarIcons.check,
+  double? bottom,
 }) {
   final overlay = Overlay.of(context);
   late final OverlayEntry entry;
@@ -428,7 +430,7 @@ void showMabarToast(
     builder: (context) => Positioned(
       left: 16,
       right: 16,
-      bottom: 84 + max(12.0, MediaQuery.paddingOf(context).bottom),
+      bottom: bottom ?? 84 + max(12.0, MediaQuery.paddingOf(context).bottom),
       child: IgnorePointer(
         child: MabarToast(message: message, icon: icon),
       ),

@@ -165,6 +165,40 @@ void main() {
     });
   }
 
+  /// Clipboard palsu: test tidak punya plugin platform.
+  void mockClipboard(WidgetTester tester, [void Function(String text)? onCopy]) {
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      if (call.method == 'Clipboard.setData') onCopy?.call((call.arguments as Map)['text'] as String);
+      return null;
+    });
+    addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
+  }
+
+  /// Render poster + share sheet berjalan di luar fake async; tanpa plugin share di test, share gagal dan
+  /// caption disalin.
+  Future<void> untilCopied(WidgetTester tester) async {
+    for (var i = 0; i < 30 && find.text('Hasil disalin').evaluate().isEmpty; i++) {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+  }
+
+  testWidgets('11c share gagal: tombol aktif lagi, toast 19 pt di atas action bar', (tester) async {
+    await precacheHifiAssets(tester, [SportType.padel.assetPath]);
+    mockClipboard(tester);
+    await expectMatchesHifi(
+      tester,
+      screen(set1),
+      '11c',
+      act: (tester) async {
+        await tester.tap(find.text('Bagikan hasil').last);
+        await tester.pump();
+        await untilCopied(tester);
+      },
+    );
+    await tester.pump(const Duration(seconds: 3)); // toast hilang sendiri
+  });
+
   Future<ProviderContainer> pumpRouted(WidgetTester tester, ActiveTournament active) async {
     tester.view.physicalSize = const Size(390, 844) * hifiPixelRatio;
     tester.view.devicePixelRatio = hifiPixelRatio;
@@ -195,11 +229,7 @@ void main() {
 
   testWidgets('Bagikan: tombol mati saat menyiapkan gambar; share gagal → caption disalin + toast', (tester) async {
     String? copied;
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
-      if (call.method == 'Clipboard.setData') copied = (call.arguments as Map)['text'] as String;
-      return null;
-    });
-    addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
+    mockClipboard(tester, (text) => copied = text);
     await precacheHifiAssets(tester, [SportType.padel.assetPath]);
     await pumpRouted(tester, set1);
 
@@ -208,11 +238,7 @@ void main() {
     expect(find.text('Menyiapkan gambar…'), findsOneWidget);
     expect(tester.widget<MabarButton>(find.widgetWithText(MabarButton, 'Menyiapkan gambar…')).onPressed, isNull);
 
-    // Render poster + share sheet berjalan di luar fake async; tanpa plugin share di test, share gagal.
-    for (var i = 0; i < 30 && find.text('Hasil disalin').evaluate().isEmpty; i++) {
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
-      await tester.pump(const Duration(milliseconds: 100));
-    }
+    await untilCopied(tester);
     expect(find.text('Hasil disalin'), findsOneWidget);
     expect(copied, contains('Peringkat Sementara'));
     expect(find.text('Bagikan hasil'), findsWidgets);

@@ -31,6 +31,7 @@ class _ShareResultScreenState extends ConsumerState<ShareResultScreen> {
   ShareFormat _format = ShareFormat.ringkas;
   ShareTheme _theme = ShareTheme.biru;
   bool _sharing = false;
+  final _actionBar = GlobalKey();
 
   Future<XFile> _render(SharePosterData data, SharePosterTarget target) async {
     final bytes = await ScreenshotController().captureFromWidget(
@@ -60,7 +61,11 @@ class _ShareResultScreenState extends ConsumerState<ShareResultScreen> {
     } catch (_) {
       // Share sheet tidak tersedia (desktop/web tertentu): caption disalin.
       await Clipboard.setData(ClipboardData(text: caption));
-      if (mounted) showMabarToast(context, 'Hasil disalin');
+      if (mounted) {
+        // Action bar Bagikan dua tombol: toast tetap 19 pt di atasnya, tidak menutupi "Bagikan hasil".
+        final bar = _actionBar.currentContext?.size?.height;
+        showMabarToast(context, 'Hasil disalin', bottom: bar == null ? null : bar + 19);
+      }
     } finally {
       if (mounted) setState(() => _sharing = false);
     }
@@ -133,6 +138,7 @@ class _ShareResultScreenState extends ConsumerState<ShareResultScreen> {
             ),
           ),
           MabarActionBar(
+            key: _actionBar,
             column: true,
             children: [
               _sharing
