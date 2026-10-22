@@ -5,11 +5,15 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/theme/mabar_icons.dart';
 import '../../core/theme/mabar_theme.dart';
-import '../../core/widgets/mabar_widgets.dart';
+import '../../core/widgets/mabar_controls.dart';
+import '../../core/widgets/mabar_group.dart';
+import '../../core/widgets/numbered_lists.dart';
 import '../../models/models.dart';
 import '../../services/pairing/player_name_parser.dart';
+import 'widgets/name_list_field.dart';
 
-/// Screen 2 · Input Peserta — textarea multiline + parser auto-trim + preview live.
+/// Screen 02 · Pemain — satu kotak teks untuk ditempel dari grup WhatsApp, aksinya menempel di bawah kotak.
+/// Penomoran/bullet dan duplikat dibersihkan diam-diam; daftar bernomor di bawahnya = hasil akhirnya.
 class SetupPesertaScreen extends StatefulWidget {
   final SportType sport;
   const SetupPesertaScreen({super.key, required this.sport});
@@ -23,6 +27,7 @@ class _SetupPesertaScreenState extends State<SetupPesertaScreen> {
 
   final _controller = TextEditingController();
   ParseResult _result = const ParseResult(names: [], duplicates: []);
+  var _scrolled = false;
 
   @override
   void initState() {
@@ -41,6 +46,7 @@ class _SetupPesertaScreenState extends State<SetupPesertaScreen> {
     setState(() => _result = next);
   }
 
+  /// Kosong: mengganti isi. Ada isi: ditambahkan di baris baru.
   Future<void> _paste() async {
     final data = await Clipboard.getData(Clipboard.kTextPlain);
     final text = data?.text;
@@ -49,195 +55,81 @@ class _SetupPesertaScreenState extends State<SetupPesertaScreen> {
     _controller.text = current.trim().isEmpty ? text : '${current.trimRight()}\n$text';
   }
 
-  void _fillSample() => _controller.text = _sampleNames.join('\n');
-
-  void _clear() => _controller.clear();
-
   void _next() {
     const uuid = Uuid();
     final players = [for (final name in _result.names) Player(id: uuid.v4(), name: name)];
     context.push('/konfigurasi', extra: (widget.sport, players));
   }
 
+  /// Garis bawah app bar begitu isi tergulir ke bawahnya.
+  bool _onScroll(ScrollNotification n) {
+    if (n.depth == 0) {
+      final scrolled = n.metrics.pixels > 0;
+      if (scrolled != _scrolled) setState(() => _scrolled = scrolled);
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final empty = _controller.text.trim().isEmpty;
+    final count = _result.count;
+    final notes = [
+      // Kurang dari 4 bukan error: host masih mengetik.
+      if (count > 0 && count < 4) const MabarGroupNote('Minimal 4 pemain'),
+      if (count > 20) const MabarGroupNote('Maksimal 20 pemain', error: true),
+      if (_result.duplicates.isNotEmpty) MabarGroupNote('Duplikat dibuang: ${_result.duplicates.join(', ')}'),
+    ];
     return Scaffold(
-      backgroundColor: MabarColors.card,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(MabarSpacing.x5, MabarSpacing.x2, MabarSpacing.x5, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              MabarScreenHeader(
-                leading: MabarBackButton(label: 'Beranda', onTap: () => context.pop()),
-                trailing: const MabarStepIndicator(step: 2),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const MabarPageTitle(
-                        title: 'Peserta',
-                        subtitle: 'Satu nama per baris. Nomor di depan nama dihapus otomatis.',
-                      ),
-                      const MabarFieldLabel('Daftar Nama'),
-                      _NameField(controller: _controller),
-                      const SizedBox(height: 6),
-                      const _FormatHint(),
-                      const SizedBox(height: 14),
-                      _ActionChips(onPaste: _paste, onSample: _fillSample, onClear: _clear),
-                      const SizedBox(height: MabarSpacing.x4),
-                      if (!_result.isEmpty) _PlayerPreview(result: _result),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: MabarSpacing.x3),
-              MabarPrimaryButton(label: 'Lanjut', onPressed: _result.isValid ? _next : null),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NameField extends StatelessWidget {
-  final TextEditingController controller;
-  const _NameField({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    // Tumbuh dari 5 baris (≈130px, sesuai mockup) sampai 8 baris, setelah itu
-    // isinya di-scroll di dalam field supaya layout screen tidak ikut memanjang.
-    return TextField(
-      controller: controller,
-      minLines: 5,
-      maxLines: 8,
-      keyboardType: TextInputType.multiline,
-      textCapitalization: TextCapitalization.words,
-      style: const TextStyle(fontSize: 14, color: MabarColors.ink, height: 1.6),
-      decoration: const InputDecoration(
-        hintText: '1. Andi P\n2. Budi S\n3) Citra L',
-        contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        hintStyle: TextStyle(fontSize: 14, color: MabarColors.faint, height: 1.6),
-      ),
-    );
-  }
-}
-
-class _FormatHint extends StatelessWidget {
-  const _FormatHint();
-
-  @override
-  Widget build(BuildContext context) {
-    const style = TextStyle(fontSize: 11, color: MabarColors.faint, height: 1.5);
-    return const Wrap(
-      spacing: 4,
-      runSpacing: 4,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        Text('Boleh pakai', style: style),
-        MabarCode('1.'),
-        MabarCode('2)'),
-        MabarCode('-'),
-        Text('· Nama duplikat dibuang', style: style),
-      ],
-    );
-  }
-}
-
-class _ActionChips extends StatelessWidget {
-  final VoidCallback onPaste;
-  final VoidCallback onSample;
-  final VoidCallback onClear;
-
-  const _ActionChips({required this.onPaste, required this.onSample, required this.onClear});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        LegacyChip(label: 'Tempel', icon: MabarIcons.clipboardText, onTap: onPaste),
-        const SizedBox(width: 6),
-        LegacyChip(label: 'Contoh', onTap: onSample),
-        const Spacer(),
-        LegacyChip(label: 'Hapus Semua', variant: LegacyChipVariant.danger, onTap: onClear),
-      ],
-    );
-  }
-}
-
-/// `.player-preview` — hijau saat valid, merah saat jumlah pemain di luar batas.
-class _PlayerPreview extends StatelessWidget {
-  final ParseResult result;
-  const _PlayerPreview({required this.result});
-
-  @override
-  Widget build(BuildContext context) {
-    final valid = result.isValid;
-    final accent = valid ? MabarColors.ink : MabarColors.clay;
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: valid ? MabarColors.paper : MabarColors.paper,
-        border: Border.all(color: valid ? MabarColors.line : MabarColors.line),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: MabarColors.paper,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Icon(valid ? MabarIcons.check : MabarIcons.info, size: 14, color: accent),
-              const SizedBox(width: 6),
-              Text(
-                '${result.count} pemain',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: valid ? MabarColors.ink : MabarColors.clay,
+          MabarAppBar(title: 'Pemain', subtitle: widget.sport.label, onBack: () => context.pop(), scrolled: _scrolled),
+          Expanded(
+            child: NotificationListener<ScrollNotification>(
+              onNotification: _onScroll,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    NameListField(
+                      controller: _controller,
+                      hint: '1. Andi P\n2. Budi S\n3) Citra L',
+                      tools: [
+                        MabarTextButton(label: 'Tempel', icon: MabarIcons.clipboardText, onPressed: _paste),
+                        // Contoh mengganti seluruh isi, jadi hanya ada saat kosong.
+                        if (empty)
+                          MabarTextButton(
+                            label: 'Contoh',
+                            icon: MabarIcons.userList,
+                            onPressed: () => _controller.text = _sampleNames.join('\n'),
+                          ),
+                      ],
+                      trailingTool: empty
+                          ? null
+                          : MabarTextButton(
+                              label: 'Hapus semua',
+                              icon: MabarIcons.trash,
+                              tone: MabarTextTone.danger,
+                              onPressed: _controller.clear,
+                            ),
+                    ),
+                    if (count > 0) ...[
+                      const SizedBox(height: 16),
+                      MabarGroupLabel('$count pemain'),
+                      const SizedBox(height: 8),
+                      RosterPreview(names: _result.names),
+                    ],
+                    for (final note in notes) ...[const SizedBox(height: 8), note],
+                  ],
                 ),
               ),
-              const Spacer(),
-              Text(
-                valid ? 'Siap' : 'Belum siap',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: accent),
-              ),
-            ],
-          ),
-          if (!valid) ...[
-            const SizedBox(height: 4),
-            Text(result.validationError!, style: const TextStyle(fontSize: 11, color: MabarColors.clay, height: 1.5)),
-          ],
-          if (result.duplicates.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Nama duplikat dibuang: ${result.duplicates.join(', ')}',
-              style: const TextStyle(fontSize: 11, color: MabarColors.ink3, height: 1.5),
             ),
-          ],
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 4,
-            runSpacing: 4,
-            children: [
-              for (final name in result.names)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: MabarColors.card,
-                    borderRadius: BorderRadius.circular(MabarRadius.chip),
-                  ),
-                  child: Text(
-                    name,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: MabarColors.ink2),
-                  ),
-                ),
-            ],
+          ),
+          MabarActionBar(
+            children: [Expanded(child: MabarButton(label: 'Lanjut', onPressed: _result.isValid ? _next : null))],
           ),
         ],
       ),

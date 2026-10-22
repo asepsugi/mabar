@@ -1,8 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mabar/core/theme/mabar_theme.dart';
 import 'package:mabar/features/home/app_install.dart';
 import 'package:mabar/features/home/home_screen.dart';
 import 'package:mabar/features/schedule/tournament_controller.dart';
@@ -10,6 +8,7 @@ import 'package:mabar/models/models.dart';
 import 'package:mabar/services/storage/tournament_store.dart';
 
 import '../hifi_golden.dart';
+import 'screen_harness.dart';
 
 /// Golden layar penuh Beranda, frame 01a–01f, 01h, 01i. Data sama dengan frame: turnamen terakhir Padel
 /// Mixed 8 pemain selesai di R6; turnamen berjalan Padel Mixed 8 pemain R4 (6 dari 8 match) dan Tennis Fixed
@@ -88,21 +87,13 @@ void main() {
   Widget screen({ActiveTournament? active, ActiveTournament? last, AppInstallMode install = AppInstallMode.none}) {
     final store = TournamentStore.memory();
     if (active != null) store.saveActive(active);
-    return ProviderScope(
+    return hifiScreen(
+      const HomeScreen(),
       overrides: [
         tournamentStoreProvider.overrideWithValue(store),
         lastFinishedProvider.overrideWith((ref) => last),
         appInstallModeProvider.overrideWithValue(ValueNotifier(install) as ValueListenable<AppInstallMode>),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: MabarTheme.light(),
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(padding: hifiSafeArea, viewPadding: hifiSafeArea),
-          child: child!,
-        ),
-        home: const HomeScreen(),
-      ),
     );
   }
 

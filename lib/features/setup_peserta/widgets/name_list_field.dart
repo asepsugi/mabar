@@ -70,6 +70,8 @@ class _NameListFieldState extends State<NameListField> {
         children: [
           RawScrollbar(
             controller: _scroll,
+            // `.thumb` tampil selama isinya lebih panjang dari kotak, bukan hanya saat digulir (02b).
+            thumbVisibility: true,
             thumbColor: MabarColors.off,
             thickness: 3,
             radius: const Radius.circular(2),
