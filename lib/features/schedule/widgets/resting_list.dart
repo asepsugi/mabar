@@ -5,7 +5,7 @@ import '../../../core/widgets/mabar_group.dart';
 
 /// `.rest` — siapa yang istirahat. Nama dua kolom rata (urut seperti daftar pemain, kiri lalu kanan),
 /// 13/600, terpotong elipsis. Judul: "Istirahat", "Istirahat · Prioritas main di R4" ([priorityRound],
-/// bagian prioritas biru court), atau "Istirahat lagi di R4" ([later], nama dipudarkan). Fixed memakai
+/// bagian prioritas bertinta gelap — biru court dipakai tautan/aksi seperti "Batalkan Rn"), atau "Istirahat lagi di R4" ([later], nama dipudarkan). Fixed memakai
 /// nama pasangan ("Indra · Joko").
 class RestingList extends StatelessWidget {
   final List<String> names;
@@ -29,7 +29,7 @@ class RestingList extends StatelessWidget {
               children: [
                 if (priorityRound != null) ...[
                   const TextSpan(text: ' · '),
-                  TextSpan(text: 'Prioritas main di R$priorityRound', style: MabarType.label.copyWith(color: MabarColors.court)),
+                  TextSpan(text: 'Prioritas main di R$priorityRound', style: MabarType.label.copyWith(color: MabarColors.ink)),
                 ],
               ],
             ),

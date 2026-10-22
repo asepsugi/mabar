@@ -310,7 +310,7 @@ Dipakai di frame: 06a, 06b, 06c, 06d, 06e, 06f, 06g, 06h, 06i, 06j, 06k, 06l, 06
 .rest .ghead { margin: 0; }
 .rest .names { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; padding: 0 4px; }
 .rest .names span { font-size: 13px; font-weight: 600; line-height: 22px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.rest .prio { color: var(--court); }
+.rest .prio { color: var(--ink); }
 .rest.later .names span { color: var(--ink-3); font-weight: 500; }
 ```
 

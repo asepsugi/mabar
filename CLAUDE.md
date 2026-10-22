@@ -102,6 +102,8 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   46 pt dan Tambah di 08a/08b 48 pt (dulu kalah oleh `min-height: 52px` `.btn`), keyframe 200 ms 01g digambar dari
   aturan, gambar Feed/Story line-height 1,4. Kalau menemukan frame lain yang bertentangan dengan catatannya:
   berhenti dan tanya host, jangan memilih sendiri.
+- Kalau `hifi_extract.py` mengubah banyak frame yang isinya tidak tersentuh sementara `rects.json` tetap sama, itu noise
+  rasterisasi font sesaat (pernah terjadi 2026-10-22, ~60 golden gagal): jalankan ulang, jangan commit frame itu.
 - Kalau hi-fi diubah: `python3 tool/hifi_extract.py` me-render ulang `design/frames/` dan menulis ulang
   `design/spec/screens/` + `components.md` (butuh Google Chrome + internet untuk font). Jangan edit hasilnya dengan tangan.
   Hi-fi diubah hanya untuk keputusan host, bukan untuk menyamakan kode; setiap keputusan dicatat juga di hi-fi →
