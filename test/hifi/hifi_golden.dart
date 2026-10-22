@@ -106,7 +106,13 @@ Rect hifiRect(String frameId, String cssClass, {String? text, int index = 0}) {
 /// Me-render [screen] seukuran layar hi-fi lalu membandingkannya dengan `design/frames/<frameId>.png`.
 /// [screen] harus sudah lengkap (MaterialApp, tema, data); helper ini hanya mengatur ukuran layar.
 /// Dengan [region] (pt), hanya piksel di dalamnya yang dihitung — dipakai golden per komponen.
-Future<HifiDiff> compareWithHifi(WidgetTester tester, Widget screen, String frameId, {Rect? region}) async {
+Future<HifiDiff> compareWithHifi(
+  WidgetTester tester,
+  Widget screen,
+  String frameId, {
+  Rect? region,
+  Future<void> Function(WidgetTester tester)? act,
+}) async {
   await loadHifiFonts();
   tester.view.physicalSize = hifiFrameSize(frameId) * hifiPixelRatio;
   tester.view.devicePixelRatio = hifiPixelRatio;
@@ -115,6 +121,11 @@ Future<HifiDiff> compareWithHifi(WidgetTester tester, Widget screen, String fram
   final key = GlobalKey();
   await tester.pumpWidget(RepaintBoundary(key: key, child: screen));
   await tester.pumpAndSettle();
+  // Frame dialog/sheet: buka lewat ketukan yang sama dengan host, lalu tunggu animasinya selesai.
+  if (act != null) {
+    await act(tester);
+    await tester.pumpAndSettle();
+  }
   final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
 
   return (await tester.runAsync(() async {
@@ -162,8 +173,14 @@ Future<HifiDiff> compareWithHifi(WidgetTester tester, Widget screen, String fram
 
 /// [compareWithHifi] + `expect`. Toleransi bawaan 2% piksel: cukup untuk perbedaan anti-alias, tapi
 /// pergeseran 4 pt atau warna yang salah di satu komponen sudah melewatinya.
-Future<void> expectMatchesHifi(WidgetTester tester, Widget screen, String frameId, {double maxDiffRatio = 0.02}) async {
-  final diff = await compareWithHifi(tester, screen, frameId);
+Future<void> expectMatchesHifi(
+  WidgetTester tester,
+  Widget screen,
+  String frameId, {
+  double maxDiffRatio = 0.02,
+  Future<void> Function(WidgetTester tester)? act,
+}) async {
+  final diff = await compareWithHifi(tester, screen, frameId, act: act);
   expect(diff.ratio, lessThanOrEqualTo(maxDiffRatio),
       reason: '$diff — lihat build/hifi_diff/$frameId.png (merah = beda) dan ${frameId}_flutter.png');
 }

@@ -52,6 +52,9 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   (di atas `ScoreEntry`), StandingTable, StatLine, NameListField, ModePicker/CourtSwatch/CourtColorGrid,
   HomePanel/HomeRowIcon/InstallStep, SharePoster (`share/widgets/`, preset pratinjau/Feed/Story, diekspor lewat
   `SharePosterTarget.exportPixelRatio`). Widget lama yang namanya bentrok jadi `LegacyChip`/`LegacyStepper`.
+- **Layar v2 selesai: 01 Beranda** (`test/hifi/screens/beranda_test.dart`, golden 01a–01f, 01h, 01i + perilaku). Golden
+  dialog/sheet memakai `expectMatchesHifi(..., act: (tester) => tester.tap(...))`. Layar 02–11 masih tata letak lama.
+  Dialog konfirmasi dipusatkan di layar penuh (`useSafeArea: false`, sesuai `.dialog { top: 50% }`).
 - **Painter lapangan selesai** (langkah 4): `core/widgets/court_painter.dart` — `CourtPainter(t, toward, layout)`, satu
   gambar sudut lapangan untuk banner Beranda **dan** ikon app (jangan bikin gambar lapangan kedua). `t` = posisi garis
   tennis (0) → padel (1); warna `toward` menyapu dari dinding belakang dengan tepi tegas, tidak dicampur.
@@ -216,10 +219,10 @@ Sumber aslinya JPEG berlatar putih; konversinya: potong bingkai tipis 1-2px di t
 ## Target platform
 
 `android/`, `ios/`, dan `web/` semuanya ada. Bundle id / applicationId: **`id.mabar.app`** (label `Mabar`),
-minSdk 24, iOS minimum 15. Beranda tanpa header: hero biru naik sampai di bawah status bar (`SafeArea(top: false)` + inset di hero) dengan
-ikon status bar putih lewat `AnnotatedRegion` (`MabarTheme.statusBarLight`); default gelap dipasang di `builder`
-`MaterialApp` supaya gaya putih tidak terbawa ke layar lain. Beranda lama menulis `v$appVersion` di teks bawah; Beranda
-v2 tidak menampilkannya.
+minSdk 24, iOS minimum 15. Beranda tanpa header: banner lapangan naik sampai di bawah status bar (gambarnya ikut
+`MediaQuery.padding.top`) dengan ikon status bar putih lewat `AnnotatedRegion` (`MabarTheme.statusBarLight`); default
+gelap dipasang di `builder` `MaterialApp` supaya gaya putih tidak terbawa ke layar lain. Beranda tidak menampilkan versi
+app.
 Orientasi dikunci portrait di dua tempat — `SystemChrome` di `lib/main.dart`
 dan `UISupportedInterfaceOrientations` di `ios/Runner/Info.plist`; kalau menambah layar landscape,
 keduanya harus diubah bareng.
@@ -239,9 +242,11 @@ Kode Dart-nya bebas platform (nol `kIsWeb`/`dart:html`/`Platform.*`). Titik sent
   muncul di sana. Closure yang dioper ke `.toJS` harus mengembalikan tipe JS/void — `() => x.value = y`
   gagal compile di web (tidak ketahuan di `flutter test`, jadi cek dengan `tool/build_web.sh`).
 
-Beranda dibungkus `CustomScrollView` + `SliverFillRemaining(hasScrollBody: false)`: `Spacer` tetap mendorong
-pilihan permainan ke bawah, tapi di browser HP yang pendek (bar alamat + kartu lanjutkan + kartu pasang)
-halamannya bisa digulir alih-alih meluber.
+Beranda v2 (`features/home/home_screen.dart`): `Column` = banner `Expanded` (menerus 24 pt di bawah sudut panel lewat
+`Positioned(bottom: -24)`) + `HomePanel`. Tanpa scroll: panel terpanjang (01a) ±330 pt, jadi banner tetap muat wordmark +
+info round di layar 568 pt. Status pasang dibaca lewat `appInstallModeProvider` supaya golden bisa menampilkan baris
+pasang. Pilihan olahraga: pilihan host → turnamen berjalan → turnamen terakhir → Tennis; banner mengikuti turnamen
+berjalan kalau ada.
 
 Toolchain (per 2026-10-20): Android SDK di `~/Library/Android/sdk` dan Xcode 16.4 sudah terpasang (Mac Intel,
 Xcode 27 Apple Silicon saja). `app-release.apk` pernah di-build, tapi release masih ditandatangani **debug key**

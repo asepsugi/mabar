@@ -188,6 +188,9 @@ Future<bool> showMabarConfirm(
 }) async {
   final result = await showDialog<bool>(
     context: context,
+    // `.dialog { top: 50% }`: tepat di tengah layar penuh. Dengan SafeArea bawaan dialog turun setengah
+    // selisih status bar dan home indicator.
+    useSafeArea: false,
     builder: (context) => MabarConfirmDialog(
       title: title,
       message: message,
