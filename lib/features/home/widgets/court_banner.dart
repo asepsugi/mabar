@@ -8,7 +8,7 @@ import '../../../models/models.dart';
 
 /// Isi `.liveblock`: turnamen yang sedang berjalan, ditulis di zona belakang lapangan.
 class CourtBannerLive {
-  /// "Padel · Mixed · 8 pemain".
+  /// Nama turnamen atau "Padel · Mixed · 8 pemain"; satu baris, elipsis.
   final String subtitle;
 
   /// "Round 3".
@@ -168,7 +168,7 @@ class _LiveBlock extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(live.subtitle, style: text),
+          Text(live.subtitle, style: text, maxLines: 1, overflow: TextOverflow.ellipsis),
           const SizedBox(height: 10),
           Text(live.title, style: MabarType.scoreL.copyWith(color: Colors.white)),
           const SizedBox(height: 10),

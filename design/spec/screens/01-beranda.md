@@ -4,7 +4,7 @@
 
 Lapangan di atas, panel main di bawah (zona jempol), seperti layar mulai di aplikasi olahraga. Banner selalu menggambar lapangan olahraga yang sedang dipilih atau dimainkan, dengan proporsi asli pada skala 60 pt = 1 m. Garis dipertebal (baseline 7 pt, garis lain 4,5 pt) tapi dipudarkan ke 35% sebagai satu lapisan, jadi lapangan terbaca sebagai latar dan teks putih di atasnya tetap paling menonjol. Permukaan tennis biru court, padel terracotta; run-off di luarnya tetap biru tua di keduanya, jadi pergantian olahraga terbaca dari hangat-dinginnya warna tanpa mengganti bingkai. Lapangan mengisi sisa tinggi layar, jadi tinggi banner menyesuaikan isi panel di setiap kondisi.
 
-## 01a · Belum terpasang + ada riwayat
+## 01a · Belum terpasang + ada riwayat · bernama
 
 ![01a](../../frames/01a.png)
 
@@ -13,6 +13,7 @@ Komponen: `MabarButton`, `MabarGroup / MabarRow`, `CourtBanner (CourtPainter)`, 
 - Kondisi terlengkap: web/PWA belum dipasang dan ada turnamen terakhir (Mixed). Dua baris dalam satu grup: riwayat dulu, lalu pasang.
 - Pilihan olahraga diingat dari turnamen terakhir, jadi Padel terpilih dan banner menggambar lapangan padel.
 - Riwayat → sheet Lanjutkan turnamen (08c, `archived: true`). Pasang → dialog pasang bawaan browser (`prompt`) atau sheet 01i (`manual`, iPhone/iPad).
+- Turnamen bernama: nama menggantikan "Padel · Mixed · 8 pemain" di baris riwayat (satu baris, elipsis); subjudul tetap. Tanpa nama: "Padel · Mixed · 8 pemain" seperti 01c.
 
 ## 01b · Belum terpasang saja
 
@@ -44,7 +45,7 @@ Komponen: `MabarButton`, `CourtBanner (CourtPainter)`, `HomePanel / SportPicker`
 - Instalasi baru: tidak ada turnamen berjalan, tidak ada riwayat, sudah dipasang. Panel hanya pilihan olahraga dan tombol mulai; lapangan mengisi layar paling luas.
 - Tombol mulai → layar Pemain dengan olahraga terpilih.
 
-## 01e · Turnamen berjalan · Padel
+## 01e · Turnamen berjalan · Padel · bernama
 
 ![01e](../../frames/01e.png)
 
@@ -55,6 +56,7 @@ Komponen: `MabarButton`, `CourtBanner (CourtPainter)`, `HomePanel / SportPicker`
 - Kalau di web dan belum terpasang, baris pasang tetap tampil di bawah tombol seperti 01b.
 - Tombol Lanjutkan 46 pt (lebih rendah dari tombol biasa 52) supaya muat di zona belakang lapangan.
 - Semua teks di banner putih penuh, termasuk subjudul dan "6 dari 8 match" (dulu 78% dan 85%). Di terracotta putih penuh 4,5:1; putih 85% hanya 3,7:1.
+- Turnamen bernama: nama menggantikan baris kecil di atas "Round 4" (satu baris, elipsis; 40 karakter masih muat). Tanpa nama: "olahraga · mode · n pemain" seperti 01f.
 
 ## 01f · Turnamen berjalan · Tennis
 
@@ -87,6 +89,7 @@ Komponen: `MabarButton`, `MabarTextButton`, `showMabarSheet`, `showMabarConfirm`
 
 - Slot aktif cuma satu. "Hapus & mulai baru" lanjut ke layar Pemain dengan olahraga yang dipilih di panel.
 - Baru: isi dialog menyebut turnamen mana yang akan hilang.
+- Dialog menyebut nama turnamen kalau ada (boleh dua baris); tanpa nama "Padel · Mixed, Round 4".
 
 ## 01i · Sheet · pasang di iPhone
 

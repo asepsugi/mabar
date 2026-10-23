@@ -2,7 +2,7 @@
 
 > Dihasilkan `tool/hifi_extract.py` dari `design/hifi.html`. Jangan diedit langsung.
 
-Disusun seperti halaman pengaturan dan muat satu layar. Skor punya tiga format yang dipakai di mabar tennis maupun padel: Race to, Best of, dan Americano. Estimasi pindah ke tombol. Untuk Mixed, layar "Cara Kerja Mixed" dihapus: tombol langsung membuat Round 1, dan aturan fairness serta estimasi pindah ke sheet 06k.
+Disusun seperti halaman pengaturan dan muat satu layar (sampai 2 court). Nama turnamen opsional paling atas. Skor punya tiga format yang dipakai di mabar tennis maupun padel: Race to, Best of, dan Americano. Estimasi pindah ke tombol. Untuk Mixed, layar "Cara Kerja Mixed" dihapus: tombol langsung membuat Round 1, dan aturan fairness serta estimasi pindah ke sheet 06k.
 
 ## 03a · Fixed · Race to 6
 
@@ -10,6 +10,9 @@ Disusun seperti halaman pengaturan dan muat satu layar. Skor punya tiga format y
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarSegmented`, `MabarStepper`, `MabarField`, `ModePicker`, `CourtColorPicker`
 
+- Kotak "Nama turnamen" paling atas, boleh kosong. Tanpa label grup: isinya sudah menjelaskan diri, seperti nama court.
+- Maks 40 karakter (cukup untuk gabungan klub: "Mabar Jumat PB Garuda x Matcha Club 2026"); ketikan ke-41 tidak masuk, tanpa penghitung karakter. Spasi di awal/akhir dibuang; kosong = tanpa nama, semua tampilan sama dengan turnamen tanpa nama.
+- Nama hanya diisi di sini; setelah turnamen dibuat tidak bisa diubah (keputusan host 2026-10-23).
 - Default kedua olahraga: Race to 6, durasi 20 mnt (Padel 15 mnt), 2 court × 2 jam.
 - Durasi match selalu kelipatan 5 menit (minimal 5): stepper ±5, dan angka yang diketik langsung dibulatkan ke kelipatan 5 terdekat.
 - Race to N: siapa duluan menang N game. Target 2–9 (4 = gaya Fast4, 6 = satu set, 8 = pro set). Skor akhir yang diterima: N lawan 0..N−1; match langsung selesai begitu satu tim mencapai N (di dalam game tetap 15–30–40). Tidak ada 7–5 / 7–6 (keputusan host 2026-10-22).
@@ -27,8 +30,9 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 - Americano: poin reli, total per match tetap. Default 21, batas 2–99 (kotak skor 2 digit). Total genap boleh seri.
 - Mixed: tombol langsung ke Jadwal Mixed dan membuat R1. Estimasi memakai court terpendek (1 jam ÷ 15 mnt = 4 round).
 - Nama court custom ("Court VIP") dipakai di header Input Skor dan sheet Lanjutkan. Strip di Jadwal tetap nomor + warna.
+- Dengan 3 court atau lebih isi layar melebihi satu layar (kotak nama di atas); isinya di-scroll, tombol tetap menempel di bawah.
 
-## 03c · Mixed · Best of 5
+## 03c · Mixed · Best of 5 · nama diisi
 
 ![03c](../../frames/03c.png)
 
@@ -37,6 +41,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 - Best of N: main tepat N game, yang menang game lebih banyak jadi pemenang. Jumlah game 1–15, default 5.
 - N genap (mis. 6) bisa berakhir seri 3–3. Saat N genap muncul catatan kecil di bawah grup: "Bisa berakhir seri". Seri dihitung setengah menang di Win %.
 - Di Input Skor, mengisi satu sisi otomatis mengisi sisi lain dengan N − x, seperti Americano.
+- Kotak nama aktif: garis biru court seperti kotak lain. Keyboard huruf kapital di awal kata.
 
 ## 03d · Durasi tidak muat
 

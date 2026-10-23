@@ -327,6 +327,10 @@ class TournamentConfig {
   final List<Pair>? fixedPairs; // null kalau mode = mixed
   final ScoreFormat format;
 
+  /// Nama bebas dari Atur turnamen (mis. "PB Garuda x Matcha Club"); null = tanpa nama, semua tampilan
+  /// memakai olahraga · mode seperti biasa. Hanya diisi di awal, tidak bisa diubah.
+  final String? name;
+
   const TournamentConfig({
     required this.sport,
     required this.mode,
@@ -335,7 +339,11 @@ class TournamentConfig {
     required this.players,
     this.fixedPairs,
     this.format = ScoreFormat.standard,
+    this.name,
   });
+
+  /// Batas nama turnamen: muat dua baris di poster Story.
+  static const maxNameLength = 40;
 
   /// Batas court di Konfigurasi dan Kelola court.
   static const maxCourts = 10;
@@ -364,6 +372,7 @@ class TournamentConfig {
     players: players ?? this.players,
     fixedPairs: fixedPairs ?? this.fixedPairs,
     format: format,
+    name: name,
   );
 }
 

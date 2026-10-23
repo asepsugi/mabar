@@ -4,7 +4,7 @@
 
 Kartu pratinjau, pilihan tema dan format, lalu dua gambar (Feed 1:1 dan Story 9:16) dibagikan lewat share sheet sistem dengan teks hasil sebagai caption.
 
-## 11a · Ringkas · tema biru
+## 11a · Ringkas · tema biru · bernama
 
 ![11a](../../frames/11a.png)
 
@@ -15,6 +15,8 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 - Nilai per baris: Total Point → "42 poin · 100%"; Win % → "100% · +12". Nama lengkap, terpotong elipsis.
 - 10 tema; default biru (dulu hijau). Pilihan tema & format tidak disimpan.
 - "Selesai" memindahkan turnamen ke slot terakhir lalu ke Beranda (stack di-reset), tanpa konfirmasi. Footer "Hasil turnamen tersimpan otomatis" dihapus.
+- Turnamen bernama: nama menggantikan "PADEL · MIXED · 21 OKT 2026" di baris kecil di atas judul (kapital, gaya sama, maks dua baris) dan tanggal pindah ke ringkasan bawah, sama dengan baris akhir caption. Olahraga terbaca dari watermark, Fixed/Mixed dari isi daftar. Tanpa nama: baris kecil tetap "olahraga · mode · tanggal" (11b, 11e).
+- Caption: baris pertama "🏆 {nama} · Padel"; tanpa nama "🏆 Mabar Turnamen · Padel".
 
 ## 11b · Lengkap · Fixed 20 pemain (10 pasangan) · tema peach
 
@@ -38,7 +40,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 - Kalau share sheet gagal (desktop/web tertentu), caption disalin ke clipboard dan muncul toast "Hasil disalin". Tidak ada tombol salin terpisah.
 - Caption: semua baris peringkat; format Lengkap menambah "Hasil per Round". Baru: satuan "game"/"poin" mengikuti metode skor.
 
-## 11d · Gambar yang dibagikan · Feed 1080×1080 dan Story 1080×1920 (skala 1:3)
+## 11d · Gambar yang dibagikan · Feed 1080×1080 dan Story 1080×1920 (skala 1:3) · nama 40 karakter
 
 ![11d](../../frames/11d.png)
 
@@ -47,6 +49,7 @@ Komponen: `SharePoster`
 - Baris membagi tinggi yang tersisa sama rata, jadi daftar selalu mengisi poster; baris mengecil kalau banyak (format Lengkap). Ukuran huruf dan margin per gambar ada di preset komponen `SharePoster` (`SharePosterTarget` pratinjau / Feed / Story).
 - File: `mabar-feed-1080x1080.png`, `mabar-story-1080x1920.png`, dibagikan bersamaan lewat `Share.shareXFiles`.
 - Render poster di test wajib memuat font Archivo (`loadHifiFonts()`), jangan percaya font Ahem.
+- Nama terpanjang (40 karakter): Feed satu baris, Story dua baris; daftar di bawahnya berbagi tinggi yang tersisa.
 
 ## 11e · Lengkap · Mixed 20 pemain · tema biru
 
@@ -59,7 +62,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 - Nomor sama untuk statistik identik tetap berlaku (3, 3 · 11, 11 · 14, 14).
 - Data: Americano 21, 4 court × 8 round = 32 match, tiap pemain main 6–7 kali.
 
-## 11f · Gambar Lengkap · Mixed 20 pemain · Feed dan Story (skala 1:3)
+## 11f · Gambar Lengkap · Mixed 20 pemain · Feed dan Story (skala 1:3) · bernama
 
 ![11f](../../frames/11f.png)
 
@@ -67,6 +70,7 @@ Komponen: `SharePoster`
 
 - Feed 1:1: dua kolom rata karena lebih dari 10 baris (pembagian sama dengan pratinjau, 11e/11h); tiap baris di 1080 px ±45 px tinggi, sama terbacanya dengan Ringkas.
 - Story 9:16: satu kolom 20 baris; tinggi kanvas cukup (±60 px per baris di 1080×1920). Hanya nilai metode, tanpa "poin · %".
+- Kasus paling padat: 20 baris di Story dengan nama dua baris; tiap baris tetap terbaca.
 
 ## 11g · Gambar Lengkap · Fixed 10 pasangan · Feed dan Story (skala 1:3)
 

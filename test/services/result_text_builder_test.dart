@@ -14,16 +14,17 @@ const _players = [
 const _ab = Pair(id: 'ab', player1Id: 'a', player2Id: 'b');
 const _cd = Pair(id: 'cd', player1Id: 'c', player2Id: 'd');
 
-Tournament _tournament(List<MatchGame> matches) => Tournament(
+Tournament _tournament(List<MatchGame> matches, {String? name}) => Tournament(
       id: 't1',
       createdAt: DateTime(2026, 9, 14),
-      config: const TournamentConfig(
+      config: TournamentConfig(
         sport: SportType.padel,
         mode: PartnerMode.fixed,
         matchDurationMinutes: 15,
-        courts: [Court(id: 'c1', name: 'Court 1', colorIndex: 0, bookingDurationMinutes: 120)],
+        courts: const [Court(id: 'c1', name: 'Court 1', colorIndex: 0, bookingDurationMinutes: 120)],
         players: _players,
-        fixedPairs: [_ab, _cd],
+        fixedPairs: const [_ab, _cd],
+        name: name,
       ),
       matches: matches,
     );
@@ -87,6 +88,17 @@ void main() {
       expect(text, contains('1. Andi P — 12 game'));
       expect(text, contains('1. Budi S — 12 game'));
       expect(text, contains('3. Citra L — 4 game'));
+    });
+
+    test('turnamen bernama: baris pertama "🏆 nama · olahraga"', () {
+      final text = ResultTextBuilder.build(
+        active: ActiveTournament(tournament: _tournament(matches, name: 'PB Garuda x Matcha Club')),
+        standings: standings,
+        format: ShareFormat.ringkas,
+        now: DateTime(2026, 9, 14, 1),
+      );
+      expect(text.split('\n').first, '🏆 PB Garuda x Matcha Club · Padel');
+      expect(text, isNot(contains('Mabar Turnamen')));
     });
 
     test('lengkap adds per-round results and skips unplayed matches', () {

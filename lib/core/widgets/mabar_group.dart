@@ -70,6 +70,9 @@ class MabarRow extends StatelessWidget {
   /// Isi judul selain teks biasa, mis. kotak isian sebaris; menggantikan [title].
   final Widget? titleWidget;
   final String? subtitle;
+
+  /// Judul satu baris berelipsis (isi bebas dari host, mis. nama turnamen); default boleh turun baris.
+  final bool titleOneLine;
   final String? value;
   final Widget? trailing;
   final bool chevron;
@@ -84,6 +87,7 @@ class MabarRow extends StatelessWidget {
     this.title,
     this.titleWidget,
     this.subtitle,
+    this.titleOneLine = false,
     this.value,
     this.trailing,
     this.chevron = false,
@@ -99,6 +103,7 @@ class MabarRow extends StatelessWidget {
       title = null,
       titleWidget = null,
       subtitle = null,
+      titleOneLine = false,
       value = null,
       trailing = null,
       chevron = false,
@@ -134,7 +139,10 @@ class MabarRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (title != null) Text(title!, style: titleStyle),
+                  if (title != null)
+                    titleOneLine
+                        ? Text(title!, style: titleStyle, maxLines: 1, overflow: TextOverflow.ellipsis)
+                        : Text(title!, style: titleStyle),
                   if (subtitle != null) Text(subtitle!, style: MabarType.caption),
                 ],
               ),

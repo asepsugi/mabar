@@ -44,6 +44,7 @@ ActiveTournament mixedTournament(
   MatchGame Function(MatchGame m)? adjust,
   Map<String, int> courtStarts = const {},
   String Function(int round, int index)? courtOf,
+  String? name,
 }) {
   final names = roster ?? fixtureNames.take(players).toList();
   final people = [for (var i = 0; i < names.length; i++) Player(id: 'p${i.toString().padLeft(2, '0')}', name: names[i])];
@@ -86,6 +87,7 @@ ActiveTournament mixedTournament(
         ],
         players: people,
         format: format,
+        name: name,
       ),
       matches: matches,
     ),

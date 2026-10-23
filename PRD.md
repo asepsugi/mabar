@@ -1,6 +1,6 @@
 # PRD — Aplikasi Mabar Tennis/Padel (Klub/Komunitas)
 
-**Versi dokumen:** 2.2 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21; Kelola court 2026-10-22) dan app **2.2.0**
+**Versi dokumen:** 2.3 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21; Kelola court 2026-10-22; nama turnamen 2026-10-23) dan app **2.3.0**
 **Platform:** Android + iOS + Web/PWA (1 codebase — Flutter)
 **Target user:** Host mabar klub/komunitas tennis & padel, 4–20 pemain per turnamen, 1 HP host, offline
 
@@ -220,6 +220,8 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
   pilih olahraga (diingat dari turnamen terakhir, default Tennis) + satu tombol "Mulai turnamen …".
 - Turnamen berjalan: info round + "Lanjutkan" di banner; mulai baru → dialog yang menyebut turnamen yang akan dihapus.
 - Turnamen terakhir Mixed → baris riwayat → sheet Lanjutkan turnamen. Fixed tidak tampil.
+- Turnamen bernama: nama menggantikan "olahraga · mode · n pemain" di banner dan baris riwayat (satu baris, elipsis)
+  dan "olahraga · mode" di dialog mulai baru.
 - Web/PWA: baris "Pasang Mabar di HP" (dialog bawaan browser, atau panduan iPhone/iPad).
 
 ### 5.2 Pemain (02a–02d)
@@ -229,6 +231,8 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 - Lanjut aktif untuk 4–20 pemain.
 
 ### 5.3 Konfigurasi (03a–03e)
+- Nama turnamen opsional paling atas (maks 40 karakter, dipangkas; kosong = tanpa nama). Hanya diisi di sini, tidak
+  bisa diubah setelah turnamen dibuat.
 - Mode Fixed/Mixed, format skor (4.1), durasi match (stepper ±5), jumlah court 1–10, per court nama/warna (10 warna
   preset)/booking. Estimasi di tombol. Fixed → Pasangan; Mixed → langsung Jadwal + R1.
 
@@ -265,6 +269,9 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
   dibagi dua kolom rata). Nomor "#n"; peringkat 1 lencana emas, digantung ke kiri supaya "#1" sejajar dengan nomor di bawahnya.
 - Dua gambar 1080×1080 dan 1080×1920 dibagikan lewat share sheet sistem dengan caption teks hasil; gagal → caption
   disalin + toast "Hasil disalin".
+- Turnamen bernama: nama menggantikan baris kecil "olahraga · mode · tanggal" di atas judul poster (maks dua baris) dan
+  tanggalnya pindah ke ringkasan bawah ("4 round · 8 match · 21 Okt 2026"); caption dibuka "🏆 {nama} · Padel"
+  (tanpa nama "🏆 Mabar Turnamen · Padel").
 - "Selesai" memindahkan turnamen ke slot terakhir lalu kembali ke Beranda.
 
 ### 5.10 Penyimpanan Data
@@ -349,6 +356,9 @@ State teks sederhana tanpa frame: "Halaman tidak ditemukan", "Belum ada turnamen
 7. Data turnamen app lama tidak dimuat di v2; simpanan membawa versi app (2026-10-22).
 8. Court bisa ditambah di tengah turnamen, hanya Mixed; jam court baru dihitung dari saat ditambah dan court langsung
    dipakai kalau round sedang berjalan (2026-10-22).
+9. Nama turnamen (usulan pemain): opsional, maks 40 karakter supaya gabungan klub ("PB Garuda x Matcha Club") muat,
+   hanya diisi di Konfigurasi; tampil di Beranda, poster, dan caption. Di poster jadi baris kecil, bukan judul besar
+   (2026-10-23).
 
 ---
 

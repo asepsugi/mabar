@@ -11,7 +11,7 @@ import 'package:mabar/services/share/result_text_builder.dart';
 import 'package:mabar/features/share/share_theme.dart';
 
 /// Turnamen dengan [count] pemain, satu round yang seluruh match-nya selesai.
-ActiveTournament _active(int count) {
+ActiveTournament _active(int count, {String? name}) {
   final players = [
     for (var i = 0; i < count; i++)
       Player(id: 'p$i', name: 'Pemain Nomor ${i + 1}'),
@@ -42,6 +42,7 @@ ActiveTournament _active(int count) {
           Court(id: 'c1', name: 'Court 1', colorIndex: 0, bookingDurationMinutes: 120),
         ],
         players: players,
+        name: name,
       ),
       matches: matches,
     ),
@@ -84,6 +85,19 @@ void main() {
       expect((data.rows.first.value, data.rows.first.detail), ('6', 'game · 100%'));
       expect(data.eyebrow, 'Padel · Mixed · 16 Sep 2026');
       expect(data.summary, '1 round · 2 match');
+    });
+
+    test('Turnamen bernama: nama di baris kecil, tanggal pindah ke ringkasan', () {
+      final active = _active(8, name: 'PB Garuda x Matcha Club');
+      final data = sharePosterData(
+        active: active,
+        entries: _standings(active),
+        method: RankingMethod.totalGames,
+        format: ShareFormat.ringkas,
+        isFinal: false,
+      );
+      expect(data.eyebrow, 'PB Garuda x Matcha Club');
+      expect(data.summary, '1 round · 2 match · 16 Sep 2026');
     });
 
     test('Lengkap: semua yang bernomor, tanpa "+n"; Win % "100%" + selisih', () {

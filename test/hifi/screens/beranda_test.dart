@@ -11,8 +11,8 @@ import '../hifi_golden.dart';
 import 'screen_harness.dart';
 
 /// Golden layar penuh Beranda, frame 01a–01f, 01h, 01i. Data sama dengan frame: turnamen terakhir Padel
-/// Mixed 8 pemain selesai di R6; turnamen berjalan Padel Mixed 8 pemain R4 (6 dari 8 match) dan Tennis Fixed
-/// 10 pemain R2 (3 dari 10 match).
+/// Mixed 8 pemain selesai di R6 (01a bernama "PB Garuda x Matcha Club", 01c tanpa nama); turnamen berjalan
+/// Padel Mixed 8 pemain R4 (6 dari 8 match, bernama) dan Tennis Fixed 10 pemain R2 (3 dari 10 match).
 void main() {
   Court court(int i) => Court(id: 'c$i', name: 'Court $i', colorIndex: i - 1, bookingDurationMinutes: 120);
 
@@ -28,7 +28,13 @@ void main() {
   );
 
   /// Mixed 8 pemain, 2 court; [played] match pertama sudah selesai.
-  ActiveTournament mixed(SportType sport, {required int rounds, required int played, bool finished = false}) {
+  ActiveTournament mixed(
+    SportType sport, {
+    required int rounds,
+    required int played,
+    bool finished = false,
+    String? name,
+  }) {
     final players = [for (var i = 1; i <= 8; i++) Player(id: 'p$i', name: 'Pemain $i')];
     Pair pair(int a, int b) => Pair(id: 'p$a+p$b', player1Id: 'p$a', player2Id: 'p$b');
     var n = 0;
@@ -50,6 +56,7 @@ void main() {
           courts: [court(1), court(2)],
           players: players,
           format: const ScoreFormat(ScoringMethod.americano, 21),
+          name: name,
         ),
         matches: matches,
       ),
@@ -98,6 +105,8 @@ void main() {
   }
 
   final lastPadel = mixed(SportType.padel, rounds: 6, played: 12, finished: true);
+  const longName = 'Mabar Jumat PB Garuda x Matcha Club';
+  ActiveTournament runningPadel() => mixed(SportType.padel, rounds: 4, played: 6, name: longName);
 
   Future<void> golden(WidgetTester tester, String frame, Widget screen, {Future<void> Function(WidgetTester)? act}) async {
     await precacheHifiAssets(tester, [SportType.tennis.assetPath, SportType.padel.assetPath]);
@@ -105,7 +114,8 @@ void main() {
   }
 
   testWidgets('01a belum terpasang + ada riwayat', (tester) async {
-    await golden(tester, '01a', screen(last: lastPadel, install: AppInstallMode.prompt));
+    final named = mixed(SportType.padel, rounds: 6, played: 12, finished: true, name: 'PB Garuda x Matcha Club');
+    await golden(tester, '01a', screen(last: named, install: AppInstallMode.prompt));
   });
 
   testWidgets('01b belum terpasang saja', (tester) async {
@@ -121,7 +131,7 @@ void main() {
   });
 
   testWidgets('01e turnamen berjalan Padel', (tester) async {
-    await golden(tester, '01e', screen(active: mixed(SportType.padel, rounds: 4, played: 6)));
+    await golden(tester, '01e', screen(active: runningPadel()));
   });
 
   testWidgets('01f turnamen berjalan Tennis', (tester) async {
@@ -132,7 +142,7 @@ void main() {
     await golden(
       tester,
       '01h',
-      screen(active: mixed(SportType.padel, rounds: 4, played: 6)),
+      screen(active: runningPadel()),
       act: (tester) => tester.tap(find.text('Mulai turnamen Padel')),
     );
   });

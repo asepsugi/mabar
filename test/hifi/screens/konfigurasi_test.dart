@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mabar/core/theme/mabar_theme.dart';
 import 'package:mabar/core/widgets/mabar_controls.dart';
 import 'package:mabar/core/widgets/mabar_inputs.dart';
@@ -53,7 +54,8 @@ void main() {
         await mixed(tester);
         await tester.tap(find.text('Americano'));
         await tapStep(tester, 2, 'Tambah');
-        await tester.enterText(find.byType(TextField).at(1), 'Court VIP');
+        // 0 = nama turnamen, 1.. = nama court (isian stepper hanya ada selama angkanya diketik).
+        await tester.enterText(find.byType(TextField).at(2), 'Court VIP');
         FocusManager.instance.primaryFocus?.unfocus();
         await tapStep(tester, 5, 'Kurangi');
         await tester.pump();
@@ -61,7 +63,7 @@ void main() {
     );
   });
 
-  testWidgets('03c Mixed · Best of 5', (tester) async {
+  testWidgets('03c Mixed · Best of 5 · nama diisi (kotak aktif)', (tester) async {
     await expectMatchesHifi(
       tester,
       screen(SportType.padel),
@@ -70,6 +72,7 @@ void main() {
         await mixed(tester);
         await tester.tap(find.text('Best of'));
         await tester.pump();
+        await tester.enterText(find.byType(TextField).first, 'Mabar Jumat PB Garuda x Matcha Club');
       },
     );
   });
@@ -144,5 +147,43 @@ void main() {
     expect(button().meta, '· ±6 round · 60 match');
     await mixed(tester);
     expect((button().label, button().meta), ('Mulai Round 1', '· ±6 round'));
+  });
+
+  testWidgets('Nama turnamen: dipangkas, maks 40 karakter, kosong = tanpa nama; ikut config ke Pasangan', (tester) async {
+    tester.view.physicalSize = const Size(390, 844) * hifiPixelRatio;
+    tester.view.devicePixelRatio = hifiPixelRatio;
+    addTearDown(tester.view.reset);
+    final opened = <TournamentConfig>[];
+    final router = GoRouter(
+      initialLocation: '/konfigurasi',
+      routes: [
+        GoRoute(path: '/konfigurasi', builder: (_, _) => KonfigurasiScreen(sport: SportType.tennis, players: players)),
+        GoRoute(
+          path: '/pair-setup',
+          builder: (_, state) {
+            opened.add(state.extra! as TournamentConfig);
+            return const Text('Pasangan');
+          },
+        ),
+      ],
+    );
+    await tester.pumpWidget(hifiRouterScreen(router));
+    final name = find.byType(TextField).first;
+    Future<TournamentConfig> next() async {
+      await tester.tap(find.text('Lanjut'));
+      await tester.pumpAndSettle();
+      final config = opened.last;
+      router.pop();
+      await tester.pumpAndSettle();
+      return config;
+    }
+
+    expect((await next()).name, isNull);
+    await tester.enterText(name, '   ');
+    expect((await next()).name, isNull);
+    await tester.enterText(name, '  PB Garuda x Matcha Club ');
+    expect((await next()).name, 'PB Garuda x Matcha Club');
+    await tester.enterText(name, 'Mabar Jumat PB Garuda x Matcha Club 2026 Ceria');
+    expect((await next()).name, 'Mabar Jumat PB Garuda x Matcha Club 2026');
   });
 }

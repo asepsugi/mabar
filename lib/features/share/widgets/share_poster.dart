@@ -46,7 +46,7 @@ class SharePosterRow {
 class SharePosterData {
   final SportType sport;
 
-  /// "Padel · Mixed · 21 Okt 2026" (ditulis kapital di poster).
+  /// Nama turnamen, atau "Padel · Mixed · 21 Okt 2026" kalau tanpa nama (ditulis kapital di poster).
   final String eyebrow;
   final bool isFinal;
   final List<SharePosterRow> rows;
@@ -54,7 +54,7 @@ class SharePosterData {
   /// "+6 pemain lainnya" / "+n pasangan lainnya" — hanya Ringkas.
   final String? more;
 
-  /// "3 round · 6 match · 1 WO".
+  /// "3 round · 6 match · 1 WO" (+ " · 21 Okt 2026" kalau turnamen bernama).
   final String summary;
 
   /// Lengkap = semua baris berbagi tinggi kartu; Ringkas di pratinjau = baris setinggi isinya.
@@ -168,7 +168,8 @@ class SharePoster extends StatelessWidget {
           opacity: 0.75,
           child: Text(
             data.eyebrow.toUpperCase(),
-            maxLines: 1,
+            // Nama turnamen panjang turun ke baris kedua di Story; "olahraga · mode · tanggal" selalu sebaris.
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: base.copyWith(fontSize: eyebrow, fontWeight: FontWeight.w700, letterSpacing: eyebrow * 0.08),
           ),

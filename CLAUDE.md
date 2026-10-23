@@ -124,7 +124,7 @@ logika/desain atau data lama tidak kompatibel (`schemaVersion` naik → selalu M
 kompatibel; PATCH = perbaikan bug/teks/visual kecil tanpa mengubah perilaku yang disepakati. Versi + `appVersion`
 dinaikkan di commit yang membawa perubahan ke `main` (tiap push = deploy web), kategori tertinggi yang menang, `BUILD`
 naik tiap rilis. Sebut kategorinya di pesan commit/PR (`[minor]`). Branch `redesain-v2-spec` = 2.0.0 (MAJOR: redesain +
-format skor + data app lama tidak dimuat); 2.2.0 (MINOR) = Kelola court.
+format skor + data app lama tidak dimuat); 2.2.0 (MINOR) = Kelola court; 2.3.0 (MINOR) = nama turnamen.
 
 ## Arsitektur
 
@@ -198,6 +198,12 @@ Mesin domain yang sudah ada + ter-test (semua `flutter test` lulus, termasuk gol
   court lama yang sudah muat tidak pernah tiba-tiba dipakai (`wasAvailable`). Hapus (`removeCourt`) hanya court bernomor
   terakhir tanpa skor dan bukan satu-satunya — nomor court = urutannya. Fixture `courtTournament` (id `t-court-329705`
   dipilih supaya undian seri sama dengan frame).
+- **Nama turnamen** (keputusan host 2026-10-23): `TournamentConfig.name` (null = tanpa nama, maks
+  `TournamentConfig.maxNameLength` 40, dipangkas di Konfigurasi; kunci simpanan `name` opsional, jadi simpanan lama
+  terbaca). Hanya diisi di Konfigurasi (kotak paling atas, `MabarField` tanpa label), tidak bisa diubah. Menggantikan
+  "olahraga · mode · n pemain" di Beranda (`MabarRow.titleOneLine`, banner satu baris) dan baris kecil poster
+  (`SharePosterData.eyebrow`, maks dua baris; tanggal pindah ke `summary`); caption "🏆 {nama} · Padel". Tanpa nama
+  semua tampilan tetap. Golden bernama: 01a/01e/01h, 03c, 11a/11d/11f.
 - `ActiveTournament.capacityAhead` (sheet Lanjutkan) mengembalikan `fewerCourtsFrom` = round tambahan saat court yang
   main di round pertamanya habis; court yang sejak awal tidak dapat tambahan bukan "berkurang" (bug lama).
 - `share/result_text_builder.dart` — teks share ringkas/lengkap (tiap baris memuat total point, satuan ikut format, "Peringkat Akhir"/"Sementara" dari `isFinal`).

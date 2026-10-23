@@ -26,7 +26,7 @@ class ResultTextBuilder {
     final config = tournament.config;
     final unit = config.format.unit;
     final buffer = StringBuffer()
-      ..writeln('🏆 Mabar Turnamen · ${config.sport.label}')
+      ..writeln('🏆 ${config.name ?? 'Mabar Turnamen'} · ${config.sport.label}')
       ..writeln(DateFormat('d MMMM yyyy', 'id').format(tournament.createdAt))
       ..writeln();
 

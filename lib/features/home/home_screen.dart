@@ -37,9 +37,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   SportType _sport(ActiveTournament? active, ActiveTournament? last) =>
       _picked ?? active?.config.sport ?? last?.config.sport ?? SportType.tennis;
 
-  /// "Padel · Mixed · 8 pemain" — jumlah pemain aktif sekarang.
+  /// Nama turnamen, atau "Padel · Mixed · 8 pemain" (jumlah pemain aktif sekarang) kalau tanpa nama.
   static String _summary(ActiveTournament t) =>
-      '${t.config.sport.label} · ${t.config.mode.label} · ${t.activePlayers.length} pemain';
+      t.config.name ?? '${t.config.sport.label} · ${t.config.mode.label} · ${t.activePlayers.length} pemain';
 
   /// Slot turnamen aktif cuma satu, jadi memulai turnamen baru membuang yang sedang berjalan; dialog 01h
   /// menyebut turnamen mana yang akan hilang.
@@ -50,7 +50,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         title: 'Mulai turnamen baru?',
         message:
             'Turnamen yang berjalan akan dihapus:\n'
-            '${active.config.sport.label} · ${active.config.mode.label}, Round ${active.currentRound}',
+            '${active.config.name ?? '${active.config.sport.label} · ${active.config.mode.label}'}, '
+            'Round ${active.currentRound}',
         confirmLabel: 'Hapus & mulai baru',
         destructive: true,
       );
@@ -102,6 +103,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               padded: true,
               leading: const HomeRowIcon(MabarIcons.clockCounterClockwise),
               title: _summary(last),
+              titleOneLine: true,
               subtitle: 'Selesai di R${last.roundCount} · tambah jam untuk lanjut',
               chevron: true,
               onTap: () => _resumeLast(last),

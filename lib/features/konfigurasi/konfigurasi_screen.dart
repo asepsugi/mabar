@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
@@ -10,7 +11,7 @@ import '../../core/widgets/mabar_layers.dart';
 import '../../models/models.dart';
 import 'widgets/config_pickers.dart';
 
-/// Screen 03 · Konfigurasi — disusun seperti halaman pengaturan: mode, format skor + durasi, court.
+/// Screen 03 · Konfigurasi — disusun seperti halaman pengaturan: nama turnamen, mode, format skor + durasi, court.
 /// Estimasi ada di tombol. Fixed → Pasangan; Mixed → langsung Jadwal dan membuat R1.
 class KonfigurasiScreen extends StatefulWidget {
   final SportType sport;
@@ -33,6 +34,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
   ScoreFormat _format = ScoreFormat.standard;
   late int _duration = widget.sport.defaultMatchDurationMinutes;
   final List<_CourtDraft> _courts = [];
+  final _name = TextEditingController();
   var _scrolled = false;
 
   @override
@@ -45,6 +47,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
 
   @override
   void dispose() {
+    _name.dispose();
     for (final c in _courts) {
       c.dispose();
     }
@@ -85,6 +88,7 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
     courts: [for (var i = 0; i < _courts.length; i++) _courts[i].toCourt(i)],
     players: widget.players,
     format: _format,
+    name: _name.text.trim().isEmpty ? null : _name.text.trim(),
   );
 
   void _next() {
@@ -137,6 +141,15 @@ class _KonfigurasiScreenState extends State<KonfigurasiScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Tanpa label grup: isinya sudah menjelaskan diri, seperti nama court.
+                    MabarField(
+                      controller: _name,
+                      hint: 'Nama turnamen',
+                      textCapitalization: TextCapitalization.words,
+                      textInputAction: TextInputAction.done,
+                      inputFormatters: [LengthLimitingTextInputFormatter(TournamentConfig.maxNameLength)],
+                    ),
+                    const SizedBox(height: 12),
                     MabarSection(
                       bodyGap: 12,
                       header: const MabarGroupLabel('Pasangan'),

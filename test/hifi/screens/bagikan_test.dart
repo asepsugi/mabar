@@ -33,6 +33,7 @@ void main() {
   final now = date.add(const Duration(minutes: 45));
 
   /// 11a: data set 1 Peringkat (Americano 24, R1–R3) dengan nama lengkap; Gilang belum main ikut "+6".
+  /// Turnamennya bernama "Mabar Jumat PB Garuda".
   final set1 = mixedTournament(
     const [
       [('Andi', 'Hana', 'Budi', 'Eko', 14, 10), ('Dewant', 'Citra', 'Fajar', 'Joko', 15, 9)],
@@ -42,6 +43,7 @@ void main() {
     roster: [...fullNames.take(10), 'Gilang Saputra'],
     format: const ScoreFormat(ScoringMethod.americano, 24),
     createdAt: date,
+    name: 'Mabar Jumat PB Garuda',
   );
 
   /// 11b: Fixed Tennis 10 pasangan, round-robin 45 match (5 court, 9 round), semua selesai. Urutan kuat:

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +11,7 @@ import 'package:mabar/services/storage/tournament_store.dart';
 
 /// Turnamen Fixed dengan satu match selesai, satu WO, satu belum dimain —
 /// cukup untuk menyentuh semua cabang serialisasi.
-ActiveTournament _sample() {
+ActiveTournament _sample({String? name}) {
   const players = [
     Player(id: 'p1', name: 'Andi'),
     Player(id: 'p2', name: 'Budi'),
@@ -24,15 +25,16 @@ ActiveTournament _sample() {
     tournament: Tournament(
       id: 't1',
       createdAt: DateTime(2026, 9, 18, 7, 30),
-      config: const TournamentConfig(
+      config: TournamentConfig(
         sport: SportType.padel,
         mode: PartnerMode.fixed,
         matchDurationMinutes: 15,
-        courts: [
+        courts: const [
           Court(id: 'c1', name: 'Merah', colorIndex: 2, bookingDurationMinutes: 120),
         ],
         players: players,
-        fixedPairs: [pairA, pairB],
+        fixedPairs: const [pairA, pairB],
+        name: name,
       ),
       matches: const [
         MatchGame(
@@ -103,6 +105,14 @@ void main() {
       expect(restored.restingPlayerIdsByRound, {
         3: ['p3', 'p4'],
       });
+    });
+
+    test('nama turnamen ikut tersimpan; tanpa nama tidak menulis kuncinya (simpanan sebelum 2.3 terbaca null)', () {
+      final named = TournamentCodec.decode(TournamentCodec.encode(_sample(name: 'PB Garuda x Matcha Club')))!;
+      expect(named.config.name, 'PB Garuda x Matcha Club');
+      final config = (jsonDecode(TournamentCodec.encode(_sample())) as Map)['tournament']['config'] as Map;
+      expect(config.containsKey('name'), isFalse);
+      expect(TournamentCodec.decode(TournamentCodec.encode(_sample()))!.config.name, isNull);
     });
 
     test('payload kosong, rusak, atau beda skema dibuang, bukan melempar', () {

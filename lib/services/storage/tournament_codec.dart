@@ -70,6 +70,8 @@ class TournamentCodec {
     'matchDurationMinutes': c.matchDurationMinutes,
     'scoring': c.format.method.name,
     'target': c.format.target,
+    // Opsional: turnamen tanpa nama (dan simpanan sebelum 2.3) tidak punya kunci ini.
+    if (c.name != null) 'name': c.name,
     'courts': [
       for (final court in c.courts)
         {
@@ -119,6 +121,7 @@ class TournamentCodec {
     mode: PartnerMode.values.byName(j['mode'] as String),
     matchDurationMinutes: j['matchDurationMinutes'] as int,
     format: _readFormat(j),
+    name: j['name'] as String?,
     courts: [
       for (final c in j['courts'] as List)
         Court(

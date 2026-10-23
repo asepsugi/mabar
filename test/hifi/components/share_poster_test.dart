@@ -63,9 +63,9 @@ void main() {
       target: SharePosterTarget.preview,
       shareTheme: ShareTheme.biru,
       sport: SportType.padel,
-      eyebrow: 'Padel · Mixed · 21 Okt 2026',
+      eyebrow: 'Mabar Jumat PB Garuda',
       isFinal: false,
-      summary: '3 round · 6 match',
+      summary: '3 round · 6 match · 21 Okt 2026',
       more: '+6 pemain lainnya',
       complete: false,
     );
@@ -111,9 +111,9 @@ void main() {
         target: target,
         shareTheme: ShareTheme.biru,
         sport: SportType.padel,
-        eyebrow: 'Padel · Mixed · 21 Okt 2026',
+        eyebrow: 'Mabar Jumat PB Garuda x Matcha Club 2026',
         isFinal: true,
-        summary: '4 round · 8 match · 1 WO',
+        summary: '4 round · 8 match · 1 WO · 21 Okt 2026',
         more: '+5 pemain lainnya',
         complete: false,
       );
@@ -128,9 +128,9 @@ void main() {
         target: target,
         shareTheme: ShareTheme.biru,
         sport: SportType.padel,
-        eyebrow: 'Padel · Mixed · 21 Okt 2026',
+        eyebrow: 'Mabar Jumat PB Garuda x Matcha Club',
         isFinal: true,
-        summary: '8 round · 32 match',
+        summary: '8 round · 32 match · 21 Okt 2026',
       );
     });
 
