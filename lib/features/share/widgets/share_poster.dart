@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '../../../core/theme/mabar_icons.dart';
 import '../../../core/theme/mabar_theme.dart';
@@ -174,40 +175,52 @@ class SharePoster extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
-            MabarBall(size: ball),
-            SizedBox(width: wordGap),
-            Text(
-              'mabar',
-              style: base.copyWith(fontSize: word, fontWeight: FontWeight.w800, fontVariations: const [FontVariation('wdth', 125)]),
-            ),
-          ],
+        _CssLines(
+          fontSize: word,
+          lineHeight: _lineHeight,
+          child: Row(
+            children: [
+              MabarBall(size: ball),
+              SizedBox(width: wordGap),
+              Text(
+                'mabar',
+                style: base.copyWith(fontSize: word, fontWeight: FontWeight.w800, fontVariations: const [FontVariation('wdth', 125)]),
+              ),
+            ],
+          ),
         ),
         SizedBox(height: target == SharePosterTarget.preview && !data.complete ? 14 : 12),
-        Opacity(
-          opacity: 0.75,
-          child: Text(
-            data.eyebrow.toUpperCase(),
-            // Nama turnamen panjang turun ke baris kedua di Story; "olahraga · mode · tanggal" selalu sebaris.
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: base.copyWith(fontSize: eyebrow, fontWeight: FontWeight.w700, letterSpacing: eyebrow * 0.08),
+        _CssLines(
+          fontSize: eyebrow,
+          lineHeight: _lineHeight,
+          child: Opacity(
+            opacity: 0.75,
+            child: Text(
+              data.eyebrow.toUpperCase(),
+              // Nama turnamen panjang turun ke baris kedua di Story; "olahraga · mode · tanggal" selalu sebaris.
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: base.copyWith(fontSize: eyebrow, fontWeight: FontWeight.w700, letterSpacing: eyebrow * 0.08),
+            ),
           ),
         ),
         const SizedBox(height: 6),
-        Row(
-          children: [
-            Icon(MabarIcons.trophy, size: trophy, color: theme.trophy),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                data.isFinal ? 'Klasemen akhir' : 'Klasemen sementara',
-                maxLines: 1,
-                style: MabarType.title.copyWith(fontSize: title, height: 1.05, color: ink),
+        _CssLines(
+          fontSize: title,
+          lineHeight: 1.05,
+          child: Row(
+            children: [
+              Icon(MabarIcons.trophy, size: trophy, color: theme.trophy),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  data.isFinal ? 'Klasemen akhir' : 'Klasemen sementara',
+                  maxLines: 1,
+                  style: MabarType.title.copyWith(fontSize: title, height: 1.05, color: ink),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 12),
       ],
@@ -259,23 +272,27 @@ class SharePoster extends StatelessWidget {
   /// Kaki: ringkasan round/match, dan di gambar Ringkas juga "+n lainnya". Di pratinjau Ringkas "+n
   /// lainnya" ikut daftar ([_rows]) dan kaki menempel di bawah (`margin-top: auto`).
   Widget _footer(TextStyle base) {
-    final foot = base.copyWith(fontSize: _story ? 8.5 : 11.5);
+    final size = _story ? 8.5 : 11.5;
+    final foot = base.copyWith(fontSize: size);
+    Widget line(Widget child) => _CssLines(fontSize: size, lineHeight: _lineHeight, child: child);
     final more = target == SharePosterTarget.preview ? null : data.more;
     final Widget body = switch (target) {
-      SharePosterTarget.preview => Text(data.summary, style: foot, maxLines: 1, overflow: TextOverflow.ellipsis),
+      SharePosterTarget.preview => line(Text(data.summary, style: foot, maxLines: 1, overflow: TextOverflow.ellipsis)),
       // `justify-content: space-between`: tanpa "+n lainnya" (Lengkap) ringkasannya rata kiri.
-      SharePosterTarget.feed => Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (more != null) ...[Text(more, style: foot), const Spacer()],
-          Text(data.summary, style: foot),
-        ],
+      SharePosterTarget.feed => line(
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            if (more != null) ...[Text(more, style: foot), const Spacer()],
+            Text(data.summary, style: foot),
+          ],
+        ),
       ),
       SharePosterTarget.story => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (more != null) ...[Text(more, style: foot), const SizedBox(height: 2)],
-          Text(data.summary, style: foot),
+          if (more != null) ...[line(Text(more, style: foot)), const SizedBox(height: 2)],
+          line(Text(data.summary, style: foot)),
         ],
       ),
     };
@@ -312,16 +329,19 @@ class SharePoster extends StatelessWidget {
             children: [Expanded(child: column(0)), const SizedBox(width: 14), Expanded(child: column(k))],
           );
         }
-        Widget sized(Widget row) => switch (_mode) {
+        // `.rows .prow { flex: 1 }` = flex-basis 0: sisa ruang dibagi rata ke isi baris dan garis atas 1 pt
+        // ada di luar bagian itu, jadi baris pertama (tanpa garis) 1 pt lebih pendek dari baris lain.
+        final shared = (space - (rows.length - 1)) / rows.length;
+        Widget sized(Widget row, int i) => switch (_mode) {
           _RowMode.natural => row,
           _RowMode.atLeastContent => ConstrainedBox(constraints: BoxConstraints(minHeight: space / rows.length), child: row),
-          _RowMode.share => SizedBox(height: space / rows.length, child: row),
+          _RowMode.share => SizedBox(height: shared + (i > 0 ? 1 : 0), child: row),
         };
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            for (var i = 0; i < rows.length; i++) sized(_row(rows[i], sizes, base, divider: i > 0)),
+            for (var i = 0; i < rows.length; i++) sized(_row(rows[i], sizes, base, divider: i > 0), i),
             if (target == SharePosterTarget.preview && !data.complete && data.more != null)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
@@ -430,6 +450,48 @@ class SharePoster extends StatelessWidget {
       decoration: divider ? BoxDecoration(border: Border(top: BorderSide(color: theme.inkAlpha(0.18)))) : null,
       child: share ? content : SizedBox(height: lineBox, child: content),
     );
+  }
+}
+
+/// Teks kepala/kaki setinggi kotak baris CSS: n baris × ukuran × line-height (ikut skala teks). Mesin teks
+/// membulatkan tinggi tiap baris ke pt bulat (keterangan 15,4 → 15, judul 29,4 → 29, wordmark 23,8 → 24), jadi
+/// sisa ruang yang dibagi baris Lengkap meleset ±0,7 pt dan di daftar rapat (11l, 15 baris) menumpuk jadi geseran
+/// yang kelihatan. Isinya di tengah kotak, seperti half-leading CSS.
+class _CssLines extends SingleChildRenderObjectWidget {
+  final double fontSize, lineHeight;
+
+  const _CssLines({required this.fontSize, required this.lineHeight, required Widget super.child});
+
+  double _line(BuildContext context) => MediaQuery.textScalerOf(context).scale(fontSize) * lineHeight;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderCssLines(_line(context));
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderCssLines renderObject) => renderObject.line = _line(context);
+}
+
+class _RenderCssLines extends RenderShiftedBox {
+  _RenderCssLines(this._line) : super(null);
+
+  double _line;
+  set line(double value) {
+    if (value == _line) return;
+    _line = value;
+    markNeedsLayout();
+  }
+
+  Size _sizeFor(BoxConstraints constraints, Size child) =>
+      constraints.constrain(Size(child.width, max(1, (child.height / _line).round()) * _line));
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) => _sizeFor(constraints, child!.getDryLayout(constraints.loosen()));
+
+  @override
+  void performLayout() {
+    final child = this.child!..layout(constraints.loosen(), parentUsesSize: true);
+    size = _sizeFor(constraints, child.size);
+    (child.parentData! as BoxParentData).offset = Offset(0, (size.height - child.size.height) / 2);
   }
 }
 

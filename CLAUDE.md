@@ -100,7 +100,8 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
 - Jebakan CSS→Flutter yang sudah makan korban: border CSS memakan tempat (border-box), `inset box-shadow` tidak;
   `Container` dengan border dekorasi otomatis menambah tebal border ke padding; mesin teks membulatkan tinggi tiap
   baris ke pt bulat (22,4 → 22, 25,6 → 26), jadi kotak yang tingginya dari jumlah baris perlu dikompensasi
-  (NameListField, baris poster); `OutlineInputBorder` menggeser isi 4 pt kecuali `gapPadding: 0`; `ButtonStyle.textStyle`
+  (NameListField, baris poster); `OutlineInputBorder` menggeser isi 4 pt kecuali `gapPadding: 0`; `flex: 1` (basis 0) membagi sisa ruang ke isi
+  baris dan garis atas ada di luar bagian itu, jadi baris pertama tanpa garis 1 pt lebih pendek (poster `.rows`); `ButtonStyle.textStyle`
   mengganti gaya tema (makanya `MabarType` membawa `fontFamily`); `ThemeData` mengunci platform saat dibuat.
 - Frame yang dulu tidak konsisten dengan aturannya sudah dibetulkan di hi-fi atas keputusan host (2026-10-22), jadi
   golden layar tidak perlu pengecualian: keypad 07a–07g/07i menggambar tombol mati sesuai aturan, Lanjutkan di banner
@@ -220,8 +221,10 @@ action bar dua tombol). Isi poster dari `sharePosterData()` (`share_content.dart
 teratas + "+n pemain/pasangan lainnya", Lengkap = semua yang bernomor; Fixed menulis nilai + satuan saja, Mixed
 "42 poin · 100%" / "100% · +12". Lengkap: Mixed > 10 baris di pratinjau/Feed jadi dua kolom, pasangan dan Story selalu
 satu kolom; lebih padat dari frame terpadat yang disetujui (10 baris satu kolom, 15 per kolom, 20 baris nama di Story) semua huruf
-baris dikecilkan sebanding (`SharePoster._density`, frame 11k/11l). Golden Feed/Story 11l bertoleransi 3%: kepala & kaki
-poster kena pembulatan tinggi baris (±0,7 pt ruang daftar), menumpuk di 15 baris rapat. `ShareTheme` punya 10 gradien (6 gelap bertinta putih + 4 lembut bertinta gelap);
+baris dikecilkan sebanding (`SharePoster._density`, frame 11k/11l). Teks kepala/kaki poster dibungkus `_CssLines`
+(tinggi = n baris × ukuran × line-height, ikut skala teks) supaya ruang daftar sama dengan CSS. Golden Feed/Story 11l
+bertoleransi 3%: kotaknya sudah sama dengan Chrome, sisa geseran huruf ≤ 1 pt di baris rapat (line-height 1,1) jadi
+±1,7% piksel di Mac dan ±0,7 poin lebih tinggi di CI Linux (pernah gagal 3,2% sebelum `_CssLines`). `ShareTheme` punya 10 gradien (6 gelap bertinta putih + 4 lembut bertinta gelap);
 semua warna poster diturunkan dari `theme.ink` — jangan menaruh `Colors.white` langsung. Tema & format tidak disimpan.
 
 Cara melihat hasil poster tanpa build web: test sekali pakai yang me-render `SharePoster` di `RepaintBoundary` lalu `toImage(pixelRatio: 3)` di dalam `tester.runAsync`, dan simpan PNG-nya. Wajib `loadHifiFonts()` (`test/hifi/hifi_golden.dart`, memuat Archivo + font ikon `PhosphorBold`) dan tema `MabarTheme.light()` — tanpa itu `flutter test` memakai font Ahem dan proporsinya menyesatkan. `Image.asset` memang tidak ikut ter-render di test.

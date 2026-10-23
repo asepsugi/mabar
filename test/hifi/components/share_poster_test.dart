@@ -187,9 +187,9 @@ void main() {
         eyebrow: 'Padel · Mixed · 21 Okt 2026',
         isFinal: true,
         summary: '8 round · 32 match',
-        // Mesin teks membulatkan tinggi baris kepala & kaki ke pt bulat (keterangan 15,4 → 15, judul 29,4 → 29),
-        // jadi ruang daftar 0,7 pt lebih tinggi daripada CSS. Di 15 baris rapat selisih per baris menumpuk jadi
-        // ±1,5 pt di baris teratas (2,3–2,5% piksel); di frame lain tetap di bawah 2%.
+        // Kotak kepala, baris, dan kaki sama dengan Chrome sampai 0,05 pt; yang tersisa posisi huruf di dalam
+        // baris yang lebih rapat dari tinggi alami font (line-height 1,05–1,1), ≤ 1 pt. Di 30 baris rapat itu
+        // 1,7% (Feed) / 1,2% (Story) piksel di Mac dan ±0,7 poin lebih tinggi di CI Linux.
         maxDiffRatio: target == SharePosterTarget.preview ? 0.02 : 0.03,
       );
     });
