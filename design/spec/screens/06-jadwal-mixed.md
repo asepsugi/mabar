@@ -92,7 +92,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`
 
-- Tab muat ±6 dengan label kanan. Mixed bisa lebih dari 20 round (booking panjang, durasi pendek), Fixed sampai 45 round (10 pasangan, 1 court), jadi baris tab harus bisa digeser.
+- Tab muat ±6 dengan label kanan. Mixed bisa lebih dari 20 round (booking panjang, durasi pendek), Fixed sampai 105 round (15 pasangan, 1 court), jadi baris tab harus bisa digeser.
 - Hanya baris tab yang digeser horizontal dengan jari; label kanan ("2/2 match", "Waktu habis") tetap di tempat. Kalau semua tab muat, tidak ada fade dan baris tidak bisa digeser.
 - Tepi yang menyembunyikan tab dipudarkan 36 pt: kiri (06l), kanan (frame ini), atau keduanya saat di tengah. Tab yang terpotong di tepi adalah tanda utama bahwa masih ada round di baliknya.
 - Saat layar dibuka, setelah Buat R*n*, dan setelah Batalkan R*n*, tab terpilih otomatis digeser masuk tampilan (round terakhir rapat kanan). Mengetuk tab yang terpotong menggesernya sampai utuh.
@@ -101,15 +101,15 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 - Di round lewat tidak ada "Prioritas main di R…", daftar kedua, maupun "Batalkan R…"; semuanya hanya untuk round terakhir. Tombol bawah tetap untuk round berikutnya (Buat R13).
 - Flutter: komponen `RoundTabs` (baris tab yang digeser + `ShaderMask` di tepi); tidak pakai `TabBarView`.
 
-## 06o · Banyak yang istirahat · 20 pemain, 2 court
+## 06o · Banyak yang istirahat · 30 pemain, 2 court
 
 ![06o](../../frames/06o.png)
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`
 
-- Kondisi terpadat Mixed: 20 pemain aktif. Dengan 2 court, 12 istirahat (6 baris); dengan 1 court 16 istirahat (8 baris) tapi hanya 1 match, jadi isi layar tetap muat. Makin banyak court, makin sedikit yang istirahat.
+- Kondisi terpadat Mixed: 30 pemain aktif. Dengan 2 court, 22 istirahat (11 baris); dengan 1 court 26 istirahat (13 baris) tapi hanya 1 match. Makin banyak court, makin sedikit yang istirahat. Kalau isinya lebih panjang dari layar, daftar di-scroll; app bar, tab, dan action bar tetap.
 - Nama dalam dua kolom rata, urut seperti daftar pemain, terpotong elipsis kalau panjang; sama dengan daftar di layar Pemain dan Pasangan, bukan kalimat yang membungkus tidak rata.
-- Yang istirahat lebih banyak dari slot round berikutnya (12 orang, R4 hanya 8 slot = 4 × court), jadi daftarnya dibagi dua: yang pasti main di R4 di bawah judul "Istirahat · Prioritas main di R4" (bagian prioritas bertinta gelap, bukan biru court supaya tidak terbaca sebagai tautan), dan sisanya di daftar kedua "Istirahat lagi di R4" yang lebih pudar. Kalau semua yang istirahat kebagian slot, hanya daftar pertama yang tampil (06f–06h).
+- Yang istirahat lebih banyak dari slot round berikutnya (22 orang, R4 hanya 8 slot = 4 × court), jadi daftarnya dibagi dua: yang pasti main di R4 di bawah judul "Istirahat · Prioritas main di R4" (bagian prioritas bertinta gelap, bukan biru court supaya tidak terbaca sebagai tautan), dan sisanya di daftar kedua "Istirahat lagi di R4" yang lebih pudar. Kalau semua yang istirahat kebagian slot, hanya daftar pertama yang tampil (06f–06h).
 - Isi kedua daftar dihitung dengan urutan yang sama persis dengan generator: jumlah main (termasuk kredit), lalu yang paling lama istirahat. Pemain yang seri diundi dengan undian yang dikunci per round (seed turnamen + nomor round), bukan diacak saat "Buat R4" ditekan. Jadi hasil Buat R4 selalu sama dengan daftar ini.
 - Daftar dihitung ulang langsung kalau host menambah/mengeluarkan pemain (sheet 08a) atau jumlah court yang masih punya waktu berubah. Pemain yang baru ditambahkan langsung masuk salah satu daftar; yang keluar hilang dari keduanya.
 

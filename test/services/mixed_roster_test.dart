@@ -136,9 +136,13 @@ void main() {
     expect(read().config.players, hasLength(6));
   });
 
-  test('maksimal 20 pemain aktif', () {
-    controller.startIfNeeded(_mixedConfig(20));
-    expect(controller.addPlayer('Zaki'), contains('Maksimal'));
+  test('maksimal 30 pemain aktif, juga saat Kembalikan', () {
+    controller.startIfNeeded(_mixedConfig(29));
+    expect(controller.addPlayer('Zaki'), isNull);
+    expect(controller.addPlayer('Yoga'), 'Maksimal 30 pemain aktif');
+    controller.withdrawPlayer('p0');
+    expect(controller.addPlayer('Yoga'), isNull);
+    expect(controller.reinstatePlayer('p0'), 'Maksimal 30 pemain aktif');
   });
 
   test('daftar keluar & kredit ikut tersimpan, payload lama tetap terbaca', () {

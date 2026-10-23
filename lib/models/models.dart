@@ -348,6 +348,10 @@ class TournamentConfig {
   /// Batas court di Konfigurasi dan Kelola court.
   static const maxCourts = 10;
 
+  /// Batas pemain (aktif, untuk Mixed) di layar Pemain dan Kelola pemain, sama untuk Fixed dan Mixed.
+  static const minPlayers = 4;
+  static const maxPlayers = 30;
+
   /// Langkah stepper durasi; durasi selalu kelipatannya.
   static const durationStep = 5;
 

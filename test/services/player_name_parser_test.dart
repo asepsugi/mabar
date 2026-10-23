@@ -54,11 +54,12 @@ Eko M
       expect(r.validationError, isNull);
     });
 
-    test('validation: > 20 invalid', () {
-      final input = List.generate(21, (i) => 'P${i + 1}').join('\n');
-      final r = PlayerNameParser.parse(input);
+    test('validation: 30 valid, > 30 invalid', () {
+      String input(int n) => List.generate(n, (i) => 'P${i + 1}').join('\n');
+      expect(PlayerNameParser.parse(input(30)).isValid, isTrue);
+      final r = PlayerNameParser.parse(input(31));
       expect(r.isValid, isFalse);
-      expect(r.validationError, contains('Maksimal 20'));
+      expect(r.validationError, contains('Maksimal 30'));
     });
   });
 }

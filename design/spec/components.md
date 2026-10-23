@@ -547,7 +547,7 @@ Dipakai di frame: 03a, 03b, 03c, 03d, 03e, 08c, 08d, 08e, 08f, 08g, 08h, 08i, 08
 Kartu/gambar Bagikan dan pemilih tema.
 
 Kelas hi-fi: `.poster`, `.themes`, `.theme`, `.poster-pair`  
-Dipakai di frame: 11a, 11b, 11c, 11d, 11e, 11f, 11g, 11h, 11i, 11j
+Dipakai di frame: 11a, 11b, 11c, 11d, 11e, 11f, 11g, 11h, 11i, 11j, 11k, 11l
 
 ```css
 .poster { position: relative; overflow: hidden; color: var(--pink, #fff); font-family: var(--f); border-radius: 14px; flex: none; }

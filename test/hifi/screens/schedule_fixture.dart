@@ -14,10 +14,11 @@ class LoadedTournament extends TournamentController {
 /// Satu match Mixed: (atas, bawah) nama depan, skor atas–bawah; null = belum diisi.
 typedef MatchSpec = (String, String, String, String, int?, int?);
 
-/// Nama pemain contoh layar Pemain.
+/// Nama pemain contoh layar Pemain, sampai batas 30; nama depannya unik karena match ditulis dengan nama depan.
 const fixtureNames = [
   'Andi P', 'Budi S', 'Citra L', 'Dewant R', 'Eko M', 'Fajar K', 'Gina R', 'Hana T', 'Indra W', 'Joko S', 'Kiki A', //
-  'Lina M', 'Maya P', 'Nanda R', 'Oki S', 'Putri A', 'Rizky H', 'Sari D', 'Tono B', 'Umar F',
+  'Lina M', 'Maya P', 'Nanda R', 'Oki S', 'Putri A', 'Rizky H', 'Sari D', 'Tono B', 'Umar F', 'Vina K', //
+  'Wulan S', 'Yoga P', 'Zaki M', 'Bayu S', 'Dimas A', 'Galih P', 'Rina K', 'Tari W', 'Hendra G',
 ];
 
 final fixtureStart = DateTime(2026, 10, 22, 19);

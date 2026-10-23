@@ -11,7 +11,7 @@ import 'schedule_fixture.dart';
 import 'screen_harness.dart';
 
 /// Golden layar penuh Jadwal Mixed, frame 06f–06o. Padel Americano 21, 2 court, durasi 15 menit; 10 pemain
-/// (06o: 20). Fixture bersama di `schedule_fixture.dart`.
+/// (06o: 30). Fixture bersama di `schedule_fixture.dart`.
 void main() {
   final start = fixtureStart;
   const tournament = mixedTournament;
@@ -107,17 +107,17 @@ void main() {
     );
   });
 
-  testWidgets('06o banyak yang istirahat, 20 pemain', (tester) async {
-    // R1: Andi·Budi·Citra·Dewant + Eko·Fajar·Gina·Hana; R2: 8 lainnya; R3: 4 pertama R1 + 4 yang belum main.
-    // Untuk R4: Eko–Hana paling lama istirahat; 4 dari 8 pemain R2 diundi (seed id turnamen, round 4).
+  testWidgets('06o banyak yang istirahat, 30 pemain', (tester) async {
+    // R1–R3 = hasil generator (8 pemain per round, urut prioritas undian id turnamen). Untuk R4: 6 yang belum
+    // pernah main + 2 dari 8 pemain R1 (paling lama istirahat) yang menang undian round 4.
     const rounds = [
-      <MatchSpec>[('Andi', 'Eko', 'Budi', 'Fajar', 11, 10), ('Citra', 'Gina', 'Dewant', 'Hana', 12, 9)],
-      <MatchSpec>[('Kiki', 'Indra', 'Maya', 'Joko', 11, 10), ('Rizky', 'Nanda', 'Umar', 'Tono', 12, 9)],
-      <MatchSpec>[('Andi', 'Lina', 'Budi', 'Oki', 13, 8), ('Citra', 'Putri', 'Dewant', 'Sari', null, null)],
+      <MatchSpec>[('Putri', 'Oki', 'Tari', 'Gina', 11, 10), ('Lina', 'Wulan', 'Kiki', 'Tono', 12, 9)],
+      <MatchSpec>[('Fajar', 'Galih', 'Rizky', 'Joko', 11, 10), ('Nanda', 'Eko', 'Hendra', 'Bayu', 12, 9)],
+      <MatchSpec>[('Citra', 'Vina', 'Maya', 'Dimas', 13, 8), ('Sari', 'Dewant', 'Umar', 'Andi', null, null)],
     ];
     await expectMatchesHifi(
       tester,
-      screen(tournament(rounds, players: 20, id: 't-06o-25'), const Duration(minutes: 40)),
+      screen(tournament(rounds, players: 30, id: 't-06o-30'), const Duration(minutes: 40)),
       '06o',
     );
   });

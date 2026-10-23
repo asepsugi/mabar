@@ -24,7 +24,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarSegmented`, `SharePoster`
 
-- Skenario penuh Fixed: 20 pemain = 10 pasangan, round-robin 45 match (5 court, 9 round). Lengkap memuat 10 baris dalam satu kolom; baris berbagi tinggi kartu yang tersisa, nama lengkap kedua anggota dipisah "+", terpotong elipsis kalau panjang.
+- Fixed 20 pemain = 10 pasangan, round-robin 45 match (5 court, 9 round). Lengkap memuat 10 baris dalam satu kolom; baris berbagi tinggi kartu yang tersisa, nama lengkap kedua anggota dipisah "+", terpotong elipsis kalau panjang. Lebih dari 10 pasangan tetap satu kolom dengan huruf lebih kecil (11k).
 - Pratinjau memakai tata letak gambar Feed 1:1; gambar Feed dan Story-nya di 11g.
 - Tema lembut memakai tinta gelap tema itu untuk semua teks, garis, piala, dan watermark (tidak ada `Colors.white` langsung).
 - Baru: di Fixed hitungannya "pasangan", bukan "pemain" (juga di "+n pasangan lainnya").
@@ -57,7 +57,7 @@ Komponen: `SharePoster`
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarSegmented`, `SharePoster`
 
-- 20 baris tidak terbaca dalam satu kolom 1:1, jadi lebih dari 10 baris dibagi dua kolom rata: ⌈n/2⌉ di kiri, sisanya di kanan, urut ke bawah dulu seperti daftar Pemain (20 → 10–10, 12 → 6–6 di 11h, 13 → 7–6 di 11i; ≤ 10 tetap satu kolom). Bukan 10 di kiri lalu sisanya, supaya kolom kanan tidak setengah kosong.
+- 20 baris tidak terbaca dalam satu kolom 1:1, jadi lebih dari 10 pemain dibagi dua kolom rata: ⌈n/2⌉ di kiri, sisanya di kanan, urut ke bawah dulu seperti daftar Pemain (20 → 10–10, 12 → 6–6 di 11h, 13 → 7–6 di 11i, 30 → 15–15 di 11l; ≤ 10 tetap satu kolom). Pasangan Fixed tidak pernah dua kolom (11k). Bukan 10 di kiri lalu sisanya, supaya kolom kanan tidak setengah kosong.
 - Dalam dua kolom tiap baris hanya nama dan nilai metode; "poin · %" dihapus karena tidak muat di setengah lebar.
 - Nomor sama untuk statistik identik tetap berlaku (3, 3 · 11, 11 · 14, 14).
 - Data: Americano 21, 4 court × 8 round = 32 match, tiap pemain main 6–7 kali.
@@ -70,7 +70,7 @@ Komponen: `SharePoster`
 
 - Feed 1:1: dua kolom rata karena lebih dari 10 baris (pembagian sama dengan pratinjau, 11e/11h); tiap baris di 1080 px ±45 px tinggi, sama terbacanya dengan Ringkas.
 - Story 9:16: satu kolom 20 baris; tinggi kanvas cukup (±60 px per baris di 1080×1920). Hanya nilai metode, tanpa "poin · %".
-- Kasus paling padat: 20 baris di Story dengan nama dua baris; tiap baris tetap terbaca.
+- Story memuat 20 baris nama di ukuran ini (Mixed 20 pemain, atau Fixed 10 pasangan bertumpuk di 11g). Lebih dari itu semua huruf baris dikecilkan sebanding: 30 baris nama → 20/30 (11k, 11l).
 
 ## 11g · Gambar Lengkap · Fixed 10 pasangan · Feed dan Story (skala 1:3)
 
@@ -78,7 +78,7 @@ Komponen: `SharePoster`
 
 Komponen: `SharePoster`
 
-- Fixed paling banyak 10 baris, jadi Feed tetap satu kolom dengan nama lengkap kedua anggota dalam satu baris.
+- Pasangan selalu satu kolom, juga di Feed, supaya nama lengkap kedua anggota muat dalam satu baris; di setengah lebar nama kedua terpotong habis. Lebih dari 10 pasangan: 11k.
 - Story lebih sempit, jadi nama pasangan ditumpuk dua baris (seperti tabel Klasemen 09c) supaya tidak terpotong.
 
 ## 11h · Lengkap · Mixed 12 pemain · dua kolom 6–6
@@ -110,3 +110,23 @@ Komponen: `SharePoster`
 - Baris kiri dan kanan selalu sejajar; slot terakhir di kanan kosong. Makin sedikit baris, makin tinggi tiap baris (tetap membagi tinggi kartu), jadi 5 pemain terlihat lega dan 19 pemain sama padatnya dengan 20.
 - Nomor diberi "#" pudar di semua kartu dan gambar, supaya "#3" tidak tertukar dengan angka poin di ujung baris.
 - Semua baris peringkat 1 diberi lencana emas `#E3B341` dengan tulisan tinta, dan namanya lebih tebal. Kalau ada dua #1 (statistik identik), keduanya dapat lencana.
+
+## 11k · Gambar Lengkap · Fixed 30 pemain (15 pasangan) · Feed, Story (skala 1:3) dan pratinjau
+
+![11k](../../frames/11k.png)
+
+Komponen: `SharePoster`
+
+- Pasangan selalu satu kolom: Feed dan pratinjau satu baris per pasangan dengan nama lengkap kedua anggota, Story menumpuk nama dua baris (30 baris nama).
+- Lebih padat dari frame terpadat yang disetujui (satu kolom 10 baris di 11b/11g, 20 baris nama di Story 11g), jadi semua huruf baris dikecilkan sebanding: 15 pasangan → 10/15 di Feed dan pratinjau, 30 baris nama → 20/30 di Story. Wordmark, judul, dan kaki tetap.
+- Data: Tennis Race to 6, 4 court, diakhiri setelah 10 round · 35 match (round-robin penuh 105 match).
+
+## 11l · Gambar Lengkap · Mixed 30 pemain · Feed, Story (skala 1:3) dan pratinjau
+
+![11l](../../frames/11l.png)
+
+Komponen: `SharePoster`
+
+- Feed dan pratinjau: dua kolom 15–15 di ukuran 11e/11f, tidak dikecilkan; 15 baris per kolom masih terbaca.
+- Story: 30 baris satu kolom, semua huruf baris dikecilkan 20/30 (±6,3 pt di kanvas 203 pt, ±12 pt saat Story dibuka layar penuh di HP).
+- Data: Americano 21, 4 court × 8 round = 32 match, tiap pemain main 4–5 kali.

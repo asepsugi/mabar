@@ -24,9 +24,6 @@ class TournamentController extends Notifier<ActiveTournament?> {
   /// Config yang dipakai memulai turnamen di sesi ini (lihat [startIfNeeded]).
   TournamentConfig? _startedFrom;
 
-  static const maxPlayers = 20;
-  static const _minPlayers = 4;
-
   @override
   ActiveTournament? build() {
     // Auto-save lewat satu listener: semua mutasi di controller ini berakhir di
@@ -146,7 +143,8 @@ class TournamentController extends Notifier<ActiveTournament?> {
           ? '${existing.name} sudah ada — pakai "Kembalikan" di bawah'
           : '${existing.name} sudah ada di daftar';
     }
-    if (current.activePlayers.length >= maxPlayers) return 'Maksimal $maxPlayers pemain aktif';
+    const limit = TournamentConfig.maxPlayers;
+    if (current.activePlayers.length >= limit) return 'Maksimal $limit pemain aktif';
 
     final player = Player(id: const Uuid().v4(), name: name);
     state = current.copyWith(
@@ -163,7 +161,7 @@ class TournamentController extends Notifier<ActiveTournament?> {
   /// Mengembalikan false kalau sisa pemain aktif tidak cukup untuk satu match.
   bool withdrawPlayer(String playerId) {
     final current = state;
-    if (current == null || current.activePlayers.length <= _minPlayers) return false;
+    if (current == null || current.activePlayers.length <= TournamentConfig.minPlayers) return false;
     state = current.copyWith(withdrawn: {...current.withdrawnPlayerIds, playerId});
     return true;
   }
@@ -172,7 +170,8 @@ class TournamentController extends Notifier<ActiveTournament?> {
   String? reinstatePlayer(String playerId) {
     final current = state;
     if (current == null || !current.withdrawnPlayerIds.contains(playerId)) return null;
-    if (current.activePlayers.length >= maxPlayers) return 'Maksimal $maxPlayers pemain aktif';
+    const limit = TournamentConfig.maxPlayers;
+    if (current.activePlayers.length >= limit) return 'Maksimal $limit pemain aktif';
     state = current.copyWith(
       withdrawn: {...current.withdrawnPlayerIds}..remove(playerId),
       matchCredits: _withCatchUpCredit(current, playerId),

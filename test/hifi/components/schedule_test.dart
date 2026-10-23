@@ -171,11 +171,17 @@ void main() {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             RestingList(
-              names: ['Eko M', 'Fajar K', 'Gina R', 'Hana T', 'Kiki A', 'Maya P', 'Rizky H', 'Umar F'],
+              names: ['Budi S', 'Hana T', 'Indra W', 'Putri A', 'Yoga P', 'Zaki M', 'Rina K', 'Tari W'],
               priorityRound: 4,
             ),
             SizedBox(height: 16),
-            RestingList.later(names: ['Indra W', 'Joko S', 'Nanda R', 'Tono B'], nextRound: 4),
+            RestingList.later(
+              names: [
+                'Eko M', 'Fajar K', 'Gina R', 'Joko S', 'Kiki A', 'Lina M', 'Nanda R', 'Oki S', 'Rizky H', 'Tono B', //
+                'Wulan S', 'Bayu S', 'Galih P', 'Hendra G',
+              ],
+              nextRound: 4,
+            ),
           ],
         ),
       ),

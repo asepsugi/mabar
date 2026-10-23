@@ -9,10 +9,12 @@ import '../hifi_golden.dart';
 import 'share_poster_data.dart';
 
 /// Golden SharePoster: pratinjau di layar Bagikan (11a, 11b, 11e, 11h, 11i) dan gambar Feed/Story
-/// (11d, 11f, 11g; di frame Feed 360×360 di x 0, Story 203×360 di x 374).
+/// (11d, 11f, 11g, 11k, 11l; di frame Feed 360×360 di x 0, Story 203×360 di x 374, lalu di 11k/11l kartu
+/// pratinjau 358×372 di x 591).
 void main() {
   final theme = MabarTheme.light();
   const feedAt = Rect.fromLTWH(0, 0, 360, 360), storyAt = Rect.fromLTWH(374, 0, 203, 360);
+  const previewAt = Rect.fromLTWH(591, 0, 358, 372);
 
   Future<void> check(
     WidgetTester tester, {
@@ -27,6 +29,7 @@ void main() {
     required String summary,
     String? more,
     bool complete = true,
+    double maxDiffRatio = 0.02,
   }) async {
     await precacheHifiAssets(tester, [sport.assetPath]);
     final data = SharePosterData(
@@ -52,6 +55,7 @@ void main() {
       frame,
       at,
       label: '${target.name}$index',
+      maxDiffRatio: maxDiffRatio,
     );
   }
 
@@ -146,6 +150,47 @@ void main() {
         eyebrow: 'Tennis · Fixed · 21 Okt 2026',
         isFinal: true,
         summary: '9 round · 45 match',
+      );
+    });
+  }
+
+  // Lebih padat dari frame terpadat yang disetujui: pasangan tetap satu kolom, huruf baris dikecilkan.
+  for (final (target, at, index) in [
+    (SharePosterTarget.feed, feedAt, 0),
+    (SharePosterTarget.story, storyAt, 1),
+    (SharePosterTarget.preview, previewAt, 2),
+  ]) {
+    testWidgets('gambar Lengkap Fixed 15 pasangan ${target.name} (11k)', (tester) async {
+      await check(
+        tester,
+        frame: '11k',
+        index: index,
+        at: at,
+        target: target,
+        shareTheme: ShareTheme.peach,
+        sport: SportType.tennis,
+        eyebrow: 'Tennis · Fixed · 21 Okt 2026',
+        isFinal: true,
+        summary: '10 round · 35 match',
+      );
+    });
+
+    testWidgets('gambar Lengkap Mixed 30 ${target.name} (11l)', (tester) async {
+      await check(
+        tester,
+        frame: '11l',
+        index: index,
+        at: at,
+        target: target,
+        shareTheme: ShareTheme.biru,
+        sport: SportType.padel,
+        eyebrow: 'Padel · Mixed · 21 Okt 2026',
+        isFinal: true,
+        summary: '8 round · 32 match',
+        // Mesin teks membulatkan tinggi baris kepala & kaki ke pt bulat (keterangan 15,4 → 15, judul 29,4 → 29),
+        // jadi ruang daftar 0,7 pt lebih tinggi daripada CSS. Di 15 baris rapat selisih per baris menumpuk jadi
+        // ±1,5 pt di baris teratas (2,3–2,5% piksel); di frame lain tetap di bawah 2%.
+        maxDiffRatio: target == SharePosterTarget.preview ? 0.02 : 0.03,
       );
     });
   }

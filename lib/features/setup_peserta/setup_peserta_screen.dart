@@ -76,8 +76,10 @@ class _SetupPesertaScreenState extends State<SetupPesertaScreen> {
     final count = _result.count;
     final notes = [
       // Kurang dari 4 bukan error: host masih mengetik.
-      if (count > 0 && count < 4) const MabarGroupNote('Minimal 4 pemain'),
-      if (count > 20) const MabarGroupNote('Maksimal 20 pemain', error: true),
+      if (count > 0 && count < TournamentConfig.minPlayers)
+        const MabarGroupNote('Minimal ${TournamentConfig.minPlayers} pemain'),
+      if (count > TournamentConfig.maxPlayers)
+        const MabarGroupNote('Maksimal ${TournamentConfig.maxPlayers} pemain', error: true),
       if (_result.duplicates.isNotEmpty) MabarGroupNote('Duplikat dibuang: ${_result.duplicates.join(', ')}'),
     ];
     return Scaffold(

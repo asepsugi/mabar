@@ -42,7 +42,8 @@ class _ScriptedRandom implements Random {
 void main() {
   const names = [
     'Andi P', 'Budi S', 'Citra L', 'Dewant R', 'Eko M', 'Fajar K', 'Gina R', 'Hana T', 'Indra W', 'Joko S', 'Kiki A', //
-    'Lina M', 'Maya P', 'Nanda R', 'Oki S', 'Putri A', 'Rizky H', 'Sari D', 'Tono B', 'Umar F',
+    'Lina M', 'Maya P', 'Nanda R', 'Oki S', 'Putri A', 'Rizky H', 'Sari D', 'Tono B', 'Umar F', 'Vina K', //
+    'Wulan S', 'Yoga P', 'Zaki M', 'Bayu S', 'Dimas A', 'Galih P', 'Rina K', 'Tari W', 'Hendra G',
   ];
   List<Player> players(int n) => [for (var i = 0; i < n; i++) Player(id: 'p$i', name: names[i])];
 
@@ -112,12 +113,12 @@ void main() {
     );
   });
 
-  testWidgets('04e Manual · 20 pemain', (tester) async {
+  testWidgets('04e Manual · 30 pemain', (tester) async {
     await expectMatchesHifi(
       tester,
-      screen(SportType.padel, 20),
+      screen(SportType.padel, 30),
       '04e',
-      act: (tester) => manual(tester, names.take(10).toList()),
+      act: (tester) => manual(tester, names.take(14).toList()),
     );
   });
 

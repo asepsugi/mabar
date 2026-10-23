@@ -72,13 +72,14 @@ class SharePosterData {
 }
 
 /// Ukuran huruf satu tata letak baris (font dasar/nama, nomor, nilai) dan lebar kolom nomor. Angka-angka
-/// ini dipilih tangan per varian di hi-fi (11a–11j), bukan hasil rumus.
+/// ini dipilih tangan per varian di hi-fi (11a–11j), bukan hasil rumus; di atas frame terpadat dikecilkan
+/// [SharePoster._density].
 typedef _RowSizes = ({double text, double rank, double value, double rankWidth});
 
 /// `.poster` — kartu/gambar hasil: wordmark + bola, keterangan, judul berpiala, daftar peringkat, kaki.
-/// Nomor ditulis "#n"; semua baris peringkat 1 diberi lencana emas bertulisan tinta. Lebih dari 10 baris
-/// di pratinjau dan Feed dibagi dua kolom rata (⌈n/2⌉ di kiri, urut ke bawah, baris kiri-kanan sejajar);
-/// Story selalu satu kolom. Semua warna diturunkan dari tinta [theme].
+/// Nomor ditulis "#n"; semua baris peringkat 1 diberi lencana emas bertulisan tinta. Lebih dari 10 pemain
+/// (Mixed) di pratinjau dan Feed dibagi dua kolom rata (⌈n/2⌉ di kiri, urut ke bawah, baris kiri-kanan
+/// sejajar); pasangan dan Story selalu satu kolom. Semua warna diturunkan dari tinta [theme].
 class SharePoster extends StatelessWidget {
   final SharePosterData data;
   final ShareTheme theme;
@@ -87,8 +88,22 @@ class SharePoster extends StatelessWidget {
   const SharePoster({super.key, required this.data, required this.theme, required this.target});
 
   bool get _story => target == SharePosterTarget.story;
-  bool get _twoColumns => !_story && data.rows.length > 10;
-  bool get _stackPairs => _story && data.rows.any((r) => r.names.length > 1);
+  bool get _pairRows => data.rows.any((r) => r.names.length > 1);
+
+  /// Pasangan (Fixed) tidak pernah dua kolom: nama kedua anggota butuh lebar penuh, di kolom sempit yang kedua
+  /// terpotong habis.
+  bool get _twoColumns => !_story && data.rows.length > 10 && !_pairRows;
+  bool get _stackPairs => _story && _pairRows;
+
+  /// Lengkap yang lebih padat dari frame terpadat yang disetujui (Story 20 baris nama, 11f/11g; satu kolom 10
+  /// baris, 11b/11g; dua kolom 15 baris per kolom, 11l) mengecilkan semua huruf baris sebanding: 30 baris nama
+  /// di Story → 20/30. Dua kolom lewat 15 baris hanya kalau pemain yang keluar ikut di klasemen (30 aktif + keluar).
+  double get _density {
+    if (!data.complete) return 1;
+    if (_twoColumns) return min(1, 15 / ((data.rows.length + 1) ~/ 2));
+    final lines = data.rows.length * (_stackPairs ? 2 : 1);
+    return min(1, (_story ? 20 : 10) / lines);
+  }
 
   /// Tinggi baris teks poster, sama di kartu pratinjau dan gambar. Gambar dulu mewarisi 1,55 dari dokumen
   /// hi-fi dan kaki Feed Ringkas meluber dari padding; disamakan atas keputusan host 2026-10-22.
@@ -99,6 +114,12 @@ class SharePoster extends StatelessWidget {
       : (target == SharePosterTarget.preview ? _RowMode.natural : _RowMode.atLeastContent);
 
   _RowSizes get _rowSizes {
+    final (:text, :rank, :value, :rankWidth) = _presetSizes;
+    final d = _density;
+    return (text: text * d, rank: rank * d, value: value * d, rankWidth: rankWidth * d);
+  }
+
+  _RowSizes get _presetSizes {
     switch (target) {
       case SharePosterTarget.preview:
         if (!data.complete) return (text: 14, rank: 18, value: 18, rankWidth: 32);
@@ -242,9 +263,13 @@ class SharePoster extends StatelessWidget {
     final more = target == SharePosterTarget.preview ? null : data.more;
     final Widget body = switch (target) {
       SharePosterTarget.preview => Text(data.summary, style: foot, maxLines: 1, overflow: TextOverflow.ellipsis),
+      // `justify-content: space-between`: tanpa "+n lainnya" (Lengkap) ringkasannya rata kiri.
       SharePosterTarget.feed => Row(
         crossAxisAlignment: CrossAxisAlignment.end,
-        children: [if (more != null) Text(more, style: foot), const Spacer(), Text(data.summary, style: foot)],
+        children: [
+          if (more != null) ...[Text(more, style: foot), const Spacer()],
+          Text(data.summary, style: foot),
+        ],
       ),
       SharePosterTarget.story => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,7 +384,7 @@ class SharePoster extends StatelessWidget {
                   opacity: 0.7,
                   child: Text(
                     row.detail!,
-                    style: base.copyWith(fontSize: 11, fontWeight: FontWeight.w600, height: lineHeight),
+                    style: base.copyWith(fontSize: 11 * _density, fontWeight: FontWeight.w600, height: lineHeight),
                   ),
                 ),
               ),

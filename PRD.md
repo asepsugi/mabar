@@ -1,8 +1,8 @@
 # PRD — Aplikasi Mabar Tennis/Padel (Klub/Komunitas)
 
-**Versi dokumen:** 2.3 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21; Kelola court 2026-10-22; nama turnamen 2026-10-23) dan app **2.3.0**
+**Versi dokumen:** 2.4 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21; Kelola court 2026-10-22; nama turnamen dan batas 30 pemain 2026-10-23) dan app **2.4.0**
 **Platform:** Android + iOS + Web/PWA (1 codebase — Flutter)
-**Target user:** Host mabar klub/komunitas tennis & padel, 4–20 pemain per turnamen, 1 HP host, offline
+**Target user:** Host mabar klub/komunitas tennis & padel, 4–30 pemain per turnamen, 1 HP host, offline
 
 Acuan visual dan perilaku per layar ada di hi-fi (frame 01a–11j + catatan perilaku) dan `design/spec/`. PRD ini
 memuat aturan produk dan logika; kalau ada beda dengan hi-fi soal tampilan, hi-fi yang benar. Aturan logika rinci +
@@ -74,7 +74,7 @@ Aplikasi untuk host turnamen mabar yang:
 - **Batalkan Rn**: round terakhir yang belum ada skor sama sekali boleh dihapus (bukan R1), mis. karena ada pemain
   datang terlambat; host menambah pemain lalu Buat Rn lagi.
 - **Kelola pemain** di tengah turnamen: tambah, keluarkan (pemain tidak dihapus; nama & statistik tetap), kembalikan.
-  Aktif minimal 4, maksimal 20.
+  Aktif minimal 4, maksimal 30.
 - **Kelola court** (menu ⋯, selama belum diakhiri): tambah court, ubah nama/warna/jam lewat detail court (tombol
   Simpan), hapus court bernomor terakhir yang belum punya skor. Court yang ditambah atau dipesan ulang saat round
   berjalan langsung dipakai untuk 4 pemain prioritas teratas (keputusan host 2026-10-22). Aturan: `logic.md` §10.
@@ -228,7 +228,7 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 - Satu kotak teks (tempel dari WhatsApp); parser membuang nomor/bullet, spasi ganda, baris kosong, dan duplikat
   (tidak peka huruf besar, yang pertama dipertahankan).
 - Toolbar: Tempel, Contoh (hanya saat kosong), Hapus semua. Hasil = daftar bernomor dua kolom.
-- Lanjut aktif untuk 4–20 pemain.
+- Lanjut aktif untuk 4–30 pemain (Fixed dan Mixed).
 
 ### 5.3 Konfigurasi (03a–03e)
 - Nama turnamen opsional paling atas (maks 40 karakter, dipangkas; kosong = tanpa nama). Hanya diisi di sini, tidak
@@ -264,9 +264,10 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 - Satu baris statistik (label mengikuti format skor: Poin/Game), beda partner/lawan, kalah WO, riwayat match terbaru
   di atas (Mixed menampilkan partner; menang WO menulis "+N").
 
-### 5.9 Bagikan (11a–11j)
-- Kartu pratinjau + 10 tema (default biru) + Ringkas (5 teratas + "+n lainnya") / Lengkap (semua; Feed > 10 baris
-  dibagi dua kolom rata). Nomor "#n"; peringkat 1 lencana emas, digantung ke kiri supaya "#1" sejajar dengan nomor di bawahnya.
+### 5.9 Bagikan (11a–11l)
+- Kartu pratinjau + 10 tema (default biru) + Ringkas (5 teratas + "+n lainnya") / Lengkap (semua; Feed > 10 pemain
+  Mixed dibagi dua kolom rata, pasangan Fixed dan Story selalu satu kolom; lebih padat dari 10 baris satu kolom atau
+  20 baris nama di Story → semua huruf baris dikecilkan sebanding). Nomor "#n"; peringkat 1 lencana emas, digantung ke kiri supaya "#1" sejajar dengan nomor di bawahnya.
 - Dua gambar 1080×1080 dan 1080×1920 dibagikan lewat share sheet sistem dengan caption teks hasil; gagal → caption
   disalin + toast "Hasil disalin".
 - Turnamen bernama: nama menggantikan baris kecil "olahraga · mode · tanggal" di atas judul poster (maks dua baris) dan
@@ -298,7 +299,7 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 | Input Skor + sheet Walkover | 07a–07l |
 | Klasemen | 09a–09f |
 | Detail Pemain | 10a–10c |
-| Bagikan | 11a–11j |
+| Bagikan | 11a–11l |
 
 State teks sederhana tanpa frame: "Halaman tidak ditemukan", "Belum ada turnamen berjalan", "Match tidak ditemukan",
 "Pemain tidak ditemukan", spinner saat Jadwal membuat round pertama.
@@ -323,8 +324,10 @@ State teks sederhana tanpa frame: "Halaman tidak ditemukan", "Belum ada turnamen
 
 ## 8. Skala & Batasan
 
-- 4–20 pemain (aktif, untuk Mixed). Court 1–10. Booking per court dalam jam.
-- Fixed: 10 pasangan → 45 match; dengan 1 court sampai 45 round. Mixed bisa lebih dari 20 round.
+- 4–30 pemain (aktif, untuk Mixed), sama untuk Fixed dan Mixed. Court 1–10. Booking per court dalam jam.
+- Fixed: 15 pasangan → 105 match; dengan 1 court sampai 105 round. Mixed bisa lebih dari 20 round.
+- Makin banyak pemain dengan court yang sama, makin sedikit match per orang (Mixed) atau makin panjang round-robin
+  (Fixed); turnamen besar biasanya diakhiri lewat "Akhiri" sebelum semua match Fixed dimainkan.
 
 | Pemain | Fixed (pasangan) RR | Mixed 7 round (2 court) |
 |--------|--------------------|--------------------------|
@@ -332,6 +335,8 @@ State teks sederhana tanpa frame: "Halaman tidak ditemukan", "Belum ada turnamen
 | 12 | 15 match | 14 match |
 | 16 | 28 match | 14 match |
 | 20 | 45 match | 14 match |
+| 26 | 78 match | 14 match |
+| 30 | 105 match | 14 match |
 
 ---
 
@@ -359,6 +364,9 @@ State teks sederhana tanpa frame: "Halaman tidak ditemukan", "Belum ada turnamen
 9. Nama turnamen (usulan pemain): opsional, maks 40 karakter supaya gabungan klub ("PB Garuda x Matcha Club") muat,
    hanya diisi di Konfigurasi; tampil di Beranda, poster, dan caption. Di poster jadi baris kecil, bukan judul besar
    (2026-10-23).
+10. Batas pemain 30 (dulu 20), sama untuk Fixed dan Mixed, karena kebutuhan nyata klub 24–26 orang. Poster Lengkap
+    menyesuaikan: pasangan selalu satu kolom, dan di atas kepadatan frame yang sudah disetujui huruf baris dikecilkan
+    sebanding (2026-10-23).
 
 ---
 

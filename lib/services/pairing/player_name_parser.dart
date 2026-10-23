@@ -1,3 +1,5 @@
+import '../../models/models.dart';
+
 /// Parser input textarea nama peserta.
 /// Membersihkan nomor urut (1., 2), 03 -), bullet (-, *, •), whitespace,
 /// skip baris kosong, tolak duplikat (case-insensitive).
@@ -50,10 +52,11 @@ class ParseResult {
 
   int get count => names.length;
   bool get isEmpty => names.isEmpty;
-  bool get isValid => names.length >= 4 && names.length <= 20;
+  bool get isValid => count >= TournamentConfig.minPlayers && count <= TournamentConfig.maxPlayers;
   String? get validationError {
-    if (names.length < 4) return 'Minimal 4 pemain (sekarang: ${names.length})';
-    if (names.length > 20) return 'Maksimal 20 pemain (sekarang: ${names.length})';
+    const fewest = TournamentConfig.minPlayers, most = TournamentConfig.maxPlayers;
+    if (count < fewest) return 'Minimal $fewest pemain (sekarang: $count)';
+    if (count > most) return 'Maksimal $most pemain (sekarang: $count)';
     return null;
   }
 }

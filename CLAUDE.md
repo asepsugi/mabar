@@ -1,12 +1,12 @@
 # Mabar — konteks proyek
 
-App Flutter untuk host turnamen mabar tennis/padel (klub, 4–20 pemain, 1 device host, offline).
+App Flutter untuk host turnamen mabar tennis/padel (klub, 4–30 pemain, 1 device host, offline).
 
 **Sumber kebenaran, baca sebelum mengubah UI/logika:**
 - `PRD.md` — produk, algoritma, aturan skor & ranking, **versi 2.1 sejalan dengan hi-fi v2** (diselaraskan 2026-10-22).
   Kalau keputusan host mengubah perilaku, perbarui PRD + hi-fi (`design/hifi.html` dan artifact online
   `H9ZVDUfYvEBXsoBqih4iov`, publish file yang sama) dalam perubahan yang sama.
-- `design/hifi.html` — **hi-fi v2 final** (disetujui host 2026-10-21): Fondasi, Komponen, 73 frame 390×844 +
+- `design/hifi.html` — **hi-fi v2 final** (disetujui host 2026-10-21): Fondasi, Komponen, 88 frame (layar 390×844 + lembar gambar) +
   catatan perilaku, Cakupan. Acuan visual dan perilaku untuk semua pekerjaan UI berikutnya.
 - `design/spec/` — paket implementasi v2. **Mulai dari `design/spec/README.md`** (urutan kerja, aturan golden), lalu
   `tokens.json`, `components.md`, `logic.md` (aturan logika yang berubah + data test), `screens/*.md` (per alur).
@@ -82,8 +82,8 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   "Final · 4 round · 7 match"); golden memakai data `ranking_v2_test.dart` (fixture di `test/hifi/screens/ranking_fixture.dart`), Fixed 09c
   dengan jadwal yang cocok 10b. Detail: riwayat terbaru di atas, baris atas = tim sendiri (Mixed: nama sendiri
   dulu), menang WO "+n" pudar = `woPoints` ÷ jumlah menang WO. `MatchScoreRow` mematok tinggi baris tim 22,4 supaya
-  riwayat (tanpa tinggi minimal) tidak bergeser 0,8 pt per baris. Fixture 06o memakai id turnamen `t-06o-25` karena undian
-  prioritas berseed id turnamen.
+  riwayat (tanpa tinggi minimal) tidak bergeser 0,8 pt per baris. Fixture 06o (30 pemain, R1–R3 hasil generator) memakai id
+  turnamen `t-06o-30` karena undian prioritas berseed id turnamen; `fixtureNames` berisi 30 nama berawalan unik.
   Dialog konfirmasi dipusatkan di layar penuh (`useSafeArea: false`, sesuai `.dialog { top: 50% }`).
 - **Painter lapangan selesai** (langkah 4): `core/widgets/court_painter.dart` — `CourtPainter(t, toward, layout)`, satu
   gambar sudut lapangan untuk banner Beranda **dan** ikon app (jangan bikin gambar lapangan kedua). `t` = posisi garis
@@ -124,7 +124,8 @@ logika/desain atau data lama tidak kompatibel (`schemaVersion` naik → selalu M
 kompatibel; PATCH = perbaikan bug/teks/visual kecil tanpa mengubah perilaku yang disepakati. Versi + `appVersion`
 dinaikkan di commit yang membawa perubahan ke `main` (tiap push = deploy web), kategori tertinggi yang menang, `BUILD`
 naik tiap rilis. Sebut kategorinya di pesan commit/PR (`[minor]`). Branch `redesain-v2-spec` = 2.0.0 (MAJOR: redesain +
-format skor + data app lama tidak dimuat); 2.2.0 (MINOR) = Kelola court; 2.3.0 (MINOR) = nama turnamen.
+format skor + data app lama tidak dimuat); 2.2.0 (MINOR) = Kelola court; 2.3.0 (MINOR) = nama turnamen;
+2.4.0 (MINOR) = batas 30 pemain.
 
 ## Arsitektur
 
@@ -165,7 +166,7 @@ Mesin domain yang sudah ada + ter-test (semua `flutter test` lulus, termasuk gol
   menerima `now` dari `clockProvider` — test wajib meng-override jam, kalau tidak hasilnya ikut tanggal mesin. Jadwal
   Mixed ditik ulang tiap menit supaya "Waktu habis" muncul sendiri. Waktu habis (tidak ada court yang muat) → slot dihitung dari semua
   court, sesuai frame 06l. Tes: `test/services/mixed_priority_test.dart`.
-- Peserta Mixed bisa berubah di tengah turnamen (sheet "Kelola Peserta", `features/schedule/mixed/manage_players_sheet.dart`; tes di `test/services/mixed_roster_test.dart`). Pemain keluar **tidak dihapus** dari `config.players`, hanya masuk `ActiveTournament.withdrawnPlayerIds`, supaya nama di match lama & peringkatnya tetap ada (tampil di Peringkat/Detail/Share tanpa penanda "keluar" — keputusan host 2026-10-20); generator hanya menerima `activePlayers`. Pemain baru/kembali dapat `matchCredits` (`EndlessRoundGenerator.catchUpCredit`) = disejajarkan dengan pemain aktif yang paling sedikit main — tanpa itu dia main terus sampai menyusul. Kredit hanya untuk prioritas jadwal, tidak ikut ranking (di Total Point pemain telat memang tertinggal; ini keputusan host). Minimal 4, maksimal 20 pemain aktif.
+- Peserta Mixed bisa berubah di tengah turnamen (sheet "Kelola Peserta", `features/schedule/mixed/manage_players_sheet.dart`; tes di `test/services/mixed_roster_test.dart`). Pemain keluar **tidak dihapus** dari `config.players`, hanya masuk `ActiveTournament.withdrawnPlayerIds`, supaya nama di match lama & peringkatnya tetap ada (tampil di Peringkat/Detail/Share tanpa penanda "keluar" — keputusan host 2026-10-20); generator hanya menerima `activePlayers`. Pemain baru/kembali dapat `matchCredits` (`EndlessRoundGenerator.catchUpCredit`) = disejajarkan dengan pemain aktif yang paling sedikit main — tanpa itu dia main terus sampai menyusul. Kredit hanya untuk prioritas jadwal, tidak ikut ranking (di Total Point pemain telat memang tertinggal; ini keputusan host). Minimal 4, maksimal 30 pemain aktif (`TournamentConfig.minPlayers`/`maxPlayers`, satu batas untuk layar Pemain, parser, dan Kelola pemain, Fixed maupun Mixed — keputusan host 2026-10-23, kebutuhan klub 24–26 orang).
 - Mixed: round terakhir yang belum ada satu skor pun bisa **dibatalkan = dihapus** ("Batalkan Rn",
   `TournamentController.cancelLastRound`, syaratnya `ActiveTournament.canCancelLastRound`; tombol di bawah "Buat R…"),
   untuk pemain yang baru datang: host tambah pemain lewat Peserta lalu "Buat Rn" lagi. Tidak dibuat ulang otomatis —
@@ -217,7 +218,10 @@ dengan `Share.shareXFiles` lewat share sheet sistem, teks hasil (`ResultTextBuil
 caption disalin + toast "Hasil disalin" (selalu 19 pt di atas action bar: `showMabarToast(bottom:)` diisi tinggi
 action bar dua tombol). Isi poster dari `sharePosterData()` (`share_content.dart`): Ringkas = 5
 teratas + "+n pemain/pasangan lainnya", Lengkap = semua yang bernomor; Fixed menulis nilai + satuan saja, Mixed
-"42 poin · 100%" / "100% · +12". `ShareTheme` punya 10 gradien (6 gelap bertinta putih + 4 lembut bertinta gelap);
+"42 poin · 100%" / "100% · +12". Lengkap: Mixed > 10 baris di pratinjau/Feed jadi dua kolom, pasangan dan Story selalu
+satu kolom; lebih padat dari frame terpadat yang disetujui (10 baris satu kolom, 15 per kolom, 20 baris nama di Story) semua huruf
+baris dikecilkan sebanding (`SharePoster._density`, frame 11k/11l). Golden Feed/Story 11l bertoleransi 3%: kepala & kaki
+poster kena pembulatan tinggi baris (±0,7 pt ruang daftar), menumpuk di 15 baris rapat. `ShareTheme` punya 10 gradien (6 gelap bertinta putih + 4 lembut bertinta gelap);
 semua warna poster diturunkan dari `theme.ink` — jangan menaruh `Colors.white` langsung. Tema & format tidak disimpan.
 
 Cara melihat hasil poster tanpa build web: test sekali pakai yang me-render `SharePoster` di `RepaintBoundary` lalu `toImage(pixelRatio: 3)` di dalam `tester.runAsync`, dan simpan PNG-nya. Wajib `loadHifiFonts()` (`test/hifi/hifi_golden.dart`, memuat Archivo + font ikon `PhosphorBold`) dan tema `MabarTheme.light()` — tanpa itu `flutter test` memakai font Ahem dan proporsinya menyesatkan. `Image.asset` memang tidak ikut ter-render di test.

@@ -11,7 +11,8 @@ import 'screen_harness.dart';
 void main() {
   const names = [
     'Andi P', 'Budi S', 'Citra L', 'Dewant R', 'Eko M', 'Fajar K', 'Gina R', 'Hana T', 'Indra W', 'Joko S', 'Kiki A', //
-    'Lina M', 'Maya P', 'Nanda R', 'Oki S', 'Putri A', 'Rizky H', 'Sari D', 'Tono B', 'Umar F', 'Vina K',
+    'Lina M', 'Maya P', 'Nanda R', 'Oki S', 'Putri A', 'Rizky H', 'Sari D', 'Tono B', 'Umar F', 'Vina K', //
+    'Wulan S', 'Yoga P', 'Zaki M', 'Bayu S', 'Dimas A', 'Galih P', 'Rina K', 'Tari W', 'Hendra G', 'Iwan K',
   ];
   String numbered(List<String> list) => [for (var i = 0; i < list.length; i++) '${i + 1}. ${list[i]}'].join('\n');
 
@@ -49,14 +50,15 @@ void main() {
     );
   });
 
-  testWidgets('02d lebih dari 20, halaman digulir', (tester) async {
+  testWidgets('02d lebih dari 30, halaman digulir sampai bawah', (tester) async {
     await expectMatchesHifi(
       tester,
       screen(SportType.tennis),
       '02d',
       act: (tester) async {
         await fill(tester, numbered(names));
-        tester.state<ScrollableState>(find.descendant(of: find.byType(SingleChildScrollView), matching: find.byType(Scrollable)).first).position.jumpTo(120);
+        final page = tester.state<ScrollableState>(find.descendant(of: find.byType(SingleChildScrollView), matching: find.byType(Scrollable)).first);
+        page.position.jumpTo(page.position.maxScrollExtent);
       },
     );
   });

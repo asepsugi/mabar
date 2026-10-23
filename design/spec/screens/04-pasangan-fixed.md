@@ -43,11 +43,11 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `M
 - Menggantikan kotak merah permanen "Pasangan tidak bisa diubah setelah jadwal dibuat". Memakai `showMabarConfirm` varian lanjut.
 - Konfirmasi → Jadwal Fixed (round-robin penuh dibuat sekaligus).
 
-## 04e · Manual · 20 pemain (terpadat)
+## 04e · Manual · 30 pemain (terpadat)
 
 ![04e](../../frames/04e.png)
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `MabarSegmented`, `PairList`, `MabarChip`
 
-- Kondisi terpadat Manual: 20 pemain, setengah jalan (5 pasangan + 10 chip). Tetap muat satu layar tanpa scroll karena baris pasangan 40 pt (sama dengan daftar di layar Pemain, tidak bisa diketuk) dan chip 44 pt; di titik lain jumlah baris + chip selalu lebih sedikit.
+- Kondisi terpadat Manual: 30 pemain, setengah jalan (7 pasangan + 16 chip). Daftarnya lebih panjang dari layar, jadi halaman di-scroll seperti layar Pemain; app bar dan action bar tetap. Baris pasangan 40 pt (sama dengan daftar di layar Pemain, tidak bisa diketuk) dan chip 44 pt.
 - Nama panjang dipotong elipsis di kolomnya, sama seperti daftar di layar Pemain.
