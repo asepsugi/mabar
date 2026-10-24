@@ -75,7 +75,7 @@ void main() {
       act: (tester) async {
         await tester.tap(find.text('WO'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('Eko · Budi'));
+        await tester.tap(find.text('Eko M · Budi S'));
         await tester.pump();
         await tester.tap(find.text('Absen'));
       },
@@ -121,7 +121,7 @@ void main() {
     await pumpRouted(tester, round2(), 'r2c1');
     expect(find.text('Perbarui skor'), findsOneWidget);
     await type(tester, [5]);
-    expect(find.text('Andi & Budi menang 6–4'), findsOneWidget, reason: 'belum ada kotak aktif');
+    expect(find.text('Andi P & Budi S menang 6–4'), findsOneWidget, reason: 'belum ada kotak aktif');
     await tester.tap(find.descendant(of: find.byType(ScoreBoard), matching: find.text('4')));
     await tester.pump();
     await type(tester, [6]);
@@ -129,7 +129,7 @@ void main() {
     await tester.tap(find.descendant(of: find.byType(ScoreBoard), matching: find.text('6')).first);
     await tester.pump();
     await type(tester, [3]);
-    expect(find.text('Citra & Dewant menang 6–3'), findsOneWidget);
+    expect(find.text('Citra L & Dewant R menang 6–3'), findsOneWidget);
   });
 
   testWidgets('Americano: mengetik di sisi lawan menimpa nilai otomatis', (tester) async {
@@ -139,7 +139,7 @@ void main() {
     await tester.pump();
     await type(tester, [9]);
     // Mengetik di sisi lawan menimpa nilai otomatis dan mengisi ulang sisi pertama (21 − 9 = 12).
-    expect(find.text('Andi & Dewant menang +3'), findsOneWidget);
+    expect(find.text('Andi P & Dewant R menang +3'), findsOneWidget);
   });
 
   testWidgets('WO: Simpan WO mati sampai dipilih; menyimpan → Jadwal; membuka lagi terisi', (tester) async {
@@ -148,9 +148,9 @@ void main() {
     await tester.pumpAndSettle();
     MabarButton woButton() => tester.widget<MabarButton>(find.widgetWithText(MabarButton, 'Simpan WO'));
     expect(woButton().onPressed, isNull);
-    await tester.tap(find.text('Hana · Gina'));
+    await tester.tap(find.text('Hana T · Gina R'));
     await tester.pump();
-    expect(find.text('Eko & Budi menang WO dan dapat poin rata-rata mereka, minimal 11.'), findsOneWidget);
+    expect(find.text('Eko M & Budi S menang WO dan dapat poin rata-rata mereka, minimal 11.'), findsOneWidget);
     await tester.tap(find.text('Cedera'));
     await tester.pump();
     await tester.tap(find.text('Cedera'));

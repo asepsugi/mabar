@@ -70,8 +70,8 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
     if (active == null || match == null) return const Scaffold(backgroundColor: MabarColors.paper);
 
     final entry = _entry ??= _initial(active, match);
-    String names(Pair pair) => pair.playerIds.map((id) => active.playerName(id).split(' ').first).join('\n');
-    String team(Pair pair) => names(pair).replaceAll('\n', ' & ');
+    List<String> names(Pair pair) => pair.playerIds.map(active.playerName).toList();
+    String team(Pair pair) => names(pair).join(' & ');
     final score = entry.score;
     final verdict = entry.verdict;
     final feedback = switch (verdict) {

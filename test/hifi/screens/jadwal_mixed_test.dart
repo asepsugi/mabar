@@ -10,7 +10,7 @@ import '../hifi_golden.dart';
 import 'schedule_fixture.dart';
 import 'screen_harness.dart';
 
-/// Golden layar penuh Jadwal Mixed, frame 06f–06o. Padel Americano 21, 2 court, durasi 15 menit; 10 pemain
+/// Golden layar penuh Jadwal Mixed, frame 06f–06o dan 06u. Padel Americano 21, 2 court, durasi 15 menit; 10 pemain
 /// (06o: 30). Fixture bersama di `schedule_fixture.dart`.
 void main() {
   final start = fixtureStart;
@@ -30,6 +30,24 @@ void main() {
       clockProvider.overrideWithValue(() => start.add(elapsed)),
     ],
   );
+
+  testWidgets('06u nama lengkap panjang, nama depan sama', (tester) async {
+    const roster = [
+      'Muhammad Rizky Pratama', 'Lia Ibun', 'Muhammad Fajar Nugraha', 'Lia Ncii', 'Putri Ayu', 'Andi P', //
+      'Putri Anggraini Kusuma', 'Muhammad Iqbal Ramadhan', 'Citra L', 'Dewant R',
+    ];
+    final u = tournament([
+      [
+        ('Muhammad Rizky Pratama', 'Lia Ibun', 'Muhammad Fajar Nugraha', 'Lia Ncii', null, null),
+        ('Putri Ayu', 'Andi P', 'Putri Anggraini Kusuma', 'Muhammad Iqbal Ramadhan', 13, 8),
+      ],
+    ], roster: roster);
+    await expectMatchesHifi(tester, screen(u, const Duration(minutes: 15)), '06u');
+    // Nama pendek tetap utuh di samping partner bernama panjang; yang panjang dipotong sendiri.
+    expect(find.text('Lia Ibun'), findsOneWidget);
+    expect(find.text('Lia Ncii'), findsOneWidget);
+    expect(find.text('Putri Ayu · Andi P'), findsOneWidget);
+  });
 
   testWidgets('06f round berjalan', (tester) async {
     await expectMatchesHifi(tester, screen(f, const Duration(minutes: 40)), '06f');

@@ -33,6 +33,7 @@ Komponen: `MabarButton`, `MabarGroup / MabarRow`, `CourtBanner (CourtPainter)`, 
 
 - App sudah terpasang (atau native), ada turnamen terakhir Mixed. Hanya baris riwayat.
 - Turnamen terakhir Fixed tidak tampil karena tidak bisa dilanjutkan.
+- Turnamen yang sudah diakhiri (menu ⋯ → Akhiri) juga tampil di sini meski belum lewat "Selesai" di Bagikan: bukan lagi turnamen berjalan (01e). "Mulai turnamen…" memindahkannya ke turnamen terakhir tanpa dialog 01h, sama dengan Selesai.
 - Gimmick: banner padel menggambar dinding kaca belakang dan samping (tiang tiap panel 2 m), kaca samping menurun bertingkat, jaring titik-titik setelah 4 m, service line 3,05 m dari dinding yang membentang penuh, dan center line yang menonjol 20 cm. Tidak ada alley dan baseline bercat.
 - Permukaan padel terracotta `#BC5A33`: pasangan komplementer dengan run-off biru tua, beda kecerahannya cukup jauh sehingga tepinya tidak bergetar. Tennis tetap biru karena bola paling kontras di biru dan biru court adalah warna ikon app.
 

@@ -57,6 +57,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
       if (!replace) return;
     }
+    // Turnamen yang sudah diakhiri tidak dibuang: pindah ke turnamen terakhir, sama dengan "Selesai" di Bagikan.
+    final controller = ref.read(tournamentProvider.notifier);
+    if (ref.read(tournamentProvider)?.tournament.isFinished ?? false) await controller.close();
     if (mounted) context.push('/setup-peserta', extra: sport);
   }
 
@@ -68,10 +71,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Turnamen yang belum ditutup, dibaca dari device saat app dibuka.
-    final active = ref.watch(tournamentProvider);
-    // Turnamen yang sudah ditutup; hanya Mixed yang bisa dilanjutkan, dan tidak tampil bersama slot aktif.
-    final last = ref.watch(lastFinishedProvider);
+    // Turnamen yang belum ditutup, dibaca dari device saat app dibuka. Yang sudah diakhiri bukan turnamen berjalan
+    // lagi: tampil sebagai turnamen terakhir, seperti sesudah "Selesai" di Bagikan.
+    final stored = ref.watch(tournamentProvider);
+    final ended = stored?.tournament.isFinished ?? false;
+    final active = ended ? null : stored;
+    // Turnamen terakhir; hanya Mixed yang bisa dilanjutkan, dan tidak tampil bersama turnamen berjalan.
+    final last = ended ? stored : ref.watch(lastFinishedProvider);
     final sport = _sport(active, last);
     final installMode = ref.watch(appInstallModeProvider);
 

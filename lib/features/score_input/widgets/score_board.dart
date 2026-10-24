@@ -4,7 +4,7 @@ import '../../../core/theme/mabar_icons.dart';
 import '../../../core/theme/mabar_theme.dart';
 import '../../../services/scoring/score_entry.dart';
 
-/// `.board` — papan skor gelap: satu baris per tim, nama dua baris di kiri, satu angka besar di kanan.
+/// `.board` — papan skor gelap: satu baris per tim, nama pemain satu per baris di kiri, satu angka besar di kanan.
 /// Kotak aktif berwarna bola dengan garis bawah, angka yang terisi otomatis pudar, kotak kosong "–"
 /// (kotak aktif yang kosong dibiarkan kosong). Pemenang ditandai bola di kolom tetap kiri nama — kolom
 /// itu ada di kedua tim supaya nama selalu rata — dan nama tim yang kalah dipudarkan. Ketuk kotak =
@@ -12,8 +12,8 @@ import '../../../services/scoring/score_entry.dart';
 class ScoreBoard extends StatelessWidget {
   final ScoreEntry entry;
 
-  /// Nama per tim, satu pemain per baris ("Eko\nFajar").
-  final (String, String) names;
+  /// Nama lengkap per tim, satu pemain per baris; yang tidak muat dipotong elipsis di barisnya sendiri.
+  final (List<String>, List<String>) names;
   final ValueChanged<int> onSelect;
 
   const ScoreBoard({super.key, required this.entry, required this.names, required this.onSelect});
@@ -40,7 +40,7 @@ class ScoreBoard extends StatelessWidget {
     );
   }
 
-  Widget _row(int side, String name, int? winner) {
+  Widget _row(int side, List<String> names, int? winner) {
     final win = winner == side, lose = winner != null && !win;
     final value = entry.valueOf(side);
     final active = entry.active == side;
@@ -62,16 +62,22 @@ class ScoreBoard extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: MabarType.body.copyWith(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                height: 1.25,
-                color: lose ? const Color(0x80FFFFFF) : Colors.white,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final name in names)
+                  Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: MabarType.body.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      height: 1.25,
+                      color: lose ? const Color(0x80FFFFFF) : Colors.white,
+                    ),
+                  ),
+              ],
             ),
           ),
           const SizedBox(width: 6),

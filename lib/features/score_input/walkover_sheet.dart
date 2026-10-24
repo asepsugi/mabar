@@ -44,7 +44,7 @@ class _WalkoverState extends State<_Walkover> {
   late WoReason? _reason = widget.match.woReason;
 
   String _names(Pair pair, String separator) =>
-      pair.playerIds.map((id) => widget.active.playerName(id).split(' ').first).join(separator);
+      pair.playerIds.map(widget.active.playerName).join(separator);
 
   /// Nilai menang WO ikut format (PRD 4.4): Race to N → N game; Best of / Americano → rata-rata sendiri,
   /// minimal skor menang terkecil.

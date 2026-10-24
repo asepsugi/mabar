@@ -175,7 +175,7 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
                 ),
                 if (byePair != null) ...[
                   const SizedBox(height: 16),
-                  faded(0.6, RestingList(names: [pairNames(active, byePair)])),
+                  faded(0.6, RestingList(names: [pairNames(active, byePair).join(' · ')])),
                 ],
               ],
             ),

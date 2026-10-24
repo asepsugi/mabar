@@ -86,7 +86,7 @@ class ResultTextBuilder {
           orElse: () => const Player(id: '', name: '?'),
         )
         .name;
-    String pair(Pair p) => p.playerIds.map((id) => name(id).split(' ').first).join('+');
+    String pair(Pair p) => p.playerIds.map(name).join('+');
 
     final left = pair(m.pair1);
     final right = pair(m.pair2);

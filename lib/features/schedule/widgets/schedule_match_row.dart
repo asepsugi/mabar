@@ -15,11 +15,11 @@ String scheduleSubtitle(ActiveTournament active, {bool named = false}) {
   return '$lead · ${config.format.label}${active.tournament.isFinished ? ' · diakhiri' : ''}';
 }
 
-/// Nama depan pasangan dipisah titik tengah: "Andi · Budi" (baris match, Istirahat Fixed).
-String pairNames(ActiveTournament active, Pair pair) =>
-    pair.playerIds.map((id) => active.playerName(id).split(' ').first).join(' · ');
+/// Nama lengkap pasangan (baris match, Istirahat Fixed "Andi P · Budi S"). Bukan nama depan: dua pemain bernama depan
+/// sama ("Lia Ibun", "Lia Ncii") jadi tidak terbedakan (06u).
+List<String> pairNames(ActiveTournament active, Pair pair) => [for (final id in pair.playerIds) active.playerName(id)];
 
-/// Satu match di Jadwal sebagai [MatchScoreRow]: strip court bernomor (42 pt), nama depan pasangan "Andi · Budi",
+/// Satu match di Jadwal sebagai [MatchScoreRow]: strip court bernomor (42 pt), nama pasangan "Andi P · Budi S",
 /// skor / WO / Seri / "Tidak dimainkan". [onTap] null = tidak bisa diketuk (round terkunci, dibatalkan).
 /// [onFill] = tombol "Isi skor" untuk match yang belum diisi. Di round yang sedang berjalan strip-nya membawa sisa
 /// booking court itu pada [now].
@@ -46,20 +46,20 @@ class ScheduleMatchRow extends StatelessWidget {
 
     final winner = match.winnerPairId;
     MatchScoreSide side(Pair pair, int score) {
-      final name = pairNames(active, pair);
+      final names = pairNames(active, pair);
       return switch (match.status) {
         MatchStatus.done => MatchScoreSide(
-          name: name,
+          names: names,
           scores: ['$score'],
           win: winner == pair.id,
           tone: winner != null && winner != pair.id ? MatchScoreTone.lost : MatchScoreTone.normal,
         ),
         MatchStatus.wo when match.woLoserPairId == pair.id => MatchScoreSide(
-          name: name,
+          names: names,
           tag: match.woReason == null ? 'WO' : 'WO · ${match.woReason!.label}',
         ),
-        MatchStatus.wo => MatchScoreSide(name: name, win: true),
-        _ => MatchScoreSide(name: name),
+        MatchStatus.wo => MatchScoreSide(names: names, win: true),
+        _ => MatchScoreSide(names: names),
       };
     }
 

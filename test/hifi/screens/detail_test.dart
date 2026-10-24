@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mabar/core/widgets/mabar_controls.dart';
 import 'package:mabar/features/detail_player/detail_player_screen.dart';
 import 'package:mabar/features/schedule/tournament_controller.dart';
 import 'package:mabar/models/models.dart';
@@ -31,15 +32,15 @@ void main() {
 
   testWidgets('Anggota kedua pasangan membuka Detail yang sama; pemain tak dikenal → teks tengah', (tester) async {
     await tester.pumpWidget(screen(fixedFinal(), 'p7'));
-    expect(find.text('Gina R · Hana T'), findsOneWidget);
+    expect(find.widgetWithText(MabarAppBar, 'Gina R · Hana T'), findsOneWidget);
     await tester.pumpWidget(screen(fixedFinal(), 'nobody'));
     expect(find.text('Belum ada turnamen berjalan'), findsOneWidget);
   });
 
   testWidgets('Kalah WO: tim sendiri ditandai WO, lawan menang tanpa skor', (tester) async {
     await tester.pumpWidget(screen(fixedFinal(), 'p2'));
-    expect(find.text('Citra L · Dewant R'), findsOneWidget);
+    expect(find.widgetWithText(MabarAppBar, 'Citra L · Dewant R'), findsOneWidget);
     expect(find.text('WO'), findsOneWidget);
-    expect(find.text('vs Gina · Hana'), findsOneWidget);
+    expect(find.text('vs Gina R · Hana T'), findsOneWidget);
   });
 }

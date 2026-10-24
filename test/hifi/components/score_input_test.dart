@@ -18,11 +18,11 @@ void main() {
 
   for (final (frame, entry, names) in [
     // 07b: 6 lalu 4 — kursor tetap di kotak kedua.
-    ('07b', typed(race6, [6, 4]), ('Eko\nFajar', 'Gina\nHana')),
+    ('07b', typed(race6, [6, 4]), (['Eko M', 'Fajar K'], ['Gina R', 'Hana T'])),
     // 07k: "4" penuh di Race to 6, kursor pindah ke kotak kedua yang kosong.
-    ('07k', typed(race6, [4]), ('Eko\nFajar', 'Gina\nHana')),
+    ('07k', typed(race6, [4]), (['Eko M', 'Fajar K'], ['Gina R', 'Hana T'])),
     // 07h: "2" di Americano 21, lawan terisi 19 dan menang.
-    ('07h', typed(americano21, [2]), ('Andi\nDewant', 'Citra\nFajar')),
+    ('07h', typed(americano21, [2]), (['Andi P', 'Dewant R'], ['Citra L', 'Fajar K'])),
   ]) {
     testWidgets('ScoreBoard ($frame)', (tester) async {
       final at = hifiRect(frame, 'board');

@@ -59,6 +59,11 @@ Phosphor Bold, banner Beranda berupa sudut lapangan tampak atas (padel terracott
   `/schedule`. Batas yang tidak tergambar di frame: durasi match maks 180 mnt, booking 1–12 jam per court.
   Pasangan: hasil acak bisa disuntik lewat `PairSetupScreen.random` (test memakai `Random` berskrip supaya sama
   dengan frame); "Ubah pemain" mem-pop dua layar (Pasangan + Konfigurasi) kembali ke Pemain yang masih terisi.
+  Nama pemain di baris match, Input Skor, WO, riwayat Detail, Istirahat Fixed, dan caption = nama lengkap (keputusan host
+  2026-10-25; dulu nama depan). `MatchScoreSide.names` (+ `prefix` "vs " di Detail); tidak muat → `_TeamNames` di
+  `match_score_row.dart` memotong tiap nama sendiri, nama yang muat di separuh lebar tetap utuh (`.nm.split`/`.keep`
+  di CSS, frame 06u). `pairNames` mengembalikan daftar nama. Fixture match boleh menulis nama lengkap kalau nama
+  depannya kembar (06u).
   Jadwal: `clockProvider` (`tournament_controller.dart`) = jam sekarang, dipakai hitung mundur court dan
   `createdAt`; baris match + subjudul bersama di `features/schedule/widgets/schedule_match_row.dart`
   (`ScheduleMatchRow`, `scheduleSubtitle`, `pairNames`) untuk Fixed dan Mixed. Subjudul tanpa waktu; strip court 42 pt
@@ -126,7 +131,8 @@ kompatibel; PATCH = perbaikan bug/teks/visual kecil tanpa mengubah perilaku yang
 dinaikkan di commit yang membawa perubahan ke `main` (tiap push = deploy web), kategori tertinggi yang menang, `BUILD`
 naik tiap rilis. Sebut kategorinya di pesan commit/PR (`[minor]`). Branch `redesain-v2-spec` = 2.0.0 (MAJOR: redesain +
 format skor + data app lama tidak dimuat); 2.2.0 (MINOR) = Kelola court; 2.3.0 (MINOR) = nama turnamen;
-2.4.0 (MINOR) = batas 30 pemain; 2.5.0 (MINOR) = live score.
+2.4.0 (MINOR) = batas 30 pemain; 2.5.0 (MINOR) = live score; 2.6.0 (MINOR) = nama lengkap di baris match, Akhiri di
+Beranda, back PWA.
 
 ## Arsitektur
 
@@ -299,7 +305,9 @@ Seluruh MVP PRD sudah jalan, termasuk bagian 5 (Penyimpanan Data).
   kembali `pending`. Estimasi di sheet = `ActiveTournament.capacityAhead` dalam **jumlah match** (bukan round: round jalan
   selama masih ada satu court, jadi cuma mengikuti court terpanjang dan tambahan di court lain tidak kelihatan).
 - Slot aktif cuma satu, jadi memilih jenis permainan di Home saat ada turnamen berjalan memunculkan
-  konfirmasi dulu ("Buang & Mulai Baru").
+  konfirmasi dulu ("Buang & Mulai Baru"). Turnamen di slot aktif yang sudah **diakhiri** (belum "Selesai") bukan
+  turnamen berjalan: Beranda menampilkannya sebagai turnamen terakhir (baris riwayat Mixed, 01c), dan Mulai turnamen
+  memanggil `close()` dulu tanpa dialog (keputusan host 2026-10-25).
 - Belum ikut disimpan: `rankingMethodProvider` — setelah resume, metode peringkat kembali ke
   default Total Point.
 
@@ -329,7 +337,7 @@ Orientasi dikunci portrait di dua tempat — `SystemChrome` di `lib/main.dart`
 dan `UISupportedInterfaceOrientations` di `ios/Runner/Info.plist`; kalau menambah layar landscape,
 keduanya harus diubah bareng.
 
-Kode Dart-nya bebas platform (nol `kIsWeb`/`dart:html`/`Platform.*`). Titik sentuh platform cuma tiga:
+Kode Dart-nya bebas platform (nol `kIsWeb`/`dart:html`/`Platform.*`). Titik sentuh platform cuma empat:
 
 - Share sheet di `features/share/share_result_screen.dart` — `XFile.fromData` in-memory, jadi tidak ada
   permission/Info.plist yang perlu ditambah. Konsekuensinya share **wajib diuji di HP fisik**, bukan simulator.
@@ -345,6 +353,14 @@ Kode Dart-nya bebas platform (nol `kIsWeb`/`dart:html`/`Platform.*`). Titik sent
   gagal compile di web (tidak ketahuan di `flutter test`, jadi cek dengan `tool/build_web.sh`).
 - "Buka Mabar" di halaman live yang tidak ditemukan (`features/live/open_home.dart`, conditional export yang sama):
   web memuat ulang URL tanpa `#/live/…`; stub native kosong karena halaman live hanya ada di web.
+- Back browser = back Android di PWA (`core/router/browser_back.dart`, conditional export yang sama). `appRouterConfig`
+  (`app_router.dart`) membungkus go_router supaya rute **tidak pernah dilaporkan** ke browser; `web/index.html` menjaga
+  riwayat dua entri (dasar + penjaga), menangkap `popstate` sebelum Flutter, memantul ke penjaga dengan
+  `history.forward()`, lalu `window.mabarBack` (Dart) menutup sheet/dialog/layar teratas (false di Beranda → back
+  berikutnya keluar app). Jangan kembali ke riwayat bawaan go_router: back membangun ulang tumpukan layar dari riwayat
+  dan `extra` non-JSON (config turnamen) jadi null → layar abu-abu (bug 2026-10-25). Riwayat satu entri bawaan Flutter
+  juga tidak dipakai: ia `pushState` lagi di tiap back tanpa ketukan, dan Chrome melewati entri seperti itu, jadi back
+  kedua berturut-turut menutup app. Diuji di Chrome (`navigate back` = tombol back browser), tidak ikut `flutter test`.
 
 Beranda v2 (`features/home/home_screen.dart`): `Column` = banner `Expanded` (menerus 24 pt di bawah sudut panel lewat
 `Positioned(bottom: -24)`) + `HomePanel`. Tanpa scroll: panel terpanjang (01a) ±330 pt, jadi banner tetap muat wordmark +

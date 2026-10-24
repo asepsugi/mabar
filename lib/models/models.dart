@@ -491,9 +491,6 @@ class ActiveTournament {
 
   MatchGame? matchById(String id) => matches.where((m) => m.id == id).firstOrNull;
 
-  /// "Andi + Budi" — nama depan kedua pemain di satu pair.
-  String pairLabel(Pair pair) => pair.playerIds.map((id) => playerName(id).split(' ').first).join(' + ');
-
   Pair? pairById(String id) => config.fixedPairs?.where((p) => p.id == id).firstOrNull;
 
   String playerName(String id) => config.players

@@ -60,3 +60,37 @@ final appRouter = GoRouter(
   ],
   errorBuilder: (_, state) => Scaffold(body: Center(child: Text('Halaman tidak ditemukan'))),
 );
+
+/// [appRouter] tanpa menulis riwayat browser. Back Android di PWA (= back browser) ditangani sendiri lewat
+/// `browser_back.dart`: menutup layar teratas yang masih ada di memori, seperti app native. Riwayat bawaan go_router
+/// membangun ulang tumpukan layar dari riwayat saat back, dan `extra` yang bukan JSON (config turnamen) hilang jadi
+/// null — layar Jadwal gagal dibangun dan app tinggal abu-abu.
+final appRouterConfig = RouterConfig<RouteMatchList>(
+  routeInformationProvider: _NoBrowserHistory(appRouter.routeInformationProvider),
+  routeInformationParser: appRouter.routeInformationParser,
+  routerDelegate: appRouter.routerDelegate,
+  backButtonDispatcher: appRouter.backButtonDispatcher,
+);
+
+/// Navigasi go_router apa adanya, tapi rute tidak pernah dilaporkan ke platform: di web laporan itu menambah entri
+/// riwayat browser, di native tidak dipakai.
+class _NoBrowserHistory extends RouteInformationProvider {
+  final GoRouteInformationProvider _inner;
+
+  _NoBrowserHistory(this._inner);
+
+  @override
+  RouteInformation get value => _inner.value;
+
+  @override
+  void addListener(VoidCallback listener) => _inner.addListener(listener);
+
+  @override
+  void removeListener(VoidCallback listener) => _inner.removeListener(listener);
+
+  @override
+  void routerReportsNewRouteInformation(
+    RouteInformation routeInformation, {
+    RouteInformationReportingType type = RouteInformationReportingType.none,
+  }) {}
+}

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mabar/features/home/app_install.dart';
 import 'package:mabar/features/home/home_screen.dart';
 import 'package:mabar/features/schedule/tournament_controller.dart';
@@ -154,6 +155,38 @@ void main() {
       screen(install: AppInstallMode.manual),
       act: (tester) => tester.tap(find.text('Pasang Mabar di HP')),
     );
+  });
+
+  // "Akhiri" tanpa "Selesai" di Bagikan: turnamennya masih di slot aktif, tapi bukan turnamen berjalan lagi.
+  testWidgets('01c dari slot aktif: turnamen yang sudah diakhiri tampil sebagai turnamen terakhir', (tester) async {
+    await golden(tester, '01c', screen(active: lastPadel));
+  });
+
+  testWidgets('mulai baru setelah Akhiri: tanpa dialog 01h, turnamennya pindah ke turnamen terakhir', (tester) async {
+    final store = TournamentStore.memory();
+    await store.saveActive(lastPadel);
+    final router = GoRouter(
+      routes: [
+        GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
+        GoRoute(path: '/setup-peserta', builder: (_, _) => const Text('Pemain')),
+      ],
+    );
+    await tester.pumpWidget(
+      hifiRouterScreen(
+        router,
+        overrides: [
+          tournamentStoreProvider.overrideWithValue(store),
+          appInstallModeProvider.overrideWithValue(ValueNotifier(AppInstallMode.none) as ValueListenable<AppInstallMode>),
+        ],
+      ),
+    );
+    await tester.tap(find.text('Mulai turnamen Padel'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mulai turnamen baru?'), findsNothing);
+    expect(find.text('Pemain'), findsOneWidget);
+    expect(store.loadActive(), isNull);
+    expect(store.loadLastFinished()?.tournament.id, lastPadel.tournament.id);
   });
 
   testWidgets('turnamen terakhir Fixed tidak tampil (tidak bisa dilanjutkan)', (tester) async {

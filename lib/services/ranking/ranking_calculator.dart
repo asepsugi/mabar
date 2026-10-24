@@ -251,8 +251,7 @@ class StandingEntry {
 
   const StandingEntry({required this.players, required this.standing, required this.position});
 
-  /// "Andi Pratama + Budi Santoso" — nama lengkap, bukan nama depan seperti di
-  /// kartu jadwal, karena di klasemen ruangnya cukup dan homonim harus terbaca.
+  /// "Andi Pratama + Budi Santoso" — nama lengkap, sama dengan baris match di Jadwal: homonim harus terbaca.
   String get label => players.map((p) => p.name).join(' + ');
 
   bool hasPlayer(String playerId) => players.any((p) => p.id == playerId);

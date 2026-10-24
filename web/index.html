@@ -76,6 +76,30 @@
     })();
   </script>
   <script>
+    // Back Android di PWA = back browser (lib/core/router/browser_back_web.dart). Flutter tidak menulis riwayat
+    // (appRouterConfig); di sini riwayat dijaga dua entri, dasar + penjaga. Back dari penjaga ditangkap sebelum
+    // Flutter, dipantulkan kembali ke penjaga dengan forward, lalu Dart menutup layar teratas. Bukan pushState
+    // seperti riwayat bawaan Flutter: Chrome melewati entri yang ditambah tanpa ketukan, jadi back kedua
+    // berturut-turut malah menutup app. Di Beranda (tidak ada yang ditutup) back tidak dipantulkan: back
+    // berikutnya keluar dari app, kecuali layar disentuh dulu.
+    (() => {
+      const isBase = (state) => state?.mabar === 'base';
+      history.replaceState({ mabar: 'base' }, '');
+      history.pushState({ mabar: 'guard' }, '');
+      let atBase = false;
+      addEventListener('popstate', (e) => {
+        e.stopImmediatePropagation();
+        if (!isBase(e.state)) return; // pantulan kembali ke penjaga
+        if (window.mabarBack?.()) history.forward(); else atBase = true;
+      });
+      addEventListener('pointerdown', () => {
+        if (!atBase) return;
+        atBase = false;
+        history.forward();
+      }, true);
+    })();
+  </script>
+  <script>
     // Offline: sw.js (diisi tool/build_web.sh). Gagal daftar tidak fatal, app tetap jalan online.
     // Versi baru yang sudah terunduh di sesi sebelumnya langsung dipasang saat app dibuka, lalu
     // halaman dimuat ulang sekali — PWA di Android jarang benar-benar ditutup, jadi menunggu

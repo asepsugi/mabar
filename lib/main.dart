@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/router/app_router.dart';
+import 'core/router/browser_back.dart';
 import 'core/theme/mabar_theme.dart';
 import 'features/live/live_host_controller.dart';
 import 'features/live/live_view_controller.dart';
@@ -26,6 +27,7 @@ Future<void> main() async {
   // Dibuka dari link live (`#/live/KODE`): seluruh app jadi halaman penonton. Turnamen datang dari relay dan
   // simpanan Hive penonton sendiri tidak dibuka, jadi turnamennya di HP ini tidak pernah tertimpa.
   final liveCode = LiveRelay.codeIn(Uri.base);
+  handleBrowserBack(appRouter);
   runApp(
     ProviderScope(
       overrides: liveCode == null
@@ -62,7 +64,7 @@ class MabarApp extends ConsumerWidget {
       title: 'Mabar',
       debugShowCheckedModeBanner: false,
       theme: MabarTheme.light(),
-      routerConfig: appRouter,
+      routerConfig: appRouterConfig,
       // Default untuk semua layar. Beranda memasang region putih sendiri; tanpa
       // default ini gaya putihnya terbawa ke layar berikutnya (Flutter hanya
       // mengganti gaya status bar kalau menemukan region lain).

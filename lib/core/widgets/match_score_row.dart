@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../theme/mabar_theme.dart';
@@ -13,16 +15,24 @@ enum MatchScoreTone {
   credit,
 }
 
-/// Satu tim di [MatchScoreRow]: nama ("Andi · Budi"), skor per kolom (satu angka; format lama per
-/// set), penanda menang, dan tag clay ("WO · Absen").
+/// Satu tim di [MatchScoreRow]: nama lengkap pemainnya (ditulis "Andi P · Budi S", [prefix] "vs " di riwayat
+/// Detail), skor per kolom (satu angka; format lama per set), penanda menang, dan tag clay ("WO · Absen").
 class MatchScoreSide {
-  final String name;
+  final List<String> names;
+  final String prefix;
   final List<String> scores;
   final MatchScoreTone tone;
   final bool win;
   final String? tag;
 
-  const MatchScoreSide({required this.name, this.scores = const [], this.tone = MatchScoreTone.normal, this.win = false, this.tag});
+  const MatchScoreSide({
+    required this.names,
+    this.prefix = '',
+    this.scores = const [],
+    this.tone = MatchScoreTone.normal,
+    this.win = false,
+    this.tag,
+  });
 }
 
 /// `.bug` — satu match gaya scorebug: strip court berwarna (atau label round di riwayat Detail), dua
@@ -159,7 +169,7 @@ class MatchScoreRow extends StatelessWidget {
               )
             : null,
       ),
-      Expanded(child: Text(side.name, style: name, maxLines: 1, overflow: TextOverflow.ellipsis)),
+      Expanded(child: _TeamNames(side, name)),
       if (side.scores.isNotEmpty)
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -189,7 +199,12 @@ class MatchScoreRow extends StatelessWidget {
       if (side.tag != null)
         Text(
           side.tag!,
-          style: MabarType.label.copyWith(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 12 * 0.02, color: MabarColors.clay),
+          style: MabarType.label.copyWith(
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 12 * 0.02,
+            color: MabarColors.clay,
+          ),
         ),
     ];
     return Row(
@@ -197,5 +212,73 @@ class MatchScoreRow extends StatelessWidget {
         for (var i = 0; i < items.length; i++) ...[if (i > 0) const SizedBox(width: 8), items[i]],
       ],
     );
+  }
+}
+
+/// `.nm` / `.nm.split` (06u) — nama tim lengkap, selalu satu baris. Muat → satu teks. Tidak muat → tiap nama dipotong
+/// elipsis sendiri: nama yang muat di bagian rata tetap utuh dan sisanya untuk nama yang lebih panjang, jadi "Lia Ibun"
+/// dan "Lia Ncii" tetap terbedakan meski partnernya bernama panjang. Elipsis di ujung baris saja bisa menghilangkan
+/// nama kedua seluruhnya.
+class _TeamNames extends StatelessWidget {
+  final MatchScoreSide side;
+  final TextStyle style;
+
+  const _TeamNames(this.side, this.style);
+
+  static const _separator = ' · ';
+
+  @override
+  Widget build(BuildContext context) {
+    final names = side.names;
+    final full = '${side.prefix}${names.join(_separator)}';
+    Text text(String value) => Text(value, style: style, maxLines: 1, overflow: TextOverflow.ellipsis);
+    if (names.length < 2) return text(full);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final measured = DefaultTextStyle.of(context).style.merge(style);
+        final scaler = MediaQuery.textScalerOf(context);
+        double width(String value) {
+          final painter = TextPainter(
+            text: TextSpan(text: value, style: measured),
+            textDirection: TextDirection.ltr,
+            textScaler: scaler,
+          )..layout();
+          final result = painter.width;
+          painter.dispose();
+          return result;
+        }
+
+        if (width(full) <= constraints.maxWidth) return text(full);
+        final natural = [for (final n in names) width(n)];
+        final widths = _fairWidths(
+          natural,
+          constraints.maxWidth - width(side.prefix) - (names.length - 1) * width(_separator),
+        );
+        return Row(
+          children: [
+            if (side.prefix.isNotEmpty) Text(side.prefix, style: style),
+            for (var i = 0; i < names.length; i++) ...[
+              if (i > 0) Text(_separator, style: style),
+              // Nama yang utuh tidak dibungkus lebar hasil hitungan: pembulatan bisa memunculkan elipsis.
+              if (widths[i] < natural[i]) SizedBox(width: widths[i], child: text(names[i])) else text(names[i]),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  /// Nama terpendek dulu: tiap nama dapat lebar aslinya atau bagian rata dari sisa [room], mana yang lebih kecil
+  /// (`.keep` dan `flex: 1 1 0` di CSS).
+  static List<double> _fairWidths(List<double> natural, double room) {
+    final order = [for (var i = 0; i < natural.length; i++) i]..sort((a, b) => natural[a].compareTo(natural[b]));
+    final widths = List.filled(natural.length, 0.0);
+    var left = max(0.0, room);
+    for (final (k, i) in order.indexed) {
+      widths[i] = min(natural[i], left / (order.length - k));
+      left -= widths[i];
+    }
+    return widths;
   }
 }

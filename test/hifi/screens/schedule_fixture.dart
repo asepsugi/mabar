@@ -11,10 +11,11 @@ class LoadedTournament extends TournamentController {
   ActiveTournament? build() => active;
 }
 
-/// Satu match Mixed: (atas, bawah) nama depan, skor atas–bawah; null = belum diisi.
+/// Satu match Mixed: (atas, bawah) nama depan — atau nama lengkap kalau nama depannya kembar (06u) — skor atas–bawah;
+/// null = belum diisi.
 typedef MatchSpec = (String, String, String, String, int?, int?);
 
-/// Nama pemain contoh layar Pemain, sampai batas 30; nama depannya unik karena match ditulis dengan nama depan.
+/// Nama pemain contoh layar Pemain, sampai batas 30; nama depannya unik supaya fixture match cukup menulis nama depan.
 const fixtureNames = [
   'Andi P', 'Budi S', 'Citra L', 'Dewant R', 'Eko M', 'Fajar K', 'Gina R', 'Hana T', 'Indra W', 'Joko S', 'Kiki A', //
   'Lina M', 'Maya P', 'Nanda R', 'Oki S', 'Putri A', 'Rizky H', 'Sari D', 'Tono B', 'Umar F', 'Vina K', //
@@ -49,7 +50,9 @@ ActiveTournament mixedTournament(
 }) {
   final names = roster ?? fixtureNames.take(players).toList();
   final people = [for (var i = 0; i < names.length; i++) Player(id: 'p${i.toString().padLeft(2, '0')}', name: names[i])];
-  String pid(String first) => people.firstWhere((p) => p.name.split(' ').first == first).id;
+  String pid(String name) => people
+      .firstWhere((p) => p.name == name, orElse: () => people.firstWhere((p) => p.name.split(' ').first == name))
+      .id;
   Pair pair(String a, String b) => Pair(id: '${pid(a)}+${pid(b)}', player1Id: pid(a), player2Id: pid(b));
   final matches = <MatchGame>[];
   for (final (r, round) in rounds.indexed) {

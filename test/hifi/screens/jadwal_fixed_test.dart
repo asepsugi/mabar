@@ -134,14 +134,14 @@ void main() {
     await tester.tap(find.text('R3'));
     await tester.pumpAndSettle();
     expect(find.text('Isi skor'), findsNothing);
-    await tester.tap(find.text('Andi · Budi'));
+    await tester.tap(find.text('Andi P · Budi S'));
     await tester.pumpAndSettle();
     expect(visited, isEmpty);
 
     await tester.tap(find.text('R1'));
     await tester.pumpAndSettle();
     expect(find.text('Round 1'), findsOneWidget);
-    await tester.tap(find.text('Citra · Dewant'));
+    await tester.tap(find.text('Citra L · Dewant R'));
     await tester.pumpAndSettle();
     expect(visited, ['score:r1c1']);
   });

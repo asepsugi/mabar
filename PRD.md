@@ -1,6 +1,6 @@
 # PRD — Aplikasi Mabar Tennis/Padel (Klub/Komunitas)
 
-**Versi dokumen:** 2.5 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21; Kelola court 2026-10-22; nama turnamen dan batas 30 pemain 2026-10-23; live score 2026-10-24) dan app **2.5.0**
+**Versi dokumen:** 2.6 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21; Kelola court 2026-10-22; nama turnamen dan batas 30 pemain 2026-10-23; live score 2026-10-24; nama lengkap di baris match dan Akhiri di Beranda 2026-10-25) dan app **2.6.0**
 **Platform:** Android + iOS + Web/PWA (1 codebase — Flutter)
 **Target user:** Host mabar klub/komunitas tennis & padel, 4–30 pemain per turnamen, 1 HP host, offline
 
@@ -24,7 +24,9 @@ Aplikasi untuk host turnamen mabar yang:
 
 ## 2. Teknologi
 
-- **Flutter** (Android, iOS, Web/PWA dari satu codebase), state **Riverpod**, routing **go_router**.
+- **Flutter** (Android, iOS, Web/PWA dari satu codebase), state **Riverpod**, routing **go_router**. Di web/PWA back
+  browser (= back Android) menutup layar, sheet, atau dialog teratas seperti app native; go_router tidak menulis
+  riwayat browser.
 - Penyimpanan lokal **Hive** (JSON lewat codec sendiri, tanpa TypeAdapter). Tanpa server/cloud.
 - Bagikan: `screenshot` (render poster) + `share_plus` (share sheet sistem).
 - Huruf **Archivo** variabel (sumbu `wdth` + `wght`), ikon **Phosphor Bold** (font resmi, `MabarIcons`).
@@ -220,6 +222,8 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
   pilih olahraga (diingat dari turnamen terakhir, default Tennis) + satu tombol "Mulai turnamen …".
 - Turnamen berjalan: info round + "Lanjutkan" di banner; mulai baru → dialog yang menyebut turnamen yang akan dihapus.
 - Turnamen terakhir Mixed → baris riwayat → sheet Lanjutkan turnamen. Fixed tidak tampil.
+- Turnamen yang sudah diakhiri tapi belum lewat Selesai di Bagikan juga tampil sebagai turnamen terakhir, bukan
+  turnamen berjalan; Mulai turnamen memindahkannya ke slot terakhir tanpa dialog (2026-10-25).
 - Turnamen bernama: nama menggantikan "olahraga · mode · n pemain" di banner dan baris riwayat (satu baris, elipsis)
   dan "olahraga · mode" di dialog mulai baru.
 - Web/PWA: baris "Pasang Mabar di HP" (dialog bawaan browser, atau panduan iPhone/iPad).
@@ -239,10 +243,13 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 ### 5.4 Pasangan — Fixed (04a–04e)
 - Acak / Manual (pilih, lepas pilihan, Urungkan), pemain ganjil + "Ubah pemain", dialog kunci pasangan.
 
-### 5.5 Jadwal Fixed (06a–06e) & Mixed (06f–06o)
+### 5.5 Jadwal Fixed (06a–06e) & Mixed (06f–06o, 06u)
 - Tab round yang bisa digeser (tepi dipudarkan), label kanan "x/y match" atau "Waktu habis"; ganti round hanya lewat tab.
 - Baris match bergaya scorebug dengan strip court berwarna (42 pt; di round yang sedang berjalan + kotak jam sisa
   booking court itu); ketuk → Input Skor (juga untuk mengubah).
+- Nama pemain ditulis lengkap ("Andi P · Budi S"), di baris match, Input Skor, WO, riwayat Detail, dan Istirahat Fixed,
+  supaya pemain bernama depan sama terbedakan. Tidak muat → tiap nama dipotong elipsis sendiri; nama yang muat di
+  separuh lebar tetap utuh (06u).
 - Istirahat: Fixed paling banyak satu pasangan; Mixed di round terakhir dibagi "Istirahat · Prioritas main di R(n+1)"
   dan "Istirahat lagi di R(n+1)".
 - Menu ⋯: Kelola court (Mixed), Cara kerja Mixed (sheet; muncul otomatis sekali saat R1 dibuat), dan Akhiri turnamen
@@ -251,7 +258,8 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 - Mixed: Buat R(n+1) / Batalkan Rn / Pemain (n) / Tambah jam / Lanjutkan turnamen.
 
 ### 5.6 Input Skor & Walkover (07a–07k)
-- Papan skor gelap: satu angka besar per tim, keypad sendiri, pesan validasi, "Perbarui skor" saat mengubah.
+- Papan skor gelap: nama lengkap satu pemain per baris, satu angka besar per tim, keypad sendiri, pesan validasi,
+  "Perbarui skor" saat mengubah.
 - Subjudul menulis sisa booking court itu untuk match di round yang sedang berjalan ("· sisa 02:00").
 - WO lewat sheet (4.4).
 
@@ -390,6 +398,10 @@ State teks sederhana tanpa frame: "Halaman tidak ditemukan", "Belum ada turnamen
 11. Live score tanpa database: relay kecil di Cloudflare (Worker + Durable Object, paket gratis) yang hanya memegang
     salinan turnamen terakhir per kode, terhapus 3 hari setelah perubahan terakhir. Penonton melihat Jadwal, Klasemen,
     dan Detail; Fixed dan Mixed. Preview link WhatsApp tetap generik "Mabar" (GitHub Pages statis) (2026-10-24).
+12. Nama pemain di baris match ditulis lengkap, bukan nama depan: dua pemain bernama depan sama membuat siapa yang
+    main membingungkan. Tidak muat → elipsis per nama (2026-10-25).
+13. "Akhiri" mengakhiri turnamen juga di Beranda: yang sudah diakhiri tampil sebagai turnamen terakhir, bukan
+    "Round n · Lanjutkan" (2026-10-25).
 
 ---
 

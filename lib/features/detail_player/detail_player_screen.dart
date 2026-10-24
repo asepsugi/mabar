@@ -145,32 +145,34 @@ class _HistoryRow extends StatelessWidget {
     final ownIsPair1 = match.pair1.contains(playerId);
     final own = ownIsPair1 ? match.pair1 : match.pair2;
     final other = ownIsPair1 ? match.pair2 : match.pair1;
-    String first(String id) => active.playerName(id).split(' ').first;
     final ownIds = active.config.mode == PartnerMode.fixed
         ? own.playerIds
         : [playerId, ...own.playerIds.where((id) => id != playerId)];
-    final ownName = ownIds.map(first).join(' · ');
-    final otherName = 'vs ${other.playerIds.map(first).join(' · ')}';
+    final ownNames = ownIds.map(active.playerName).toList();
+    final otherNames = other.playerIds.map(active.playerName).toList();
 
     final winner = match.winnerPairId;
     final MatchScoreSide top, bottom;
     if (match.status == MatchStatus.wo) {
       final won = winner == own.id;
       top = won
-          ? MatchScoreSide(name: ownName, scores: ['+$woPoints'], tone: MatchScoreTone.credit, win: true)
-          : MatchScoreSide(name: ownName, tag: 'WO');
-      bottom = won ? MatchScoreSide(name: otherName, tag: 'WO') : MatchScoreSide(name: otherName, win: true);
+          ? MatchScoreSide(names: ownNames, scores: ['+$woPoints'], tone: MatchScoreTone.credit, win: true)
+          : MatchScoreSide(names: ownNames, tag: 'WO');
+      bottom = won
+          ? MatchScoreSide(names: otherNames, prefix: 'vs ', tag: 'WO')
+          : MatchScoreSide(names: otherNames, prefix: 'vs ', win: true);
     } else {
       final ownScore = ownIsPair1 ? match.pair1TotalGames : match.pair2TotalGames;
       final otherScore = ownIsPair1 ? match.pair2TotalGames : match.pair1TotalGames;
-      MatchScoreSide side(String name, int score, String pairId) => MatchScoreSide(
-        name: name,
+      MatchScoreSide side(List<String> names, int score, String pairId, {String prefix = ''}) => MatchScoreSide(
+        names: names,
+        prefix: prefix,
         scores: ['$score'],
         win: winner == pairId,
         tone: winner != null && winner != pairId ? MatchScoreTone.lost : MatchScoreTone.normal,
       );
-      top = side(ownName, ownScore, own.id);
-      bottom = side(otherName, otherScore, other.id);
+      top = side(ownNames, ownScore, own.id);
+      bottom = side(otherNames, otherScore, other.id, prefix: 'vs ');
     }
     return MatchScoreRow(
       badge: 'R${match.roundNumber}',

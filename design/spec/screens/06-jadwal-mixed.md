@@ -160,3 +160,13 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`
 
 - Round yang sudah lewat hanya menulis nomor court: sisa waktu adalah keadaan sekarang, bukan milik R3. Lebar strip tetap 42 supaya pindah tab tidak menggeser nama.
+
+## 06u · Nama lengkap panjang · nama depan sama
+
+![06u](../../frames/06u.png)
+
+Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`
+
+- Nama di baris match ditulis lengkap, juga di Input Skor, sheet WO, riwayat Detail, Istirahat Fixed, dan caption: dua pemain bernama depan sama (Lia Ibun, Lia Ncii) tetap terbedakan.
+- Tim tidak muat: tiap nama dipotong elipsis sendiri. Nama yang muat di separuh lebar tetap utuh dan nama lain mengisi sisanya (Court 1); dua-duanya lebih panjang → dibagi rata (Court 2 bawah). Memotong hanya ujung baris bisa menghilangkan nama kedua seluruhnya ("Muhammad Rizky Pratama · Li…").
+- Selalu satu baris, jadi tinggi baris dan tombol Isi skor tidak bergeser.
