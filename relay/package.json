@@ -1,0 +1,13 @@
+{
+  "name": "mabar-live",
+  "private": true,
+  "description": "Relay live score Mabar (Cloudflare Worker + Durable Object)",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "smoke": "sh smoke.sh"
+  },
+  "devDependencies": {
+    "wrangler": "4.148.0"
+  }
+}

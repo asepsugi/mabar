@@ -34,7 +34,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 - Setelah "Akhiri": match kosong jadi "Tidak dimainkan" (tidak bisa diketuk), tidak ada lagi titik live, dan tombol Klasemen jadi tombol utama. Sama untuk turnamen yang semua match-nya selesai.
 - Fixed tidak bisa dilanjutkan, jadi tidak ada "Lanjutkan turnamen".
-- Ikon ⋯ tampil pudar dan tidak bisa diketuk: satu-satunya item menu Fixed ("Akhiri turnamen") sudah tidak ada (keputusan host 2026-10-22).
+- Ikon ⋯ tetap aktif: "Akhiri turnamen" hilang, "Live score" tetap ada (12f). Dulu pudar dan mati karena menunya kosong (2026-10-22); sejak live score menunya tidak pernah kosong (2026-10-24).
 
 ## 06d · Menu ⋯ · Fixed
 
@@ -42,8 +42,8 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`, `MabarMenu`
 
-- Ikon ⋯ sekarang berfungsi (dulu cuma hiasan). Di Fixed isinya satu: "Akhiri turnamen" → dialog 06e.
-- Setelah diakhiri, item ini tidak tampil lagi.
+- Ikon ⋯ sekarang berfungsi (dulu cuma hiasan). Isi menu Fixed: "Live score" → dialog 12b / sheet 12c, lalu garis dan "Akhiri turnamen" → dialog 06e.
+- Setelah diakhiri, "Akhiri turnamen" tidak tampil lagi; Live score tetap (12f).
 
 ## 06e · Dialog · akhiri turnamen
 

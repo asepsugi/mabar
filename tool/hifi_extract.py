@@ -62,6 +62,9 @@ COMPONENTS = [
     ('CourtColorPicker', ['.swatches', '.swatch', '.dot'], 'Lingkaran warna court.'),
     ('SharePoster', ['.poster', '.themes', '.theme', '.poster-pair'], 'Kartu/gambar Bagikan dan pemilih tema.'),
     ('InstallStep', ['.install-step'], 'Langkah pasang di iPhone.'),
+    ('LiveTag', ['.livetag'], 'Tag "Live" / "Offline" pengganti ⋯ di Jadwal penonton.'),
+    ('LiveScoreSheet', ['.url'], 'Link penonton di sheet Live score.'),
+    ('LiveScreen', ['.centermsg'], 'Halaman penonton: memuat / live tidak ditemukan.'),
 ]
 
 

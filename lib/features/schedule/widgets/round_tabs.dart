@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/mabar_theme.dart';
+import '../../../core/widgets/mabar_ball.dart';
 
 /// `.tabs` — tab round + label kanan. Round selesai teks biasa, round berjalan diberi titik bola
 /// ([liveRound]), round Fixed yang belum terbuka pudar ([isFuture]). Kalau tidak muat, hanya baris tab
@@ -68,12 +69,10 @@ class _RoundTabsState extends State<RoundTabs> {
     });
   }
 
-  static const _future = Color(0xFFB3BEC8);
-
   Widget _tab(int round) {
     final on = round == widget.selected;
     final future = widget.isFuture?.call(round) ?? false;
-    final color = on ? MabarColors.ink : (future ? _future : MabarColors.ink3);
+    final color = on ? MabarColors.ink : (future ? MabarColors.dim : MabarColors.ink3);
     return GestureDetector(
       key: _keys.putIfAbsent(round, GlobalKey.new),
       behavior: HitTestBehavior.opaque,
@@ -91,18 +90,7 @@ class _RoundTabsState extends State<RoundTabs> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('R$round', style: MabarType.body.copyWith(fontSize: 15, fontWeight: FontWeight.w700, color: color)),
-              if (round == widget.liveRound) ...[
-                const SizedBox(width: 6),
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: BoxDecoration(
-                    color: MabarColors.ball,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: MabarColors.ballEdge, strokeAlign: BorderSide.strokeAlignOutside),
-                  ),
-                ),
-              ],
+              if (round == widget.liveRound) ...[const SizedBox(width: 6), const LiveDot()],
             ],
           ),
         ),

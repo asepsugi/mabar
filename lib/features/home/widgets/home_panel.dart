@@ -103,21 +103,6 @@ class _SportTile extends StatelessWidget {
   }
 }
 
-/// `.rowic` — ikon 24 biru court di kotak kartu 38 pt, pembuka baris di panel Beranda.
-class HomeRowIcon extends StatelessWidget {
-  final IconData icon;
-
-  const HomeRowIcon(this.icon, {super.key});
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 38,
-    height: 38,
-    decoration: BoxDecoration(color: MabarColors.card, borderRadius: BorderRadius.circular(MabarRadius.smallButton)),
-    child: Icon(icon, size: MabarSize.icon, color: MabarColors.court),
-  );
-}
-
 /// `.install-step` — satu langkah pasang di iPhone (01i): nomor di kotak 36 pt, kalimat ([text], bagian
 /// tebal dan ikon menu Safari sebaris lewat [icon]), keterangan kecil di bawah.
 class InstallStep extends StatelessWidget {

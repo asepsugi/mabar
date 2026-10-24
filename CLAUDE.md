@@ -6,7 +6,7 @@ App Flutter untuk host turnamen mabar tennis/padel (klub, 4–30 pemain, 1 devic
 - `PRD.md` — produk, algoritma, aturan skor & ranking, **versi 2.1 sejalan dengan hi-fi v2** (diselaraskan 2026-10-22).
   Kalau keputusan host mengubah perilaku, perbarui PRD + hi-fi (`design/hifi.html` dan artifact online
   `H9ZVDUfYvEBXsoBqih4iov`, publish file yang sama) dalam perubahan yang sama.
-- `design/hifi.html` — **hi-fi v2 final** (disetujui host 2026-10-21): Fondasi, Komponen, 88 frame (layar 390×844 + lembar gambar) +
+- `design/hifi.html` — **hi-fi v2 final** (disetujui host 2026-10-21): Fondasi, Komponen, 103 frame (layar 390×844 + lembar gambar) +
   catatan perilaku, Cakupan. Acuan visual dan perilaku untuk semua pekerjaan UI berikutnya.
 - `design/spec/` — paket implementasi v2. **Mulai dari `design/spec/README.md`** (urutan kerja, aturan golden), lalu
   `tokens.json`, `components.md`, `logic.md` (aturan logika yang berubah + data test), `screens/*.md` (per alur).
@@ -126,7 +126,7 @@ kompatibel; PATCH = perbaikan bug/teks/visual kecil tanpa mengubah perilaku yang
 dinaikkan di commit yang membawa perubahan ke `main` (tiap push = deploy web), kategori tertinggi yang menang, `BUILD`
 naik tiap rilis. Sebut kategorinya di pesan commit/PR (`[minor]`). Branch `redesain-v2-spec` = 2.0.0 (MAJOR: redesain +
 format skor + data app lama tidak dimuat); 2.2.0 (MINOR) = Kelola court; 2.3.0 (MINOR) = nama turnamen;
-2.4.0 (MINOR) = batas 30 pemain.
+2.4.0 (MINOR) = batas 30 pemain; 2.5.0 (MINOR) = live score.
 
 ## Arsitektur
 
@@ -138,6 +138,7 @@ format skor + data app lama tidak dimuat); 2.2.0 (MINOR) = Kelola court; 2.3.0 (
 - `lib/core/widgets/` — komponen v2 lintas layar (lihat bagian Redesain v2 → Komponen).
 - `lib/core/widgets/court_painter.dart` + `mabar_ball.dart` — lapangan + bola brand. Dipakai banner Beranda **dan** generator icon aplikasi; jangan bikin salinan kedua.
 - `lib/features/schedule/widgets/` — komponen jadwal v2 (RoundTabs, RestingList, ScheduleMatchRow), dipakai Fixed dan Mixed.
+- `relay/` — relay live score (Cloudflare Worker + Durable Object, JavaScript), di luar app Flutter; lihat bagian Live score.
 - State turnamen: Riverpod `tournamentProvider` (`features/schedule/tournament_controller.dart`) — satu-satunya sumber kebenaran sejak layar jadwal. Sebelum itu data dioper lewat `extra` router.
 
 Konvensi: komentar seperlunya dan dalam bahasa Indonesia, menjelaskan *kenapa*. Nama komponen merujuk kelas CSS mockup (mis. `// .info` / `.share-card`) supaya mudah dicocokkan; untuk kode desain v2 pakai kelas di `design/hifi.html` (mis. `// .bug`, `.rest`) dan nama widget di `design/spec/components.md`.
@@ -229,6 +230,39 @@ semua warna poster diturunkan dari `theme.ink` — jangan menaruh `Colors.white`
 
 Cara melihat hasil poster tanpa build web: test sekali pakai yang me-render `SharePoster` di `RepaintBoundary` lalu `toImage(pixelRatio: 3)` di dalam `tester.runAsync`, dan simpan PNG-nya. Wajib `loadHifiFonts()` (`test/hifi/hifi_golden.dart`, memuat Archivo + font ikon `PhosphorBold`) dan tema `MabarTheme.light()` — tanpa itu `flutter test` memakai font Ahem dan proporsinya menyesatkan. `Image.asset` memang tidak ikut ter-render di test.
 
+## Live score (2.5.0)
+
+Keputusan host 2026-10-24 (frame 06c/06d/06i, 12a–12o; PRD §5.11; aturan rinci `design/spec/logic.md` §11). Host
+membagikan link `asepsugi.github.io/mabar/#/live/KODE`; pemain lain melihat Jadwal, Klasemen, Detail di browser, baca
+saja, Fixed dan Mixed. **Tanpa database**: `relay/src/index.js` (Cloudflare Worker + satu Durable Object per kode, paket
+gratis) hanya memegang salinan JSON `TournamentCodec` terakhir, terhapus 3 hari setelah kiriman terakhir. Deploy relay
+dari `relay/`: `npm install`, `npx wrangler login` (akun Cloudflare host), `npm run deploy`; URL-nya =
+`LiveRelay.url` (`lib/services/live/live_relay.dart`, bisa diganti `--dart-define=LIVE_RELAY=…`). Uji relay:
+`npm run dev` (port 8790; 8787 dipakai proses lain di Mac host) lalu `npm run smoke` (`relay/smoke.sh`, juga dengan
+`BASE=https://…` untuk hasil deploy). Relay tidak ikut `flutter test`/CI.
+
+- `services/live/live_relay.dart` — klien HTTP (`package:http`) + `LiveSession` (kode, token rahasia, `sentAt`). Sesi
+  disimpan di box Hive yang sama, kunci `live` (`TournamentStore.loadLive/saveLive`). Token tidak pernah ikut isi.
+- `features/live/live_host_controller.dart` — `liveHostProvider`, didengar `MabarApp` supaya hidup sepanjang app. Live
+  = sesi milik turnamen aktif; setiap perubahan `tournamentProvider` dikirim utuh, satu kiriman sekaligus (perubahan
+  selama itu dikirim sesudahnya), gagal → "Menunggu internet" + coba lagi 30 detik. "Selesai" tidak menghentikan live
+  (resume dari Beranda melanjutkan kode yang sama); turnamen dibuang ("Hapus & mulai baru") → DELETE. Relay 404/403 →
+  sesi dibuang. **Jangan** memanggil kirim manual dari mutator: sama seperti auto-save, semua lewat `state =`.
+- `features/live/live_view_controller.dart` — halaman penonton. `main()` membaca `#/live/KODE` (`LiveRelay.codeIn`);
+  kalau ada, `liveCodeProvider` di-override dan `tournamentProvider` = `LiveTournamentController` (salinan relay), Hive
+  penonton **tidak dibuka**. Layar memakai `ref.watch(liveCodeProvider) != null` sebagai tanda baca saja (Jadwal Fixed/
+  Mixed tanpa ⋯/kembali/Isi skor/Batalkan/Buat, Klasemen tanpa Bagikan); jangan pakai `liveViewProvider` untuk itu
+  karena ia berubah tiap pengecekan. Cek tiap 10 detik (1 menit setelah Final), berhenti saat halaman tidak terlihat
+  (`AppLifecycleListener`), dua gagal → "Offline", 404 → "Live tidak ditemukan".
+- `features/live/live_score.dart` — item menu, dialog mulai, `LiveScoreSheet`, `LiveTag`; `live_screen.dart` — rute
+  `/live/:code`; `open_home*.dart` — "Buka Mabar" memuat ulang web tanpa fragment (mode penonton dipasang sekali di
+  `main()`).
+- Mixed: mengetuk tab round terakhir menyimpan `null`, jadi penonton yang mengikuti round terakhir ikut pindah saat round
+  baru muncul. ⋯ Fixed setelah diakhiri tetap aktif (menunya berisi Live score).
+- Test: `test/services/live_score_test.dart` (relay tiruan `FakeRelay` di atas `MockClient`; timer lewat `testWidgets`),
+  golden `test/hifi/screens/live_test.dart` (+ 12f/12i di `jadwal_fixed_test.dart`, fixture `live_fixture.dart`).
+- Preview link WhatsApp generik "Mabar": GitHub Pages statis, tidak bisa OG tag per turnamen.
+
 ## Persistensi lokal
 
 Seluruh MVP PRD sudah jalan, termasuk bagian 5 (Penyimpanan Data).
@@ -240,8 +274,8 @@ Seluruh MVP PRD sudah jalan, termasuk bagian 5 (Penyimpanan Data).
   `version` di pubspec — dijaga test; tampil juga di Beranda). Simpanan app lama (skema 1, tanpa `appVersion`,
   skor per set) sengaja tidak dimuat. Payload beda versi atau rusak (app di-kill di tengah tulis) di-`decode` jadi `null`, bukan
   melempar — turnamennya saja yang hilang, app tetap bisa dibuka.
-- `services/storage/tournament_store.dart` — box Hive `tournament` berisi 2 key: `active` dan
-  `lastFinished`. `TournamentStore.memory()` dipakai test dan sebagai penyelamat kalau box gagal
+- `services/storage/tournament_store.dart` — box Hive `tournament` berisi 3 key: `active`,
+  `lastFinished`, dan `live` (sesi live score, lihat bagian Live score). `TournamentStore.memory()` dipakai test dan sebagai penyelamat kalau box gagal
   dibuka (disk penuh, browser mode private).
 - Auto-save-nya satu `listenSelf` di `TournamentController.build()`. Semua mutasi controller
   berakhir di `state =`, jadi tidak ada call site yang bisa lupa menyimpan — **jangan** menambah
@@ -294,7 +328,7 @@ Orientasi dikunci portrait di dua tempat — `SystemChrome` di `lib/main.dart`
 dan `UISupportedInterfaceOrientations` di `ios/Runner/Info.plist`; kalau menambah layar landscape,
 keduanya harus diubah bareng.
 
-Kode Dart-nya bebas platform (nol `kIsWeb`/`dart:html`/`Platform.*`). Titik sentuh platform cuma dua:
+Kode Dart-nya bebas platform (nol `kIsWeb`/`dart:html`/`Platform.*`). Titik sentuh platform cuma tiga:
 
 - Share sheet di `features/share/share_result_screen.dart` — `XFile.fromData` in-memory, jadi tidak ada
   permission/Info.plist yang perlu ditambah. Konsekuensinya share **wajib diuji di HP fisik**, bukan simulator.
@@ -308,6 +342,8 @@ Kode Dart-nya bebas platform (nol `kIsWeb`/`dart:html`/`Platform.*`). Titik sent
   lagi mengirim event-nya. Di tab Safari iOS status terpasang **tidak bisa** diketahui, jadi kartunya tetap
   muncul di sana. Closure yang dioper ke `.toJS` harus mengembalikan tipe JS/void — `() => x.value = y`
   gagal compile di web (tidak ketahuan di `flutter test`, jadi cek dengan `tool/build_web.sh`).
+- "Buka Mabar" di halaman live yang tidak ditemukan (`features/live/open_home.dart`, conditional export yang sama):
+  web memuat ulang URL tanpa `#/live/…`; stub native kosong karena halaman live hanya ada di web.
 
 Beranda v2 (`features/home/home_screen.dart`): `Column` = banner `Expanded` (menerus 24 pt di bawah sudut panel lewat
 `Positioned(bottom: -24)`) + `HomePanel`. Tanpa scroll: panel terpanjang (01a) ±330 pt, jadi banner tetap muat wordmark +

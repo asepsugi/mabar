@@ -30,7 +30,7 @@ void main() {
           rows: [
             MabarRow(
               padded: true,
-              leading: const HomeRowIcon(MabarIcons.clockCounterClockwise),
+              leading: const MabarRowIcon(MabarIcons.clockCounterClockwise),
               title: 'Padel · Mixed · 8 pemain',
               subtitle: 'Selesai di R6 · tambah jam untuk lanjut',
               chevron: true,
@@ -38,7 +38,7 @@ void main() {
             ),
             MabarRow(
               padded: true,
-              leading: const HomeRowIcon(MabarIcons.deviceMobile),
+              leading: const MabarRowIcon(MabarIcons.deviceMobile),
               title: 'Pasang Mabar di HP',
               subtitle: 'Buka dari layar utama, tanpa browser',
               chevron: true,

@@ -101,7 +101,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           if (active == null && last != null && last.config.mode == PartnerMode.mixed)
             MabarRow(
               padded: true,
-              leading: const HomeRowIcon(MabarIcons.clockCounterClockwise),
+              leading: const MabarRowIcon(MabarIcons.clockCounterClockwise),
               title: _summary(last),
               titleOneLine: true,
               subtitle: 'Selesai di R${last.roundCount} · tambah jam untuk lanjut',
@@ -111,7 +111,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           if (mode != AppInstallMode.none)
             MabarRow(
               padded: true,
-              leading: const HomeRowIcon(MabarIcons.deviceMobile),
+              leading: const MabarRowIcon(MabarIcons.deviceMobile),
               title: 'Pasang Mabar di HP',
               subtitle: 'Buka dari layar utama, tanpa browser',
               chevron: true,

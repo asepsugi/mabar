@@ -41,7 +41,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarGroupHeader`, `RoundTabs`, `MatchScoreRow`, `RestingList`, `MabarMenu`
 
-- Isi menu Mixed: "Kelola court" → sheet 08e, "Cara kerja Mixed" → sheet 06k, dan "Akhiri turnamen" → dialog 06e.
+- Isi menu Mixed: "Live score" → dialog 12b / sheet 12c, "Kelola court" → sheet 08e, "Cara kerja Mixed" → sheet 06k, dan "Akhiri turnamen" → dialog 06e.
 - "Kelola court" di menu, bukan di layar, supaya Jadwal tidak bertambah elemen. Namanya sejajar dengan Kelola pemain karena court juga diubah dan dihapus di sana. Ikon `square-split-horizontal` (lapangan dengan net). Ada selama turnamen belum diakhiri, termasuk saat court sudah 10 (sheet-nya lalu hanya berisi daftar).
 - "Batalkan Rn" sengaja tidak ada di menu: syaratnya sama persis dengan tombol di layar (06h), jadi item menu tidak pernah menolong saat tombolnya tidak ada. Satu aksi, satu tempat.
 

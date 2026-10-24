@@ -1,0 +1,18 @@
+# Relay live score Mabar. Deploy: `npm run deploy` (sekali `npx wrangler login` dulu).
+name = "mabar-live"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# Satu Durable Object per kode live. Paket gratis hanya mengizinkan Durable Object berpenyimpanan SQLite.
+[[durable_objects.bindings]]
+name = "LIVE"
+class_name = "LiveTournament"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["LiveTournament"]
+
+# 8787 (bawaan) sudah dipakai proses lain di Mac host.
+[dev]
+port = 8790
+ip = "127.0.0.1"

@@ -110,6 +110,12 @@ const mixedR1 = <MatchSpec>[('Andi', 'Budi', 'Citra', 'Dewant', 12, 9), ('Eko', 
 const mixedR2 = <MatchSpec>[('Gina', 'Andi', 'Hana', 'Citra', 11, 10), ('Indra', 'Budi', 'Joko', 'Dewant', 13, 8)];
 const mixedR3Running = <MatchSpec>[('Andi', 'Dewant', 'Citra', 'Fajar', 13, 8), ('Eko', 'Budi', 'Hana', 'Gina', null, null)];
 
+const mixedR3Done = <MatchSpec>[('Andi', 'Dewant', 'Citra', 'Fajar', 13, 8), ('Hana', 'Gina', 'Eko', 'Budi', null, null)];
+const mixedR4 = <MatchSpec>[('Indra', 'Citra', 'Joko', 'Hana', null, null), ('Andi', 'Fajar', 'Budi', 'Gina', null, null)];
+
+/// 06g/06h: match kedua R3 menang WO (pemain absen).
+MatchGame mixedWo(MatchGame m) => m.id == 'r3c2' ? m.asWalkover(loserPairId: m.pair2.id, reason: WoReason.absent) : m;
+
 /// R8 di 06l (waktu habis); R1–R7 bergantian [mixedR1]/[mixedR2].
 final mixedTimeUpRounds = [
   for (var r = 0; r < 7; r++) r.isEven ? mixedR1 : mixedR2,
@@ -140,3 +146,68 @@ ActiveTournament courtTournament(List<List<MatchSpec>> rounds, {int courts = 2})
   courtStarts: const {'c2': 62},
   courtOf: (round, index) => round >= 8 ? 'c2' : 'c${index + 1}',
 );
+
+/// Jadwal Fixed 06a–06e (dan penonton 12f, 12i). Tennis Race to 6, 10 pemain (5 pasangan), 2 court × 2 jam, mulai
+/// 45 menit lalu. Jadwal round-robin sah (tiap pasangan istirahat sekali):
+/// R1 A istirahat (B–C, D–E) · R2 E (A–B, C–D) · R3 D (A–C, B–E) · R4 B (A–D, C–E) · R5 C (A–E, B–D),
+/// dengan A Andi·Budi, B Citra·Dewant, C Eko·Fajar, D Gina·Hana, E Indra·Joko.
+const _fixedNames = ['Andi P', 'Budi S', 'Citra L', 'Dewant R', 'Eko M', 'Fajar K', 'Gina R', 'Hana T', 'Indra W', 'Joko S'];
+final _fixedPlayers = [for (var i = 0; i < _fixedNames.length; i++) Player(id: 'p$i', name: _fixedNames[i])];
+final _fixedPairs = [for (var i = 0; i < 5; i++) Pair(id: 'pair$i', player1Id: 'p${2 * i}', player2Id: 'p${2 * i + 1}')];
+final fixedStart = DateTime(2026, 10, 22, 19);
+final _fixedConfig = TournamentConfig(
+  sport: SportType.tennis,
+  mode: PartnerMode.fixed,
+  matchDurationMinutes: 20,
+  courts: const [
+    Court(id: 'c1', name: 'Court 1', colorIndex: 0, bookingDurationMinutes: 120),
+    Court(id: 'c2', name: 'Court 2', colorIndex: 1, bookingDurationMinutes: 120),
+  ],
+  players: _fixedPlayers,
+  fixedPairs: _fixedPairs,
+);
+// (pasangan istirahat, [pair1, pair2] court 1, [pair1, pair2] court 2) per round.
+const _fixedRounds = [
+  (0, [1, 2], [3, 4]),
+  (4, [0, 1], [2, 3]),
+  (3, [0, 2], [1, 4]),
+  (1, [0, 3], [2, 4]),
+  (2, [0, 4], [1, 3]),
+];
+
+/// [scores] per match id ("r2c1") = skor pair1–pair2; match lain pending, atau dibatalkan kalau [finished].
+ActiveTournament fixedTournament(Map<String, (int, int)> scores, {bool finished = false}) {
+  MatchGame match(int round, int court, List<int> p) {
+    final id = 'r${round}c$court';
+    final base = MatchGame(
+      id: id,
+      roundNumber: round,
+      matchNumberInRound: court,
+      courtId: 'c$court',
+      pair1: _fixedPairs[p[0]],
+      pair2: _fixedPairs[p[1]],
+    );
+    final score = scores[id];
+    if (score != null) return base.withScore([SetScore(side1: score.$1, side2: score.$2)]);
+    return finished ? base.copyWith(status: MatchStatus.cancelled) : base;
+  }
+
+  return ActiveTournament(
+    tournament: Tournament(
+      id: 't-fixed',
+      createdAt: fixedStart,
+      isFinished: finished,
+      config: _fixedConfig,
+      matches: [
+        for (final (i, (_, c1, c2)) in _fixedRounds.indexed) ...[match(i + 1, 1, c1), match(i + 1, 2, c2)],
+      ],
+    ),
+    byePairIdByRound: {for (final (i, (bye, _, _)) in _fixedRounds.indexed) i + 1: _fixedPairs[bye].id},
+  );
+}
+
+final fixedRunning = fixedTournament({'r1c1': (6, 3), 'r1c2': (4, 6), 'r2c1': (6, 4)});
+final fixedEnded = fixedTournament({
+  for (var r = 1; r <= 4; r++) ...{'r${r}c1': (6, 2), 'r${r}c2': (3, 6)},
+  'r5c1': (6, 5),
+}, finished: true);

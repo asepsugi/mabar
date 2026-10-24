@@ -16,9 +16,8 @@ void main() {
   final start = fixtureStart;
   const tournament = mixedTournament;
   const r1 = mixedR1, r2 = mixedR2, r3Running = mixedR3Running;
-  const r3Done = <MatchSpec>[('Andi', 'Dewant', 'Citra', 'Fajar', 13, 8), ('Hana', 'Gina', 'Eko', 'Budi', null, null)];
-  const r4 = <MatchSpec>[('Indra', 'Citra', 'Joko', 'Hana', null, null), ('Andi', 'Fajar', 'Budi', 'Gina', null, null)];
-  MatchGame wo(MatchGame m) => m.id == 'r3c2' ? m.asWalkover(loserPairId: m.pair2.id, reason: WoReason.absent) : m;
+  const r3Done = mixedR3Done, r4 = mixedR4;
+  const wo = mixedWo;
 
   final f = tournament([r1, r2, r3Running]);
   final g = tournament([r1, r2, r3Done], adjust: wo);

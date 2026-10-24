@@ -6,6 +6,7 @@ import '../../features/konfigurasi/konfigurasi_screen.dart';
 import '../../features/pair_setup/pair_setup_screen.dart';
 import '../../features/detail_player/detail_player_screen.dart';
 import '../../features/leaderboard/leaderboard_screen.dart';
+import '../../features/live/live_screen.dart';
 import '../../features/schedule/schedule_fixed_screen.dart';
 import '../../features/schedule/schedule_mixed_screen.dart';
 import '../../features/share/share_result_screen.dart';
@@ -54,6 +55,8 @@ final appRouter = GoRouter(
       builder: (_, state) => DetailPlayerScreen(playerId: state.extra as String),
     ),
     GoRoute(path: '/share', builder: (_, __) => const ShareResultScreen()),
+    // Halaman penonton; kodenya dibaca `main()` dari URL (liveCodeProvider), bukan dari parameter ini.
+    GoRoute(path: '/live/:code', builder: (_, __) => const LiveScreen()),
   ],
   errorBuilder: (_, state) => Scaffold(body: Center(child: Text('Halaman tidak ditemukan'))),
 );

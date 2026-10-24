@@ -328,6 +328,15 @@ table.map { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 
 .menu .mi.off { color: var(--faint); }
 .menu .mi.off svg { color: #C3CCD4; }
 .menu hr { border: 0; border-top: 1px solid var(--line); margin: 6px 0; }
+.menu .mi .on-dot { margin-left: auto; width: 7px; height: 7px; border-radius: 50%; background: var(--ball); box-shadow: 0 0 0 1px var(--ball-edge); }
+/* Live score (12a–12o): tag pengganti ⋯ di Jadwal penonton, link di sheet, pesan tengah halaman penonton. */
+.livetag { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px; border-radius: 15px; background: var(--card); font-size: 13px; font-weight: 700; color: var(--ink); flex: none; margin-right: 4px; white-space: nowrap; }
+.livetag i { width: 7px; height: 7px; border-radius: 50%; background: var(--ball); box-shadow: 0 0 0 1px var(--ball-edge); }
+.livetag.off { color: var(--ink-3); }
+.livetag.off i { background: #B3BEC8; box-shadow: none; }
+.url { font-size: 15px; font-weight: 600; line-height: 1.35; overflow-wrap: break-word; }
+.centermsg { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 0 32px 80px; text-align: center; }
+.centermsg h2 { margin: 0; font-size: 21px; font-weight: 800; font-stretch: 95%; }
 .toast { position: absolute; left: 16px; right: 16px; bottom: 118px; background: var(--ink); color: #fff; border-radius: 12px; padding: 14px 16px; font-size: 15px; display: flex; align-items: center; gap: 10px; }
 .toast svg { color: var(--ball); }
 
@@ -499,6 +508,9 @@ table.map { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 
   <symbol id="i-user" viewBox="0 0 256 256"><path d="M234.38,210a123.36,123.36,0,0,0-60.78-53.23,76,76,0,1,0-91.2,0A123.36,123.36,0,0,0,21.62,210a12,12,0,1,0,20.77,12c18.12-31.32,50.12-50,85.61-50s67.49,18.69,85.61,50a12,12,0,0,0,20.77-12ZM76,96a52,52,0,1,1,52,52A52.06,52.06,0,0,1,76,96Z"/></symbol>
   <symbol id="i-equals" viewBox="0 0 256 256"><path d="M228,160a12,12,0,0,1-12,12H40a12,12,0,0,1,0-24H216A12,12,0,0,1,228,160ZM40,108H216a12,12,0,0,0,0-24H40a12,12,0,0,0,0,24Z"/></symbol>
   <symbol id="i-shuffle" viewBox="0 0 256 256"><path d="M240.49,175.51a12,12,0,0,1,0,17l-24,24a12,12,0,0,1-17-17L203,196h-2.09a76.17,76.17,0,0,1-61.85-31.83L97.38,105.78A52.1,52.1,0,0,0,55.06,84H32a12,12,0,0,1,0-24H55.06a76.17,76.17,0,0,1,61.85,31.83l41.71,58.39A52.1,52.1,0,0,0,200.94,172H203l-3.52-3.51a12,12,0,0,1,17-17Zm-95.62-72.62a12,12,0,0,0,16.93-1.13A52,52,0,0,1,200.94,84H203l-3.52,3.51a12,12,0,0,0,17,17l24-24a12,12,0,0,0,0-17l-24-24a12,12,0,0,0-17,17L203,60h-2.09a76,76,0,0,0-57.2,26A12,12,0,0,0,144.87,102.89Zm-33.74,50.22a12,12,0,0,0-16.93,1.13A52,52,0,0,1,55.06,172H32a12,12,0,0,0,0,24H55.06a76,76,0,0,0,57.2-26A12,12,0,0,0,111.13,153.11Z"/></symbol>
+  <symbol id="i-broadcast" viewBox="0 0 256 256"><path d="M128,84a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,84Zm0,64a20,20,0,1,1,20-20A20,20,0,0,1,128,148Zm77.39,12.7A83.94,83.94,0,0,1,190.61,184a12,12,0,0,1-17.89-16,59.92,59.92,0,0,0,0-80,12,12,0,0,1,17.89-16,84.07,84.07,0,0,1,14.78,88.7ZM83.28,168a12,12,0,0,1-17.89,16,83.94,83.94,0,0,1,0-112A12,12,0,0,1,83.28,88a59.92,59.92,0,0,0,0,80ZM252,128a123.63,123.63,0,0,1-35.43,86.78A12,12,0,1,1,199.43,198a99.88,99.88,0,0,0,0-140,12,12,0,0,1,17.14-16.8A123.63,123.63,0,0,1,252,128ZM56.57,198a12,12,0,0,1-17.14,16.8,123.89,123.89,0,0,1,0-173.56A12,12,0,0,1,56.57,58a99.88,99.88,0,0,0,0,140Z"/></symbol>
+  <symbol id="i-link" viewBox="0 0 256 256"><path d="M117.18,188.74a12,12,0,0,1,0,17l-5.12,5.12A58.26,58.26,0,0,1,70.6,228h0A58.62,58.62,0,0,1,29.14,127.92L63.89,93.17a58.64,58.64,0,0,1,98.56,28.11,12,12,0,1,1-23.37,5.44,34.65,34.65,0,0,0-58.22-16.58L46.11,144.89A34.62,34.62,0,0,0,70.57,204h0a34.41,34.41,0,0,0,24.49-10.14l5.11-5.12A12,12,0,0,1,117.18,188.74ZM226.83,45.17a58.65,58.65,0,0,0-82.93,0l-5.11,5.11a12,12,0,0,0,17,17l5.12-5.12a34.63,34.63,0,1,1,49,49L175.1,145.86A34.39,34.39,0,0,1,150.61,156h0a34.63,34.63,0,0,1-33.69-26.72,12,12,0,0,0-23.38,5.44A58.64,58.64,0,0,0,150.56,180h.05a58.28,58.28,0,0,0,41.47-17.17l34.75-34.75a58.62,58.62,0,0,0,0-82.91Z"/></symbol>
+  <symbol id="i-wifi-slash" viewBox="0 0 256 256"><path d="M216.88,207.93a12,12,0,1,1-17.76,16.14L147.78,167.6a56.06,56.06,0,0,0-52.71,7.1,12,12,0,0,1-14.14-19.4,79.35,79.35,0,0,1,41.92-15.12L103.51,118.9a104.18,104.18,0,0,0-40.06,19.55,12,12,0,0,1-14.9-18.81A128.46,128.46,0,0,1,85.61,99.21l-17.31-19a151.14,151.14,0,0,0-36.68,22.28A12,12,0,1,1,16.39,83.91a175.52,175.52,0,0,1,35-22.38L39.12,48.07A12,12,0,1,1,56.88,31.93ZM128,188a16,16,0,1,0,16,16A16,16,0,0,0,128,188Zm64.55-49.55a12,12,0,0,0,14.9-18.81A127.27,127.27,0,0,0,170,99.05a12,12,0,0,0-7.87,22.67A103.62,103.62,0,0,1,192.55,138.45Zm47.06-54.54A176.33,176.33,0,0,0,128,44c-3.94,0-7.93.13-11.86.39a12,12,0,1,0,1.59,24c3.4-.23,6.86-.34,10.27-.34a152.24,152.24,0,0,1,96.38,34.46,12,12,0,1,0,15.23-18.55Z"/></symbol>
   <symbol id="appicon-a" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#164E8C"/><rect x="-10" y="210" width="870" height="830" fill="#1E6BB8"/><g opacity="1" stroke="#fff" fill="none" stroke-linecap="square"><path d="M-20 210H860" stroke-width="30"/><path d="M860 210V1040M696 210V1040M-20 868H696M202 868V1040M202 210V250" stroke-width="20"/></g><use href="#ball" x="249" y="339" width="400" height="400"/></symbol>
   <symbol id="appicon-b" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#164E8C"/><rect x="-10" y="210" width="870" height="830" fill="#1E6BB8"/><g opacity="0.35" stroke="#fff" fill="none" stroke-linecap="square"><path d="M-20 210H860" stroke-width="30"/><path d="M860 210V1040M696 210V1040M-20 868H696M202 868V1040M202 210V250" stroke-width="20"/></g><use href="#ball" x="249" y="339" width="400" height="400"/></symbol>
   <symbol id="ball" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="#CDE84A" stroke="#A8C233" stroke-width="1.5"/><path d="M6 15C14 20 20 26 20 42M42 33C34 28 28 22 28 6" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></symbol>
@@ -510,7 +522,7 @@ table.map { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 
   <h1>Mabar Hi-Fi v2</h1>
   <p>Fondasi design system baru dan seluruh layar Mabar dalam arah "papan skor pinggir lapangan". Semua layar digambar 1:1 di 390×844 pt, lengkap dengan sheet, dialog, menu, dan state penting. Catatan di bawah tiap layar menjelaskan perilaku yang harus ikut diimplementasikan.</p>
   <nav class="toc" aria-label="Daftar isi">
-    <a href="#fondasi">Fondasi</a><a href="#komponen">Komponen</a><a href="#beranda">Beranda</a><a href="#peserta">Pemain</a><a href="#konfigurasi">Konfigurasi</a><a href="#pasangan">Pasangan</a><a href="#jadwal-fixed">Jadwal Fixed</a><a href="#jadwal-mixed">Jadwal Mixed</a><a href="#kelola">Pemain, court &amp; lanjutkan</a><a href="#skor">Input Skor</a><a href="#peringkat">Klasemen</a><a href="#detail">Detail</a><a href="#bagikan">Bagikan</a><a href="#cakupan">Cakupan</a>
+    <a href="#fondasi">Fondasi</a><a href="#komponen">Komponen</a><a href="#beranda">Beranda</a><a href="#peserta">Pemain</a><a href="#konfigurasi">Konfigurasi</a><a href="#pasangan">Pasangan</a><a href="#jadwal-fixed">Jadwal Fixed</a><a href="#jadwal-mixed">Jadwal Mixed</a><a href="#kelola">Pemain, court &amp; lanjutkan</a><a href="#skor">Input Skor</a><a href="#peringkat">Klasemen</a><a href="#detail">Detail</a><a href="#bagikan">Bagikan</a><a href="#live">Live score</a><a href="#cakupan">Cakupan</a>
   </nav>
 </header>
 
@@ -616,6 +628,9 @@ table.map { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 
           <div class="icn"><svg class="ic"><use href="#i-phone"/></svg><code>device-mobile</code><span>Pasang Mabar di HP</span></div>
           <div class="icn"><svg class="ic"><use href="#i-ios-share"/></svg><code>export</code><span>Panduan iPhone: Bagikan</span></div>
           <div class="icn"><svg class="ic"><use href="#i-add-square"/></svg><code>plus-square</code><span>Panduan iPhone: Tambah ke Layar Utama</span></div>
+          <div class="icn"><svg class="ic"><use href="#i-broadcast"/></svg><code>broadcast</code><span>Live score (menu ⋯)</span></div>
+          <div class="icn"><svg class="ic"><use href="#i-link"/></svg><code>link</code><span>Link live di sheet</span></div>
+          <div class="icn"><svg class="ic"><use href="#i-wifi-slash"/></svg><code>wifi-slash</code><span>Toast tidak ada internet</span></div>
         </div>
       </div>
       <ul class="ruleslist">
@@ -804,7 +819,7 @@ table.map { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 
         <div class="menu" style="position:static;width:auto"><div class="mi"><svg class="ic"><use href="#i-info"/></svg>Cara kerja Mixed</div><hr><div class="mi danger"><svg class="ic"><use href="#i-flag"/></svg>Akhiri turnamen</div></div>
         <div class="toast" style="position:static"><svg class="ic ic-s"><use href="#i-check"/></svg>Hasil disalin</div>
       </div>
-      <p>Menu ⋯: kartu putih berbayangan menempel di bawah tombol ⋯, item 48 pt dengan ikon 24, item berbahaya clay di bawah garis pemisah (06d, 06i). Toast: tinta dengan ikon bola, di atas action bar; hanya dipakai untuk "Hasil disalin" (11c).</p>
+      <p>Menu ⋯: kartu putih berbayangan menempel di bawah tombol ⋯, item 48 pt dengan ikon 24, item berbahaya clay di bawah garis pemisah (06d, 06i); titik bola di ujung item = fiturnya sedang menyala (Live score, 12f). Toast: tinta dengan ikon bola, di atas action bar; hanya dipakai untuk "Hasil disalin" (11c).</p>
     </div>
   </div>
 </section>
@@ -1199,7 +1214,7 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
     <div class="scr">
       <div class="cap"><b>06c</b><span>Turnamen diakhiri</span></div>
       <div class="app">
-        <div class="appbar"><span class="icbtn"><svg class="ic"><use href="#i-back"/></svg></span><div class="t"><h1>Round 5</h1><p>Tennis · Race to 6 · diakhiri</p></div><span class="icbtn" style="color:#C3CCD4"><svg class="ic"><use href="#i-more"/></svg></span></div>
+        <div class="appbar"><span class="icbtn"><svg class="ic"><use href="#i-back"/></svg></span><div class="t"><h1>Round 5</h1><p>Tennis · Race to 6 · diakhiri</p></div><span class="icbtn"><svg class="ic"><use href="#i-more"/></svg></span></div>
         <div class="tabs"><b>R1</b><b>R2</b><b>R3</b><b>R4</b><b class="on">R5</b><span class="meta">1/2 match</span></div>
         <div class="body" style="padding-top:12px">
           <div class="list">
@@ -1212,7 +1227,7 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
       </div>
       <ul>
         <li>Setelah "Akhiri": match kosong jadi "Tidak dimainkan" (tidak bisa diketuk), tidak ada lagi titik live, dan tombol Klasemen jadi tombol utama. Sama untuk turnamen yang semua match-nya selesai.</li>
-        <li>Fixed tidak bisa dilanjutkan, jadi tidak ada "Lanjutkan turnamen".</li><li>Ikon ⋯ tampil pudar dan tidak bisa diketuk: satu-satunya item menu Fixed ("Akhiri turnamen") sudah tidak ada (keputusan host 2026-10-22).</li>
+        <li>Fixed tidak bisa dilanjutkan, jadi tidak ada "Lanjutkan turnamen".</li><li>Ikon ⋯ tetap aktif: "Akhiri turnamen" hilang, "Live score" tetap ada (12f). Dulu pudar dan mati karena menunya kosong (2026-10-22); sejak live score menunya tidak pernah kosong (2026-10-24).</li>
       </ul>
     </div>
 
@@ -1228,11 +1243,11 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
           <div class="rest"><div class="ghead"><span class="glabel">Istirahat</span></div><div class="names"><span>Indra · Joko</span></div></div>
         </div>
         <div class="actionbar"><span class="btn btn-secondary"><svg class="ic ic-s"><use href="#i-podium"/></svg>Klasemen</span></div>
-        <div class="menu"><div class="mi danger"><svg class="ic"><use href="#i-flag"/></svg>Akhiri turnamen</div></div>
+        <div class="menu"><div class="mi"><svg class="ic"><use href="#i-broadcast"/></svg>Live score</div><hr><div class="mi danger"><svg class="ic"><use href="#i-flag"/></svg>Akhiri turnamen</div></div>
       </div>
       <ul>
-        <li>Ikon ⋯ sekarang berfungsi (dulu cuma hiasan). Di Fixed isinya satu: "Akhiri turnamen" → dialog 06e.</li>
-        <li>Setelah diakhiri, item ini tidak tampil lagi.</li>
+        <li>Ikon ⋯ sekarang berfungsi (dulu cuma hiasan). Isi menu Fixed: "Live score" → dialog 12b / sheet 12c, lalu garis dan "Akhiri turnamen" → dialog 06e.</li>
+        <li>Setelah diakhiri, "Akhiri turnamen" tidak tampil lagi; Live score tetap (12f).</li>
       </ul>
     </div>
 
@@ -1343,6 +1358,7 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
         </div>
         <div class="actionbar"><span class="icbtn solid"><svg class="ic"><use href="#i-podium"/></svg></span><span class="icbtn solid"><svg class="ic"><use href="#i-people"/></svg><span class="count">10</span></span><span class="btn btn-wait">Buat R5 <span class="meta">· tunggu 2 match</span></span></div>
         <div class="menu">
+          <div class="mi"><svg class="ic"><use href="#i-broadcast"/></svg>Live score</div>
           <div class="mi"><svg class="ic"><use href="#i-court"/></svg>Kelola court</div>
           <div class="mi"><svg class="ic"><use href="#i-info"/></svg>Cara kerja Mixed</div>
           
@@ -1351,7 +1367,7 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
         </div>
       </div>
       <ul>
-        <li>Isi menu Mixed: "Kelola court" → sheet 08e, "Cara kerja Mixed" → sheet 06k, dan "Akhiri turnamen" → dialog 06e.</li><li>"Kelola court" di menu, bukan di layar, supaya Jadwal tidak bertambah elemen. Namanya sejajar dengan Kelola pemain karena court juga diubah dan dihapus di sana. Ikon <code>square-split-horizontal</code> (lapangan dengan net). Ada selama turnamen belum diakhiri, termasuk saat court sudah 10 (sheet-nya lalu hanya berisi daftar).</li><li>"Batalkan Rn" sengaja tidak ada di menu: syaratnya sama persis dengan tombol di layar (06h), jadi item menu tidak pernah menolong saat tombolnya tidak ada. Satu aksi, satu tempat.</li>
+        <li>Isi menu Mixed: "Live score" → dialog 12b / sheet 12c, "Kelola court" → sheet 08e, "Cara kerja Mixed" → sheet 06k, dan "Akhiri turnamen" → dialog 06e.</li><li>"Kelola court" di menu, bukan di layar, supaya Jadwal tidak bertambah elemen. Namanya sejajar dengan Kelola pemain karena court juga diubah dan dihapus di sana. Ikon <code>square-split-horizontal</code> (lapangan dengan net). Ada selama turnamen belum diakhiri, termasuk saat court sudah 10 (sheet-nya lalu hanya berisi daftar).</li><li>"Batalkan Rn" sengaja tidak ada di menu: syaratnya sama persis dengan tombol di layar (06h), jadi item menu tidak pernah menolong saat tombolnya tidak ada. Satu aksi, satu tempat.</li>
       </ul>
     </div>
 
@@ -2532,6 +2548,274 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
   </div>
 </section>
 
+<section class="flow" id="live">
+  <div class="flow-head">
+    <h2>Live score</h2>
+    <p>Host menyalakan live dari menu ⋯ Jadwal (Fixed dan Mixed) lalu membagikan link; pemain lain membuka Jadwal, Klasemen, dan Detail di browser dalam mode baca saja, diperbarui setiap kali turnamen berubah. Tanpa database: relay hanya memegang salinan turnamen terakhir per kode live (logic.md §11). Contoh host: Padel, Americano 21, 10 pemain, R4 baru dibuat (latar 06h). Contoh penonton: data 06f, 06a, 09a, 10a, 06m.</p>
+  </div>
+  <div class="screens">
+    <div class="scr">
+      <div class="cap"><b>12a</b><span>Menu ⋯ · Mixed · live belum aktif</span></div>
+      <div class="app">
+        <div class="appbar"><span class="icbtn"><svg class="ic"><use href="#i-back"/></svg></span><div class="t"><h1>Round 4</h1><p>Padel · Americano 21</p></div><span class="icbtn" style="background:var(--fill)"><svg class="ic"><use href="#i-more"/></svg></span></div>
+        <div class="tabs"><b>R1</b><b>R2</b><b>R3</b><b class="on">R4<i class="live"></i></b><span class="meta">0/2 match</span></div>
+        <div class="body" style="padding-top:12px"><div class="list">
+          <div class="bug wide"><div class="court n timed" style="--c:#2F8F5B"><span>1</span><span class="cd">01:07</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Indra · Citra</span></div><div class="team"><i class="w"></i><span class="nm">Joko · Hana</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+          <div class="bug wide"><div class="court n timed" style="--c:#C4532D"><span>2</span><span class="cd">01:07</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Andi · Fajar</span></div><div class="team"><i class="w"></i><span class="nm">Budi · Gina</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+        </div>
+          <div class="rest"><div class="ghead"><span class="glabel">Istirahat · <span class="prio">Prioritas main di R5</span></span></div><div class="names"><span>Dewant R</span><span>Eko M</span></div></div>
+          <div style="display:flex;justify-content:center"><span class="btn btn-ghost btn-sm"><svg class="ic ic-s"><use href="#i-undo"/></svg>Batalkan R4</span></div>
+        </div>
+        <div class="actionbar"><span class="icbtn solid"><svg class="ic"><use href="#i-podium"/></svg></span><span class="icbtn solid"><svg class="ic"><use href="#i-people"/></svg><span class="count">10</span></span><span class="btn btn-wait">Buat R5 <span class="meta">· tunggu 2 match</span></span></div>
+        <div class="menu">
+          <div class="mi"><svg class="ic"><use href="#i-broadcast"/></svg>Live score</div>
+          <div class="mi"><svg class="ic"><use href="#i-court"/></svg>Kelola court</div>
+          <div class="mi"><svg class="ic"><use href="#i-info"/></svg>Cara kerja Mixed</div>
+          <hr>
+          <div class="mi danger"><svg class="ic"><use href="#i-flag"/></svg>Akhiri turnamen</div>
+        </div>
+      </div>
+      <ul><li>Item paling atas: "Live score", ikon <code>broadcast</code>. Ada di Fixed (06d) dan Mixed (06i), juga setelah diakhiri (12f).</li><li>Live tidak menambah elemen di layar Jadwal, sama seperti Kelola court.</li><li>Belum aktif → dialog 12b. Sudah aktif → langsung sheet 12c.</li></ul>
+    </div>
+
+    <div class="scr">
+      <div class="cap"><b>12b</b><span>Dialog · mulai live</span></div>
+      <div class="app">
+        <div class="appbar"><span class="icbtn"><svg class="ic"><use href="#i-back"/></svg></span><div class="t"><h1>Round 4</h1><p>Padel · Americano 21</p></div><span class="icbtn"><svg class="ic"><use href="#i-more"/></svg></span></div>
+        <div class="tabs"><b>R1</b><b>R2</b><b>R3</b><b class="on">R4<i class="live"></i></b><span class="meta">0/2 match</span></div>
+        <div class="body" style="padding-top:12px"><div class="list">
+          <div class="bug wide"><div class="court n timed" style="--c:#2F8F5B"><span>1</span><span class="cd">01:07</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Indra · Citra</span></div><div class="team"><i class="w"></i><span class="nm">Joko · Hana</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+          <div class="bug wide"><div class="court n timed" style="--c:#C4532D"><span>2</span><span class="cd">01:07</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Andi · Fajar</span></div><div class="team"><i class="w"></i><span class="nm">Budi · Gina</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+        </div>
+          <div class="rest"><div class="ghead"><span class="glabel">Istirahat · <span class="prio">Prioritas main di R5</span></span></div><div class="names"><span>Dewant R</span><span>Eko M</span></div></div>
+          <div style="display:flex;justify-content:center"><span class="btn btn-ghost btn-sm"><svg class="ic ic-s"><use href="#i-undo"/></svg>Batalkan R4</span></div>
+        </div>
+        <div class="actionbar"><span class="icbtn solid"><svg class="ic"><use href="#i-podium"/></svg></span><span class="icbtn solid"><svg class="ic"><use href="#i-people"/></svg><span class="count">10</span></span><span class="btn btn-wait">Buat R5 <span class="meta">· tunggu 2 match</span></span></div>
+      <div class="scrim"></div><div class="dialog"><h2>Mulai live score?</h2><p>Jadwal, skor, dan nama pemain bisa dilihat siapa saja yang punya link.</p><div class="dactions"><span class="txtbtn">Batal</span><span class="txtbtn go">Mulai</span></div></div></div>
+      <ul><li>Akibatnya ditulis di dialog, bukan di sheet: nama pemain keluar dari HP host.</li><li>"Mulai" butuh internet sekali untuk membuat kode live. Gagal → toast 12g, live tidak menyala.</li><li>Berhasil → sheet 12c terbuka.</li></ul>
+    </div>
+
+    <div class="scr">
+      <div class="cap"><b>12c</b><span>Sheet · live aktif · terkirim</span></div>
+      <div class="app">
+        <div class="appbar"><span class="icbtn"><svg class="ic"><use href="#i-back"/></svg></span><div class="t"><h1>Round 4</h1><p>Padel · Americano 21</p></div><span class="icbtn"><svg class="ic"><use href="#i-more"/></svg></span></div>
+        <div class="tabs"><b>R1</b><b>R2</b><b>R3</b><b class="on">R4<i class="live"></i></b><span class="meta">0/2 match</span></div>
+        <div class="body" style="padding-top:12px"><div class="list">
+          <div class="bug wide"><div class="court n timed" style="--c:#2F8F5B"><span>1</span><span class="cd">01:07</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Indra · Citra</span></div><div class="team"><i class="w"></i><span class="nm">Joko · Hana</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+          <div class="bug wide"><div class="court n timed" style="--c:#C4532D"><span>2</span><span class="cd">01:07</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Andi · Fajar</span></div><div class="team"><i class="w"></i><span class="nm">Budi · Gina</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+        </div>
+          <div class="rest"><div class="ghead"><span class="glabel">Istirahat · <span class="prio">Prioritas main di R5</span></span></div><div class="names"><span>Dewant R</span><span>Eko M</span></div></div>
+          <div style="display:flex;justify-content:center"><span class="btn btn-ghost btn-sm"><svg class="ic ic-s"><use href="#i-undo"/></svg>Batalkan R4</span></div>
+        </div>
+        <div class="actionbar"><span class="icbtn solid"><svg class="ic"><use href="#i-podium"/></svg></span><span class="icbtn solid"><svg class="ic"><use href="#i-people"/></svg><span class="count">10</span></span><span class="btn btn-wait">Buat R5 <span class="meta">· tunggu 2 match</span></span></div>
+      <div class="scrim"></div><div class="sheet"><span class="grab"></span><div class="shead"><div><h2>Live score</h2><p>Terkirim 19.53</p></div><span class="txtbtn danger" style="margin:-10px -10px 0 0">Hentikan</span></div><div class="group"><div class="row pad"><span class="rowic" style="background:var(--card)"><svg class="ic"><use href="#i-link"/></svg></span><div class="grow"><span class="url">asepsugi.github.io/mabar/<wbr>#/live/K7Q2MX</span></div></div></div><span class="btn btn-primary" style="flex:none"><svg class="ic ic-s"><use href="#i-share"/></svg>Bagikan link</span></div></div>
+      <ul><li>Subjudul = jam kiriman terakhir yang berhasil. Tiap perubahan (skor, round baru, pemain, court, Akhiri) langsung dikirim.</li><li>"Bagikan link" → share sheet sistem dengan teks "Live score Rabu Padel Matcha Club" + link (tanpa nama turnamen: "Live score Padel"). Share gagal (browser lama) → link disalin + toast "Link disalin", seperti Bagikan poster.</li><li>Kode 6 karakter tanpa huruf yang mirip (0/O, 1/I/L). Satu turnamen satu kode; resume dari Beranda memakai kode yang sama.</li><li>"Hentikan" di kanan atas seperti Hapus di detail court (08h) → dialog 12e.</li></ul>
+    </div>
+
+    <div class="scr">
+      <div class="cap"><b>12d</b><span>Sheet · menunggu internet</span></div>
+      <div class="app">
+        <div class="appbar"><span class="icbtn"><svg class="ic"><use href="#i-back"/></svg></span><div class="t"><h1>Round 4</h1><p>Padel · Americano 21</p></div><span class="icbtn"><svg class="ic"><use href="#i-more"/></svg></span></div>
+        <div class="tabs"><b>R1</b><b>R2</b><b>R3</b><b class="on">R4<i class="live"></i></b><span class="meta">0/2 match</span></div>
+        <div class="body" style="padding-top:12px"><div class="list">
+          <div class="bug wide"><div class="court n timed" style="--c:#2F8F5B"><span>1</span><span class="cd">01:07</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Indra · Citra</span></div><div class="team"><i class="w"></i><span class="nm">Joko · Hana</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+          <div class="bug wide"><div class="court n timed" style="--c:#C4532D"><span>2</span><span class="cd">01:07</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Andi · Fajar</span></div><div class="team"><i class="w"></i><span class="nm">Budi · Gina</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+        </div>
+          <div class="rest"><div class="ghead"><span class="glabel">Istirahat · <span class="prio">Prioritas main di R5</span></span></div><div class="names"><span>Dewant R</span><span>Eko M</span></div></div>
+          <div style="display:flex;justify-content:center"><span class="btn btn-ghost btn-sm"><svg class="ic ic-s"><use href="#i-undo"/></svg>Batalkan R4</span></div>
+        </div>
+        <div class="actionbar"><span class="icbtn solid"><svg class="ic"><use href="#i-podium"/></svg></span><span class="icbtn solid"><svg class="ic"><use href="#i-people"/></svg><span class="count">10</span></span><span class="btn btn-wait">Buat R5 <span class="meta">· tunggu 2 match</span></span></div>
+      <div class="scrim"></div><div class="sheet"><span class="grab"></span><div class="shead"><div><h2>Live score</h2><p>Menunggu internet · terakhir terkirim 19.48</p></div><span class="txtbtn danger" style="margin:-10px -10px 0 0">Hentikan</span></div><div class="group"><div class="row pad"><span class="rowic" style="background:var(--card)"><svg class="ic"><use href="#i-link"/></svg></span><div class="grow"><span class="url">asepsugi.github.io/mabar/<wbr>#/live/K7Q2MX</span></div></div></div><span class="btn btn-primary" style="flex:none"><svg class="ic ic-s"><use href="#i-share"/></svg>Bagikan link</span></div></div>
+      <ul><li>Setiap kiriman membawa seluruh turnamen, jadi tidak ada antrean: begitu ada sinyal, yang terkirim langsung keadaan terbaru. Dicoba lagi tiap 30 detik dan setiap ada perubahan.</li><li>Selama ini penonton tetap melihat data 19.48.</li><li>Turnamen di HP host tetap jalan offline seperti biasa.</li></ul>
+    </div>
+
+    <div class="scr">
+      <div class="cap"><b>12e</b><span>Dialog · hentikan live</span></div>
+      <div class="app">
+        <div class="appbar"><span class="icbtn"><svg class="ic"><use href="#i-back"/></svg></span><div class="t"><h1>Round 4</h1><p>Padel · Americano 21</p></div><span class="icbtn"><svg class="ic"><use href="#i-more"/></svg></span></div>
+        <div class="tabs"><b>R1</b><b>R2</b><b>R3</b><b class="on">R4<i class="live"></i></b><span class="meta">0/2 match</span></div>
+        <div class="body" style="padding-top:12px"><div class="list">
+          <div class="bug wide"><div class="court n timed" style="--c:#2F8F5B"><span>1</span><span class="cd">01:07</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Indra · Citra</span></div><div class="team"><i class="w"></i><span class="nm">Joko · Hana</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+          <div class="bug wide"><div class="court n timed" style="--c:#C4532D"><span>2</span><span class="cd">01:07</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Andi · Fajar</span></div><div class="team"><i class="w"></i><span class="nm">Budi · Gina</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+        </div>
+          <div class="rest"><div class="ghead"><span class="glabel">Istirahat · <span class="prio">Prioritas main di R5</span></span></div><div class="names"><span>Dewant R</span><span>Eko M</span></div></div>
+          <div style="display:flex;justify-content:center"><span class="btn btn-ghost btn-sm"><svg class="ic ic-s"><use href="#i-undo"/></svg>Batalkan R4</span></div>
+        </div>
+        <div class="actionbar"><span class="icbtn solid"><svg class="ic"><use href="#i-podium"/></svg></span><span class="icbtn solid"><svg class="ic"><use href="#i-people"/></svg><span class="count">10</span></span><span class="btn btn-wait">Buat R5 <span class="meta">· tunggu 2 match</span></span></div>
+      <div class="scrim"></div><div class="sheet"><span class="grab"></span><div class="shead"><div><h2>Live score</h2><p>Terkirim 19.53</p></div><span class="txtbtn danger" style="margin:-10px -10px 0 0">Hentikan</span></div><div class="group"><div class="row pad"><span class="rowic" style="background:var(--card)"><svg class="ic"><use href="#i-link"/></svg></span><div class="grow"><span class="url">asepsugi.github.io/mabar/<wbr>#/live/K7Q2MX</span></div></div></div><span class="btn btn-primary" style="flex:none"><svg class="ic ic-s"><use href="#i-share"/></svg>Bagikan link</span></div><div class="scrim"></div><div class="dialog"><h2>Hentikan live score?</h2><p>Link tidak bisa dibuka lagi.</p><div class="dactions"><span class="txtbtn">Batal</span><span class="txtbtn danger">Hentikan</span></div></div></div>
+      <ul><li>Dialog muncul di atas sheet 12c; Batal kembali ke sheet. Data live di server dihapus saat itu juga dan sheet tertutup; penonton melihat 12n.</li><li>Bisa dimulai lagi lewat menu, tapi dapat link baru.</li><li>"Hapus &amp; mulai baru" di Beranda (01h) juga menghentikan live turnamen yang dihapus.</li></ul>
+    </div>
+
+    <div class="scr">
+      <div class="cap"><b>12f</b><span>Menu ⋯ · Fixed · diakhiri · live aktif</span></div>
+      <div class="app">
+        <div class="appbar"><span class="icbtn"><svg class="ic"><use href="#i-back"/></svg></span><div class="t"><h1>Round 5</h1><p>Tennis · Race to 6 · diakhiri</p></div><span class="icbtn" style="background:var(--fill)"><svg class="ic"><use href="#i-more"/></svg></span></div>
+        <div class="tabs"><b>R1</b><b>R2</b><b>R3</b><b>R4</b><b class="on">R5</b><span class="meta">1/2 match</span></div>
+        <div class="body" style="padding-top:12px">
+          <div class="list">
+            <div class="bug wide"><div class="court n" style="--c:#2F8F5B">1</div><div class="teams"><div class="team win"><i class="w"></i><span class="nm">Andi · Budi</span><span class="sets"><b class="s n">6</b></span></div><div class="team"><i class="w"></i><span class="nm">Indra · Joko</span><span class="sets"><b class="s n l">5</b></span></div></div><span></span></div>
+            <div class="bug cancelled wide"><div class="court n">2</div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Citra · Dewant</span></div><div class="team"><i class="w"></i><span class="nm">Gina · Hana</span></div></div><span class="note-r" style="text-decoration:none">Tidak dimainkan</span></div>
+          </div>
+          <div class="rest"><div class="ghead"><span class="glabel">Istirahat</span></div><div class="names"><span>Eko · Fajar</span></div></div>
+        </div>
+        <div class="actionbar"><span class="btn btn-primary"><svg class="ic ic-s"><use href="#i-podium"/></svg>Lihat klasemen</span></div>
+      <div class="menu"><div class="mi"><svg class="ic"><use href="#i-broadcast"/></svg>Live score<i class="on-dot"></i></div></div></div>
+      <ul><li>Titik bola di ujung item = live sedang aktif.</li><li>⋯ di Fixed yang sudah diakhiri tetap aktif (06c): menunya berisi Live score.</li><li>Live tetap jalan setelah Akhiri dan setelah "Selesai" di Bagikan, jadi penonton melihat hasil Final (12l). Dihapus otomatis 3 hari setelah perubahan terakhir.</li><li>Fixed yang masih berjalan: Live score lalu garis, lalu Akhiri turnamen.</li></ul>
+    </div>
+
+    <div class="scr">
+      <div class="cap"><b>12g</b><span>Toast · gagal mulai</span></div>
+      <div class="app">
+        <div class="appbar"><span class="icbtn"><svg class="ic"><use href="#i-back"/></svg></span><div class="t"><h1>Round 4</h1><p>Padel · Americano 21</p></div><span class="icbtn"><svg class="ic"><use href="#i-more"/></svg></span></div>
+        <div class="tabs"><b>R1</b><b>R2</b><b>R3</b><b class="on">R4<i class="live"></i></b><span class="meta">0/2 match</span></div>
+        <div class="body" style="padding-top:12px"><div class="list">
+          <div class="bug wide"><div class="court n timed" style="--c:#2F8F5B"><span>1</span><span class="cd">01:07</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Indra · Citra</span></div><div class="team"><i class="w"></i><span class="nm">Joko · Hana</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+          <div class="bug wide"><div class="court n timed" style="--c:#C4532D"><span>2</span><span class="cd">01:07</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Andi · Fajar</span></div><div class="team"><i class="w"></i><span class="nm">Budi · Gina</span></div></div><span class="btn btn-primary btn-sm cta">Isi skor</span></div>
+        </div>
+          <div class="rest"><div class="ghead"><span class="glabel">Istirahat · <span class="prio">Prioritas main di R5</span></span></div><div class="names"><span>Dewant R</span><span>Eko M</span></div></div>
+          <div style="display:flex;justify-content:center"><span class="btn btn-ghost btn-sm"><svg class="ic ic-s"><use href="#i-undo"/></svg>Batalkan R4</span></div>
+        </div>
+        <div class="actionbar"><span class="icbtn solid"><svg class="ic"><use href="#i-podium"/></svg></span><span class="icbtn solid"><svg class="ic"><use href="#i-people"/></svg><span class="count">10</span></span><span class="btn btn-wait">Buat R5 <span class="meta">· tunggu 2 match</span></span></div>
+      <div class="toast"><svg class="ic ic-s"><use href="#i-wifi-slash"/></svg>Tidak ada internet · live belum dimulai</div></div>
+      <ul><li>Satu-satunya saat live butuh internet di HP host. Setelah menyala, sinyal putus hanya menunda kiriman (12d).</li><li>Toast 19 pt di atas action bar, sama dengan "Hasil disalin" (11c).</li></ul>
+    </div>
+
+    <div class="scr">
+      <div class="cap"><b>12h</b><span>Live · Jadwal Mixed · bernama</span></div>
+      <div class="app">
+        <div class="appbar no-back"><div class="t"><h1>Round 3</h1><p>Rabu Padel Matcha Club · Americano 21</p></div><span class="livetag"><i></i>Live</span></div>
+        <div class="tabs"><b>R1</b><b>R2</b><b class="on">R3<i class="live"></i></b><span class="meta">1/2 match</span></div>
+        <div class="body" style="padding-top:12px">
+          <div class="list">
+            <div class="bug wide"><div class="court n timed" style="--c:#2F8F5B"><span>1</span><span class="cd">01:20</span></div><div class="teams"><div class="team win"><i class="w"></i><span class="nm">Andi · Dewant</span><span class="sets"><b class="s n">13</b></span></div><div class="team"><i class="w"></i><span class="nm">Citra · Fajar</span><span class="sets"><b class="s n l">8</b></span></div></div><span></span></div>
+            <div class="bug wide"><div class="court n timed" style="--c:#C4532D"><span>2</span><span class="cd">01:20</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Eko · Budi</span></div><div class="team"><i class="w"></i><span class="nm">Hana · Gina</span></div></div><span></span></div>
+          </div>
+          <div class="rest"><div class="ghead"><span class="glabel">Istirahat · <span class="prio">Prioritas main di R4</span></span></div><div class="names"><span>Indra W</span><span>Joko S</span></div></div>
+        </div>
+        <div class="actionbar"><span class="btn btn-secondary"><svg class="ic ic-s"><use href="#i-podium"/></svg>Klasemen</span></div>
+      </div>
+      <ul><li>Halaman ini web Mabar yang sama (<code>asepsugi.github.io/mabar/#/live/K7Q2MX</code>) dalam mode baca saja: dibuka di browser, tanpa pasang app. Datanya tidak pernah menimpa turnamen di HP penonton sendiri.</li><li>Beda dengan host: tanpa tombol kembali, ⋯ diganti tag "Live", match kosong tanpa "Isi skor", baris tidak bisa diketuk, tanpa Batalkan, Pemain, dan Buat round. Action bar tinggal Klasemen.</li><li>Subjudul: nama turnamen menggantikan olahraga kalau ada (seperti Beranda); tanpa nama sama dengan host (12i).</li><li>Dicek tiap 10 detik selama halaman terbuka; berhenti saat tab di belakang dan langsung dicek lagi saat dibuka. Hitung mundur court jalan sendiri dari jam mulai turnamen.</li><li>Tab default sama dengan host. Round baru muncul → ikut pindah kalau penonton sedang di round terakhir; kalau sedang melihat round lain, tetap di situ.</li><li>Istirahat · Prioritas main di R4 tetap tampil: pemain bisa tahu kapan main.</li></ul>
+    </div>
+
+    <div class="scr">
+      <div class="cap"><b>12i</b><span>Live · Jadwal Fixed · tanpa nama</span></div>
+      <div class="app">
+        <div class="appbar no-back"><div class="t"><h1>Round 2</h1><p>Tennis · Race to 6</p></div><span class="livetag"><i></i>Live</span></div>
+        <div class="tabs"><b>R1</b><b class="on">R2<i class="live"></i></b><b class="future">R3</b><b class="future">R4</b><b class="future">R5</b><span class="meta">1/2 match</span></div>
+        <div class="body" style="padding-top:12px">
+          <div class="list">
+            <div class="bug wide"><div class="court n timed" style="--c:#2F8F5B"><span>1</span><span class="cd">01:15</span></div><div class="teams"><div class="team win"><i class="w"></i><span class="nm">Andi · Budi</span><span class="sets"><b class="s n">6</b></span></div><div class="team"><i class="w"></i><span class="nm">Citra · Dewant</span><span class="sets"><b class="s n l">4</b></span></div></div><span></span></div>
+            <div class="bug wide"><div class="court n timed" style="--c:#C4532D"><span>2</span><span class="cd">01:15</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Eko · Fajar</span></div><div class="team"><i class="w"></i><span class="nm">Gina · Hana</span></div></div><span></span></div>
+          </div>
+          <div class="rest"><div class="ghead"><span class="glabel">Istirahat</span></div><div class="names"><span>Indra · Joko</span></div></div>
+        </div>
+        <div class="actionbar"><span class="btn btn-secondary"><svg class="ic ic-s"><use href="#i-podium"/></svg>Klasemen</span></div>
+      </div>
+      <ul><li>Fixed: semua round sudah ada sejak awal, round terkunci tetap bisa dibuka untuk melihat lawan.</li><li>Action bar Klasemen sama dengan host (06a).</li></ul>
+    </div>
+
+    <div class="scr">
+      <div class="cap"><b>12j</b><span>Live · Klasemen</span></div>
+      <div class="app">
+        <div class="appbar"><span class="icbtn"><svg class="ic"><use href="#i-back"/></svg></span><div class="t"><h1>Klasemen</h1><p>Padel · Mixed · Sementara · R3 · 6 dari 6 match</p></div></div>
+        <div class="seg-wrap"><div class="seg"><b class="on">Total Point</b><b>Win %</b></div></div>
+        <div class="body flush" style="padding-top:12px;gap:10px">
+          <div class="rank">
+            <div class="rrow head"><span>#</span><span>Pemain</span><span>Main</span><span>W–L–D</span><span>Poin</span></div>
+            <div class="rrow"><b class="r lead n">1</b><span class="nm">Andi P</span><span class="mp n">3</span><span class="c3 n">3–0–0</span><b class="c4 n">42</b></div>
+            <div class="rrow"><b class="r lead n">1</b><span class="nm">Dewant R</span><span class="mp n">3</span><span class="c3 n">3–0–0</span><b class="c4 n">42</b></div>
+            <div class="rrow"><b class="r n">3</b><span class="nm">Hana T</span><span class="mp n">3</span><span class="c3 n">1–1–1</span><b class="c4 n">36</b></div>
+            <div class="rrow"><b class="r n">4</b><span class="nm">Fajar K</span><span class="mp n">3</span><span class="c3 n">0–2–1</span><b class="c4 n">30</b></div>
+            <div class="rrow"><b class="r n">5</b><span class="nm">Gina R</span><span class="mp n">2</span><span class="c3 n">1–0–1</span><b class="c4 n">27</b></div>
+            <div class="rrow"><b class="r n">6</b><span class="nm">Citra L</span><span class="mp n">2</span><span class="c3 n">1–1–0</span><b class="c4 n">26</b></div>
+            <div class="rrow"><b class="r n">7</b><span class="nm">Joko S</span><span class="mp n">2</span><span class="c3 n">1–1–0</span><b class="c4 n">23</b></div>
+            <div class="rrow"><b class="r n">8</b><span class="nm">Eko M</span><span class="mp n">2</span><span class="c3 n">0–1–1</span><b class="c4 n">22</b></div>
+            <div class="rrow"><b class="r n">9</b><span class="nm">Budi S</span><span class="mp n">2</span><span class="c3 n">0–2–0</span><b class="c4 n">20</b></div>
+            <div class="rrow"><b class="r n">9</b><span class="nm">Indra W</span><span class="mp n">2</span><span class="c3 n">0–2–0</span><b class="c4 n">20</b></div>
+            <div class="rrow sub"><span></span><span>Belum main</span><span></span><span></span><span></span></div>
+            <div class="rrow idle"><span class="r n">–</span><span class="nm">Gilang S</span><span class="mp">–</span><span class="c3">–</span><span class="c4">–</span></div>
+          </div>
+        </div>
+      </div>
+      <ul><li>Sama dengan host minus Bagikan, dan tanpa tag: subjudulnya panjang, dan tag ada di Jadwal tempat penonton datang dan kembali. Isinya tetap ikut diperbarui. Metode (Total Point / Win %) dipilih sendiri oleh tiap penonton, tidak ikut pilihan host.</li><li>Baris diketuk → Detail (12k). Kembali → Jadwal.</li></ul>
+    </div>
+
+    <div class="scr">
+      <div class="cap"><b>12k</b><span>Live · Detail pemain</span></div>
+      <div class="app">
+        <div class="appbar"><span class="icbtn"><svg class="ic"><use href="#i-back"/></svg></span><div class="t"><h1>Andi P</h1><p>Peringkat 1 · Padel · Mixed · Americano 24</p></div></div>
+        <div class="body">
+          <div class="statline"><div><b class="n">42</b><span>Poin</span></div><div><b class="n">100<small style="font-size:16px">%</small></b><span>Win</span></div><div><b class="n">3–0–0</b><span>W–L–D</span></div><div><b class="n">+12</b><span>Selisih poin</span></div></div>
+          <div class="group">
+            <div class="row"><span class="grow">Beda partner</span><b class="n" style="font-size:20px">3 / 10</b></div>
+            <div class="row"><span class="grow">Beda lawan</span><b class="n" style="font-size:20px">5 / 10</b></div>
+            <div class="row"><span class="grow">Kalah WO</span><b class="n" style="font-size:20px">0</b></div>
+          </div>
+          <span class="glabel">Riwayat match</span>
+          <div class="list">
+            <div class="bug" style="min-height:0"><div class="court n" style="--c:var(--ink);font-size:14px">R3</div><div class="teams"><div class="team win"><i class="w"></i><span class="nm">Andi · Dewant</span><span class="sets"><b class="s n">13</b></span></div><div class="team"><i class="w"></i><span class="nm">vs Citra · Indra</span><span class="sets"><b class="s n l">11</b></span></div></div><span></span></div>
+            <div class="bug" style="min-height:0"><div class="court n" style="--c:var(--ink);font-size:14px">R2</div><div class="teams"><div class="team win"><i class="w"></i><span class="nm">Andi · Gina</span><span class="sets"><b class="s n">15</b></span></div><div class="team"><i class="w"></i><span class="nm">vs Fajar · Indra</span><span class="sets"><b class="s n l">9</b></span></div></div><span></span></div>
+            <div class="bug" style="min-height:0"><div class="court n" style="--c:var(--ink);font-size:14px">R1</div><div class="teams"><div class="team win"><i class="w"></i><span class="nm">Andi · Hana</span><span class="sets"><b class="s n">14</b></span></div><div class="team"><i class="w"></i><span class="nm">vs Budi · Eko</span><span class="sets"><b class="s n l">10</b></span></div></div><span></span></div>
+          </div>
+        </div>
+      </div>
+      <ul><li>Sama persis dengan Detail host (10a/10b/10c), tanpa tag seperti Klasemen; ikut diperbarui saat ada skor baru.</li></ul>
+    </div>
+
+    <div class="scr">
+      <div class="cap"><b>12l</b><span>Live · diakhiri</span></div>
+      <div class="app">
+        <div class="appbar no-back"><div class="t"><h1>Round 5</h1><p>Padel · Americano 21 · diakhiri</p></div></div>
+        <div class="tabs"><b>R1</b><b>R2</b><b>R3</b><b>R4</b><b class="on">R5</b><span class="meta">1/2 match</span></div>
+        <div class="body" style="padding-top:12px">
+          <div class="list">
+            <div class="bug wide"><div class="court n" style="--c:#2F8F5B">1</div><div class="teams"><div class="team win"><i class="w"></i><span class="nm">Andi · Gina</span><span class="sets"><b class="s n">11</b></span></div><div class="team"><i class="w"></i><span class="nm">Budi · Indra</span><span class="sets"><b class="s n l">10</b></span></div></div><span></span></div>
+            <div class="bug cancelled wide"><div class="court n">2</div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Citra · Eko</span></div><div class="team"><i class="w"></i><span class="nm">Hana · Joko</span></div></div><span class="note-r" style="text-decoration:none">Tidak dimainkan</span></div>
+          </div>
+          <div class="rest"><div class="ghead"><span class="glabel">Istirahat · <span class="prio">Prioritas main di R6</span></span></div><div class="names"><span>Dewant R</span><span>Fajar K</span></div></div>
+        </div>
+        <div class="actionbar"><span class="btn btn-primary"><svg class="ic ic-s"><use href="#i-podium"/></svg>Lihat klasemen</span></div>
+      </div>
+      <ul><li>Final (diakhiri, atau syarat Final 09f/09c): tag "Live" hilang, "Lihat klasemen" jadi tombol utama seperti host Fixed (06c).</li><li>Tetap dicek tiap menit: kalau host Lanjutkan (Mixed), tag dan jadwal kembali.</li></ul>
+    </div>
+
+    <div class="scr">
+      <div class="cap"><b>12m</b><span>Live · HP penonton offline</span></div>
+      <div class="app">
+        <div class="appbar no-back"><div class="t"><h1>Round 3</h1><p>Rabu Padel Matcha Club · Americano 21</p></div><span class="livetag off"><i></i>Offline</span></div>
+        <div class="tabs"><b>R1</b><b>R2</b><b class="on">R3<i class="live"></i></b><span class="meta">1/2 match</span></div>
+        <div class="body" style="padding-top:12px">
+          <div class="list">
+            <div class="bug wide"><div class="court n timed" style="--c:#2F8F5B"><span>1</span><span class="cd">01:20</span></div><div class="teams"><div class="team win"><i class="w"></i><span class="nm">Andi · Dewant</span><span class="sets"><b class="s n">13</b></span></div><div class="team"><i class="w"></i><span class="nm">Citra · Fajar</span><span class="sets"><b class="s n l">8</b></span></div></div><span></span></div>
+            <div class="bug wide"><div class="court n timed" style="--c:#C4532D"><span>2</span><span class="cd">01:20</span></div><div class="teams"><div class="team"><i class="w"></i><span class="nm">Eko · Budi</span></div><div class="team"><i class="w"></i><span class="nm">Hana · Gina</span></div></div><span></span></div>
+          </div>
+          <div class="rest"><div class="ghead"><span class="glabel">Istirahat · <span class="prio">Prioritas main di R4</span></span></div><div class="names"><span>Indra W</span><span>Joko S</span></div></div>
+        </div>
+        <div class="actionbar"><span class="btn btn-secondary"><svg class="ic ic-s"><use href="#i-podium"/></svg>Klasemen</span></div>
+      </div>
+      <ul><li>Cek gagal dua kali berturut-turut (±20 detik) → tag "Offline" abu-abu; data terakhir tetap tampil. Kembali "Live" begitu cek berhasil.</li><li>Host yang offline tidak kelihatan dari sini: jadwal hanya berhenti berubah (12d).</li></ul>
+    </div>
+
+    <div class="scr">
+      <div class="cap"><b>12n</b><span>Live · link tidak ditemukan</span></div>
+      <div class="app">
+        <div class="appbar no-back"><div class="t"></div></div>
+        <div class="centermsg"><h2>Live tidak ditemukan</h2><span class="btn btn-secondary btn-sm">Buka Mabar</span></div>
+      </div>
+      <ul><li>Untuk link salah, live yang dihentikan (12e), dan live yang terhapus otomatis (3 hari tanpa perubahan).</li><li>Data dari versi app host yang tidak bisa dibaca (beda <code>schemaVersion</code>): judul "Live tidak bisa dibuka", tombol sama.</li><li>"Buka Mabar" → Beranda, jadi penonton bisa memakai Mabar sendiri.</li></ul>
+    </div>
+
+    <div class="scr">
+      <div class="cap"><b>12o</b><span>Live · memuat</span></div>
+      <div class="app">
+        <div class="appbar no-back"><div class="t"></div></div>
+        <div class="centermsg"><svg width="40" height="40" aria-hidden="true"><use href="#ball"/></svg></div>
+      </div>
+      <ul><li>Saat web dimuat dan cek pertama belum kembali. Bola yang sama dengan wordmark, berputar.</li></ul>
+    </div>
+  </div>
+</section>
+
 <section class="flow" id="cakupan">
   <div class="flow-head">
     <h2>Cakupan</h2>
@@ -2556,6 +2840,7 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
         <tr><td>08 Klasemen</td><td>Sementara/Final, Total Point / Win %, baris Mixed &amp; pasangan Fixed, seri, selisih negatif, jumlah WO, Bagikan, ketuk ke Detail</td><td>09a–09f</td></tr>
         <tr><td>09 Detail Pemain</td><td>Statistik, beda partner/lawan, kalah WO, riwayat menang/kalah/seri/WO, belum ada match</td><td>10a–10c</td></tr>
         <tr><td>Baru: Nama turnamen</td><td>Kotak nama di Atur turnamen (kosong / diisi), nama di baris riwayat, banner turnamen berjalan, dialog mulai baru, baris kecil poster (Feed satu baris, Story dua), ringkasan bertanggal, caption</td><td>03a–03e, 01a, 01e, 01h, 11a, 11d, 11f</td></tr>
+        <tr><td>Baru: Live score</td><td>Menu ⋯ Live score (Fixed, Mixed, setelah diakhiri), dialog mulai, gagal tanpa internet, sheet link (terkirim / menunggu internet), Bagikan link, Hentikan + dialog; halaman penonton: Jadwal Mixed bernama &amp; Fixed, Klasemen, Detail, Final, Offline, tidak ditemukan / tidak bisa dibuka, memuat</td><td>06c, 06d, 06i, 12a–12o</td></tr>
         <tr><td>10 Bagikan</td><td>Kartu pratinjau, 10 tema, Ringkas/Lengkap (sampai 30 pemain / 15 pasangan), menyiapkan gambar, poster Feed &amp; Story, caption, toast Hasil disalin, Selesai</td><td>11a–11l</td></tr>
       </tbody>
     </table>
@@ -2571,6 +2856,7 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
     <div class="panel">
       <h3>Sudah disetujui</h3>
       <ul class="ruleslist">
+        <li>Live score (ide host, 2026-10-24): host membagikan link dan pemain lain melihat Jadwal, Klasemen, dan Detail per pemain di browser, Fixed dan Mixed. Tanpa database: relay kecil di Cloudflare yang hanya memegang salinan turnamen terakhir per kode, terhapus 3 hari setelah perubahan terakhir atau saat Hentikan. Item di menu ⋯ (bukan tombol baru), dialog sebelum mulai karena nama pemain jadi terbuka, tag "Live"/"Offline" hanya di Jadwal penonton, nama turnamen menggantikan olahraga di subjudul penonton, ⋯ Fixed setelah diakhiri tetap aktif (06c). Preview link WhatsApp tetap generik "Mabar" (12a–12o).</li>
         <li>Batas pemain naik dari 20 ke 30, sama untuk Fixed dan Mixed (layar Pemain, Kelola pemain), karena kebutuhan nyata klub 24–26 orang. Poster Lengkap: pasangan selalu satu kolom; lebih padat dari 10 baris satu kolom atau 20 baris nama di Story, semua huruf baris dikecilkan sebanding (11k, 11l). Frame terpadat 02d, 04e, 06o digambar ulang untuk 30 pemain (2026-10-23).</li>
         <li>Nama turnamen (usulan pemain, 2026-10-23): opsional, maks 40 karakter supaya gabungan klub muat, hanya diisi di Atur turnamen. Menggantikan "olahraga · mode" di Beranda dan baris kecil di atas judul poster (tanggal pindah ke ringkasan bawah). Nama sebagai judul besar poster tidak dipakai: nama gabungan klub jadi tiga baris di Feed dan mendorong daftar keluar kartu. Tanpa nama semua tampilan tetap.</li>
         <li>Sisa booking ditulis per court sebagai hitung mundur jam:menit ("01:46") di kotak jam tinta 22% di dasar strip court (strip 42 pt), hanya di round yang sedang berjalan; subjudul Jadwal tidak lagi menulis waktu. Dipilih dari dua varian karena teks putih kecil langsung di warna court gagal kontras di 4 dari 10 warna (2026-10-22).</li>

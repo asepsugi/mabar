@@ -169,6 +169,21 @@ class MabarRow extends StatelessWidget {
   }
 }
 
+/// `.rowic` — ikon 24 biru court di kotak kartu 38 pt, pembuka baris (panel Beranda, link di sheet Live score).
+class MabarRowIcon extends StatelessWidget {
+  final IconData icon;
+
+  const MabarRowIcon(this.icon, {super.key});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 38,
+    height: 38,
+    decoration: BoxDecoration(color: MabarColors.card, borderRadius: BorderRadius.circular(MabarRadius.smallButton)),
+    child: Icon(icon, size: MabarSize.icon, color: MabarColors.court),
+  );
+}
+
 /// `.glabel` — label di atas grup (13/700 ink-3). Jaraknya ke grup 8; lihat [MabarSection].
 class MabarGroupLabel extends StatelessWidget {
   final String text;

@@ -109,4 +109,13 @@ class MabarIcons {
 
   /// `square-split-horizontal` — Kelola court (menu ⋯ Mixed): lapangan dengan net.
   static const squareSplitHorizontal = IconData(0xe870, fontFamily: _family);
+
+  /// `broadcast` — Live score (menu ⋯ Jadwal).
+  static const broadcast = IconData(0xe0f2, fontFamily: _family);
+
+  /// `link` — link live di sheet Live score.
+  static const link = IconData(0xe2e2, fontFamily: _family);
+
+  /// `wifi-slash` — toast "Tidak ada internet".
+  static const wifiSlash = IconData(0xe4f2, fontFamily: _family);
 }

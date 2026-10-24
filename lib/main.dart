@@ -6,7 +6,10 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/mabar_theme.dart';
+import 'features/live/live_host_controller.dart';
+import 'features/live/live_view_controller.dart';
 import 'features/schedule/tournament_controller.dart';
+import 'services/live/live_relay.dart';
 import 'services/storage/tournament_store.dart';
 
 Future<void> main() async {
@@ -20,8 +23,19 @@ Future<void> main() async {
 
   SystemChrome.setSystemUIOverlayStyle(MabarTheme.statusBarDark);
 
+  // Dibuka dari link live (`#/live/KODE`): seluruh app jadi halaman penonton. Turnamen datang dari relay dan
+  // simpanan Hive penonton sendiri tidak dibuka, jadi turnamennya di HP ini tidak pernah tertimpa.
+  final liveCode = LiveRelay.codeIn(Uri.base);
   runApp(
-    ProviderScope(overrides: [tournamentStoreProvider.overrideWithValue(await _openStore())], child: const MabarApp()),
+    ProviderScope(
+      overrides: liveCode == null
+          ? [tournamentStoreProvider.overrideWithValue(await _openStore())]
+          : [
+              liveCodeProvider.overrideWithValue(liveCode),
+              tournamentProvider.overrideWith(LiveTournamentController.new),
+            ],
+      child: const MabarApp(),
+    ),
   );
 }
 
@@ -37,11 +51,13 @@ Future<TournamentStore> _openStore() async {
   }
 }
 
-class MabarApp extends StatelessWidget {
+class MabarApp extends ConsumerWidget {
   const MabarApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Live score host hidup sepanjang app: skor dari layar mana pun, dan resume dari Beranda, ikut terkirim.
+    ref.listen(liveHostProvider, (_, __) {});
     return MaterialApp.router(
       title: 'Mabar',
       debugShowCheckedModeBanner: false,

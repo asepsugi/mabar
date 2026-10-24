@@ -50,6 +50,10 @@ class MabarColors {
   /// mati, strip court match yang tidak dimainkan. `#C3CCD4` di CSS hi-fi (tidak ada di tokens.json).
   static const off = Color(0xFFC3CCD4);
 
+  /// Teks/tanda yang belum aktif: tab round di depan, aksi baris mati, titik tag "Offline" (12m). `#B3BEC8` di
+  /// CSS hi-fi (tidak ada di tokens.json).
+  static const dim = Color(0xFFB3BEC8);
+
   /// [ink] 46% di belakang sheet dan dialog — keduanya tanpa bayangan, scrim inilah pemisahnya.
   static const scrim = Color(0x750F1E2C);
 

@@ -8,6 +8,7 @@ import '../../core/widgets/mabar_controls.dart';
 import '../../core/widgets/mabar_inputs.dart';
 import '../../models/models.dart';
 import '../../services/ranking/ranking_calculator.dart';
+import '../live/live_view_controller.dart';
 import '../schedule/tournament_controller.dart';
 import 'widgets/standing_table.dart';
 
@@ -27,6 +28,7 @@ class LeaderboardScreen extends ConsumerWidget {
     final active = ref.watch(tournamentProvider);
     if (active == null) return const Scaffold(backgroundColor: MabarColors.paper);
 
+    final watching = ref.watch(liveCodeProvider) != null;
     final method = ref.watch(rankingMethodProvider);
     final entries = ref.watch(standingEntriesProvider);
     final config = active.config;
@@ -60,7 +62,7 @@ class LeaderboardScreen extends ConsumerWidget {
           ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.only(top: 12, bottom: 16),
+              padding: EdgeInsets.only(top: 12, bottom: 16 + (watching ? MediaQuery.paddingOf(context).bottom : 0)),
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -97,13 +99,15 @@ class LeaderboardScreen extends ConsumerWidget {
               ],
             ),
           ),
-          MabarActionBar(
-            children: [
-              Expanded(
-                child: MabarButton(label: 'Bagikan', icon: MabarIcons.shareNetwork, onPressed: () => context.push('/share')),
-              ),
-            ],
-          ),
+          // Penonton (12j) tidak membagikan poster.
+          if (!watching)
+            MabarActionBar(
+              children: [
+                Expanded(
+                  child: MabarButton(label: 'Bagikan', icon: MabarIcons.shareNetwork, onPressed: () => context.push('/share')),
+                ),
+              ],
+            ),
         ],
       ),
     );

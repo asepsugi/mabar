@@ -1,10 +1,10 @@
 # PRD — Aplikasi Mabar Tennis/Padel (Klub/Komunitas)
 
-**Versi dokumen:** 2.4 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21; Kelola court 2026-10-22; nama turnamen dan batas 30 pemain 2026-10-23) dan app **2.4.0**
+**Versi dokumen:** 2.5 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21; Kelola court 2026-10-22; nama turnamen dan batas 30 pemain 2026-10-23; live score 2026-10-24) dan app **2.5.0**
 **Platform:** Android + iOS + Web/PWA (1 codebase — Flutter)
 **Target user:** Host mabar klub/komunitas tennis & padel, 4–30 pemain per turnamen, 1 HP host, offline
 
-Acuan visual dan perilaku per layar ada di hi-fi (frame 01a–11j + catatan perilaku) dan `design/spec/`. PRD ini
+Acuan visual dan perilaku per layar ada di hi-fi (frame 01a–12o + catatan perilaku) dan `design/spec/`. PRD ini
 memuat aturan produk dan logika; kalau ada beda dengan hi-fi soal tampilan, hi-fi yang benar. Aturan logika rinci +
 data test: `design/spec/logic.md`.
 
@@ -282,6 +282,25 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 - Format simpanan: `schemaVersion` 2 + **`appVersion`** (versi app yang menulisnya). Data rusak, dari skema lain,
   atau tanpa `appVersion` diabaikan (app tetap terbuka). **Turnamen dari app lama (1.x, skor per set) tidak dimuat di
   app v2** — keputusan host 2026-10-22.
+- Satu-satunya data yang keluar dari HP adalah live score (5.11), dan hanya setelah host memulainya.
+
+### 5.11 Live score (12a–12o)
+- Host memulai live dari menu ⋯ Jadwal (Fixed dan Mixed, juga setelah diakhiri) lewat dialog "Mulai live score?",
+  karena nama pemain jadi bisa dilihat siapa saja yang punya link. Mulai butuh internet sekali; gagal → toast, live
+  tidak menyala.
+- Sheet Live score: link `asepsugi.github.io/mabar/#/live/KODE` (kode 6 karakter tanpa 0/O/1/I/L), jam kiriman
+  terakhir ("Terkirim 19.53" / "Menunggu internet · terakhir terkirim 19.48"), Bagikan link (share sheet; gagal → link
+  disalin), Hentikan (dialog → data live dihapus; tanpa internet live tetap menyala dan toast memberi tahu).
+- Setiap perubahan turnamen dikirim utuh ke relay, jadi tidak ada antrean: tanpa internet dicoba lagi tiap 30 detik
+  dan setiap ada perubahan, yang terkirim selalu keadaan terbaru. App tetap jalan offline seperti biasa.
+- Live tetap ada setelah "Selesai" (turnamen terakhir) dan berlanjut dengan kode yang sama kalau dilanjutkan dari
+  Beranda. "Hapus & mulai baru" menghentikan live turnamen yang dibuang.
+- Penonton membuka link di browser (web Mabar, tanpa pasang): Jadwal, Klasemen (tanpa Bagikan, metode dipilih
+  sendiri), dan Detail, baca saja. Dicek tiap 10 detik selama halaman terlihat, tiap menit setelah Final. Tag "Live" di
+  Jadwal, "Offline" setelah dua kali gagal, hilang saat Final. Subjudul memakai nama turnamen kalau ada. Simpanan
+  turnamen penonton sendiri tidak tersentuh.
+- Relay tanpa database: satu salinan terakhir per kode, terhapus 3 hari setelah perubahan terakhir atau saat Hentikan.
+  Aturan rinci: `design/spec/logic.md` §11.
 
 ---
 
@@ -300,6 +319,7 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 | Klasemen | 09a–09f |
 | Detail Pemain | 10a–10c |
 | Bagikan | 11a–11l |
+| Live score: menu, dialog, sheet di HP host; halaman penonton (Jadwal, Klasemen, Detail) | 12a–12o |
 
 State teks sederhana tanpa frame: "Halaman tidak ditemukan", "Belum ada turnamen berjalan", "Match tidak ditemukan",
 "Pemain tidak ditemukan", spinner saat Jadwal membuat round pertama.
@@ -367,6 +387,9 @@ State teks sederhana tanpa frame: "Halaman tidak ditemukan", "Belum ada turnamen
 10. Batas pemain 30 (dulu 20), sama untuk Fixed dan Mixed, karena kebutuhan nyata klub 24–26 orang. Poster Lengkap
     menyesuaikan: pasangan selalu satu kolom, dan di atas kepadatan frame yang sudah disetujui huruf baris dikecilkan
     sebanding (2026-10-23).
+11. Live score tanpa database: relay kecil di Cloudflare (Worker + Durable Object, paket gratis) yang hanya memegang
+    salinan turnamen terakhir per kode, terhapus 3 hari setelah perubahan terakhir. Penonton melihat Jadwal, Klasemen,
+    dan Detail; Fixed dan Mixed. Preview link WhatsApp tetap generik "Mabar" (GitHub Pages statis) (2026-10-24).
 
 ---
 

@@ -282,12 +282,10 @@ class MabarRowAction extends StatelessWidget {
 
   const MabarRowAction({super.key, required this.label, this.onPressed, this.restore = false});
 
-  static const _offText = Color(0xFFB3BEC8);
-
   @override
   Widget build(BuildContext context) {
     final off = onPressed == null;
-    final color = off ? _offText : (restore ? MabarColors.court : MabarColors.ink2);
+    final color = off ? MabarColors.dim : (restore ? MabarColors.court : MabarColors.ink2);
     final radius = BorderRadius.circular(MabarRadius.chip);
     return Semantics(
       button: true,

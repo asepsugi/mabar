@@ -1,7 +1,7 @@
 name: mabar
 description: "Aplikasi mabar tennis & padel untuk klub/komunitas."
 publish_to: 'none'
-version: 2.4.0+7
+version: 2.5.0+8
 
 environment:
   sdk: ^3.9.0
@@ -30,6 +30,9 @@ dependencies:
   # Share
   share_plus: ^10.1.2
   screenshot: ^3.0.0
+
+  # Live score: kirim/ambil turnamen dari relay (relay/)
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:

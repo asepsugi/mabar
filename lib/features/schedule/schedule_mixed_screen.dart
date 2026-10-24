@@ -9,6 +9,8 @@ import '../../core/widgets/mabar_controls.dart';
 import '../../core/widgets/mabar_layers.dart';
 import '../../models/models.dart';
 import '../../services/schedule/endless_round_generator.dart';
+import '../live/live_score.dart';
+import '../live/live_view_controller.dart';
 import 'mixed/manage_courts_sheet.dart';
 import 'mixed/manage_players_sheet.dart';
 import 'mixed/mixed_guide_sheet.dart';
@@ -19,10 +21,10 @@ import 'widgets/resting_list.dart';
 import 'widgets/round_tabs.dart';
 import 'widgets/schedule_match_row.dart';
 
-enum _MenuAction { courts, guide, finish }
+enum _MenuAction { live, courts, guide, finish }
 
 /// Screen 06 · Jadwal Mixed — round dibuat satu per satu. Tab default = round terakhir; tombol bawah
-/// selalu untuk round berikutnya dan menulis alasannya kalau belum bisa.
+/// selalu untuk round berikutnya dan menulis alasannya kalau belum bisa. Di halaman penonton (12h) baca saja.
 class ScheduleMixedScreen extends ConsumerStatefulWidget {
   final TournamentConfig config;
   const ScheduleMixedScreen({super.key, required this.config});
@@ -32,7 +34,8 @@ class ScheduleMixedScreen extends ConsumerStatefulWidget {
 }
 
 class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
-  /// Null = round terakhir; kembali ke sana setelah Buat/Batalkan.
+  /// Null = round terakhir; kembali ke sana setelah Buat/Batalkan. Mengetuk tab round terakhir juga null, jadi
+  /// penonton di round terakhir ikut pindah saat host membuat round baru.
   int? _selectedRound;
   MinuteTicker? _clock;
 
@@ -41,7 +44,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
     super.initState();
     // Provider tidak boleh diubah selama widget sedang dibangun, jadi turnamen dimulai sesudah frame ini.
     Future.microtask(() {
-      if (!mounted) return;
+      if (!mounted || ref.read(liveCodeProvider) != null) return;
       final before = ref.read(tournamentProvider);
       ref.read(tournamentProvider.notifier).startIfNeeded(widget.config);
       final after = ref.read(tournamentProvider);
@@ -69,6 +72,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
     final picked = await showMabarMenu<_MenuAction>(
       anchor,
       items: [
+        liveScoreMenuItem(ref, _MenuAction.live),
         if (active.canManageCourts)
           const MabarMenuItem(icon: MabarIcons.squareSplitHorizontal, label: 'Kelola court', value: _MenuAction.courts),
         const MabarMenuItem(icon: MabarIcons.info, label: 'Cara kerja Mixed', value: _MenuAction.guide),
@@ -84,6 +88,8 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
     );
     if (!mounted) return;
     switch (picked) {
+      case _MenuAction.live:
+        await openLiveScore(context, ref);
       case _MenuAction.courts:
         await showManageCourtsSheet(context);
       case _MenuAction.guide:
@@ -119,6 +125,7 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
     final active = ref.watch(tournamentProvider);
     if (active == null || active.roundCount == 0) return const Scaffold(backgroundColor: MabarColors.paper);
 
+    final watching = ref.watch(liveCodeProvider) != null;
     final now = ref.read(clockProvider)();
     final finished = active.tournament.isFinished;
     final last = active.roundCount;
@@ -178,22 +185,25 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
         children: [
           MabarAppBar(
             title: 'Round $selected',
-            subtitle: scheduleSubtitle(active),
-            onBack: () => context.pop(),
+            subtitle: scheduleSubtitle(active, named: watching),
+            onBack: watching ? null : () => context.pop(),
             actions: [
-              Builder(
-                builder: (anchor) => MabarIconButton(
-                  icon: MabarIcons.dotsThree,
-                  semanticLabel: 'Menu',
-                  onPressed: () => _openMenu(anchor, active),
-                ),
-              ),
+              if (!watching)
+                Builder(
+                  builder: (anchor) => MabarIconButton(
+                    icon: MabarIcons.dotsThree,
+                    semanticLabel: 'Menu',
+                    onPressed: () => _openMenu(anchor, active),
+                  ),
+                )
+              else if (!active.isFinal(now))
+                const LiveTag(),
             ],
           ),
           RoundTabs(
             count: last,
             selected: selected,
-            onSelect: (r) => setState(() => _selectedRound = r),
+            onSelect: (r) => setState(() => _selectedRound = r == last ? null : r),
             liveRound: !finished && !active.isRoundComplete(last) ? last : null,
             meta: timeUp ? 'Waktu habis' : '$played/${matches.length} match',
             metaAlert: timeUp,
@@ -208,13 +218,13 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
                     active: active,
                     match: m,
                     now: now,
-                    onTap: () => openScore(m),
-                    onFill: m.status == MatchStatus.pending ? () => openScore(m) : null,
+                    onTap: watching ? null : () => openScore(m),
+                    onFill: !watching && m.status == MatchStatus.pending ? () => openScore(m) : null,
                   ),
                 ],
                 for (final list in resting) ...[const SizedBox(height: 16), list],
                 // Hanya di tab round terakhir: di tab lain bisa terbaca membatalkan round yang dilihat.
-                if (onLast && active.canCancelLastRound) ...[
+                if (!watching && onLast && active.canCancelLastRound) ...[
                   const SizedBox(height: 16),
                   Center(
                     child: MabarButton(
@@ -230,23 +240,25 @@ class _ScheduleMixedScreenState extends ConsumerState<ScheduleMixedScreen> {
             ),
           ),
           MabarActionBar(
-            children: [
-              MabarIconButton(
-                icon: MabarIcons.ranking,
-                semanticLabel: 'Klasemen',
-                solid: true,
-                onPressed: () => context.push('/leaderboard'),
-              ),
-              if (!finished)
-                MabarIconButton(
-                  icon: MabarIcons.users,
-                  semanticLabel: 'Pemain',
-                  solid: true,
-                  count: active.activePlayers.length,
-                  onPressed: () => showManagePlayersSheet(context),
-                ),
-              Expanded(child: primary),
-            ],
+            children: watching
+                ? [Expanded(child: LeaderboardButton(isFinal: active.isFinal(now)))]
+                : [
+                    MabarIconButton(
+                      icon: MabarIcons.ranking,
+                      semanticLabel: 'Klasemen',
+                      solid: true,
+                      onPressed: () => context.push('/leaderboard'),
+                    ),
+                    if (!finished)
+                      MabarIconButton(
+                        icon: MabarIcons.users,
+                        semanticLabel: 'Pemain',
+                        solid: true,
+                        count: active.activePlayers.length,
+                        onPressed: () => showManagePlayersSheet(context),
+                      ),
+                    Expanded(child: primary),
+                  ],
           ),
         ],
       ),

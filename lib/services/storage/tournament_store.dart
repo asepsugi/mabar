@@ -1,11 +1,14 @@
+import 'dart:convert';
+
 import 'package:hive/hive.dart';
 
 import '../../models/models.dart';
+import '../live/live_relay.dart';
 import 'tournament_codec.dart';
 
 /// Penyimpanan turnamen di device. Isinya persis yang diminta PRD bagian 5:
 /// satu turnamen aktif (auto-save tiap perubahan) + satu turnamen terakhir yang
-/// sudah ditutup.
+/// sudah ditutup, ditambah live score yang sedang dibagikan dari HP ini (§13).
 ///
 /// Nilainya disimpan sebagai JSON string, bukan TypeAdapter Hive: model domain
 /// jadi tidak perlu anotasi/codegen, dan format datanya bisa dites lepas dari
@@ -14,6 +17,7 @@ class TournamentStore {
   static const boxName = 'tournament';
   static const _activeKey = 'active';
   static const _lastFinishedKey = 'lastFinished';
+  static const _liveKey = 'live';
 
   final Box<String>? _box;
 
@@ -40,6 +44,12 @@ class TournamentStore {
   ActiveTournament? loadLastFinished() => TournamentCodec.decode(_read(_lastFinishedKey));
 
   Future<void> saveActive(ActiveTournament active) => _write(_activeKey, TournamentCodec.encode(active));
+
+  /// Satu live saja: turnamen aktif, atau turnamen terakhir yang masih bisa dilanjutkan dari Beranda.
+  LiveSession? loadLive() => LiveSession.fromJson(_read(_liveKey));
+
+  Future<void> saveLive(LiveSession? session) =>
+      _write(_liveKey, session == null ? null : jsonEncode(session.toJson()));
 
   /// Menutup turnamen: pindah dari slot aktif ke slot "terakhir selesai".
   /// Sesuai PRD, menutup turnamen tidak menghapus hasilnya.

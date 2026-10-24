@@ -2,87 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mabar/core/widgets/match_score_row.dart';
-import 'package:mabar/core/widgets/mabar_controls.dart';
+import 'package:mabar/features/live/live_host_controller.dart';
+import 'package:mabar/features/live/live_screen.dart';
+import 'package:mabar/features/live/live_view_controller.dart';
 import 'package:mabar/features/schedule/schedule_fixed_screen.dart';
 import 'package:mabar/features/schedule/tournament_controller.dart';
 import 'package:mabar/models/models.dart';
 
 import '../hifi_golden.dart';
+import 'live_fixture.dart';
 import 'schedule_fixture.dart';
 import 'screen_harness.dart';
 
-/// Golden layar penuh Jadwal Fixed, frame 06a–06e. Tennis Race to 6, 10 pemain (5 pasangan), 2 court × 2 jam,
-/// mulai 45 menit lalu. Jadwal round-robin sah (tiap pasangan istirahat sekali):
-/// R1 A istirahat (B–C, D–E) · R2 E (A–B, C–D) · R3 D (A–C, B–E) · R4 B (A–D, C–E) · R5 C (A–E, B–D),
-/// dengan A Andi·Budi, B Citra·Dewant, C Eko·Fajar, D Gina·Hana, E Indra·Joko.
+/// Golden layar penuh Jadwal Fixed, frame 06a–06e. Fixture ([fixedTournament]) di `schedule_fixture.dart`.
 void main() {
-  const names = ['Andi P', 'Budi S', 'Citra L', 'Dewant R', 'Eko M', 'Fajar K', 'Gina R', 'Hana T', 'Indra W', 'Joko S'];
-  final players = [for (var i = 0; i < names.length; i++) Player(id: 'p$i', name: names[i])];
-  final pairs = [for (var i = 0; i < 5; i++) Pair(id: 'pair$i', player1Id: 'p${2 * i}', player2Id: 'p${2 * i + 1}')];
-  final start = DateTime(2026, 10, 22, 19);
-  final config = TournamentConfig(
-    sport: SportType.tennis,
-    mode: PartnerMode.fixed,
-    matchDurationMinutes: 20,
-    courts: const [
-      Court(id: 'c1', name: 'Court 1', colorIndex: 0, bookingDurationMinutes: 120),
-      Court(id: 'c2', name: 'Court 2', colorIndex: 1, bookingDurationMinutes: 120),
-    ],
-    players: players,
-    fixedPairs: pairs,
-  );
-  // (pasangan istirahat, [pair1, pair2] court 1, [pair1, pair2] court 2) per round.
-  const rounds = [
-    (0, [1, 2], [3, 4]),
-    (4, [0, 1], [2, 3]),
-    (3, [0, 2], [1, 4]),
-    (1, [0, 3], [2, 4]),
-    (2, [0, 4], [1, 3]),
-  ];
-
-  /// [scores] per match id ("r2c1") = skor pair1–pair2; match lain pending, atau dibatalkan kalau [finished].
-  ActiveTournament tournament(Map<String, (int, int)> scores, {bool finished = false}) {
-    MatchGame match(int round, int court, List<int> p) {
-      final id = 'r${round}c$court';
-      final base = MatchGame(
-        id: id,
-        roundNumber: round,
-        matchNumberInRound: court,
-        courtId: 'c$court',
-        pair1: pairs[p[0]],
-        pair2: pairs[p[1]],
-      );
-      final score = scores[id];
-      if (score != null) return base.withScore([SetScore(side1: score.$1, side2: score.$2)]);
-      return finished ? base.copyWith(status: MatchStatus.cancelled) : base;
-    }
-
-    return ActiveTournament(
-      tournament: Tournament(
-        id: 't-fixed',
-        createdAt: start,
-        isFinished: finished,
-        config: config,
-        matches: [
-          for (final (i, (_, c1, c2)) in rounds.indexed) ...[match(i + 1, 1, c1), match(i + 1, 2, c2)],
-        ],
-      ),
-      byePairIdByRound: {for (final (i, (bye, _, _)) in rounds.indexed) i + 1: pairs[bye].id},
-    );
-  }
-
-  final running = tournament({'r1c1': (6, 3), 'r1c2': (4, 6), 'r2c1': (6, 4)});
-  final ended = tournament({
-    for (var r = 1; r <= 4; r++) ...{'r${r}c1': (6, 2), 'r${r}c2': (3, 6)},
-    'r5c1': (6, 5),
-  }, finished: true);
+  final running = fixedRunning, ended = fixedEnded;
 
   Widget screen(ActiveTournament active) {
     return hifiScreen(
       ScheduleFixedScreen(config: active.config),
       overrides: [
         tournamentProvider.overrideWith(() => LoadedTournament(active)),
-        clockProvider.overrideWithValue(() => start.add(const Duration(minutes: 45))),
+        clockProvider.overrideWithValue(() => fixedStart.add(const Duration(minutes: 45))),
       ],
     );
   }
@@ -124,6 +65,39 @@ void main() {
         await tester.tap(find.text('Akhiri turnamen'));
       },
     );
+  });
+
+  testWidgets('12f menu ⋯ setelah diakhiri: tetap aktif, Live score menyala', (tester) async {
+    await expectMatchesHifi(
+      tester,
+      hifiScreen(
+        ScheduleFixedScreen(config: ended.config),
+        overrides: [
+          tournamentProvider.overrideWith(() => LoadedTournament(ended)),
+          clockProvider.overrideWithValue(() => fixedStart.add(const Duration(minutes: 45))),
+          liveHostProvider.overrideWith(() => ShownLive(LiveHost(code: 'K7Q2MX', sentAt: fixedStart))),
+        ],
+      ),
+      '12f',
+      act: (tester) => tester.tap(find.bySemanticsLabel('Menu')),
+    );
+  });
+
+  testWidgets('12i penonton Jadwal Fixed tanpa nama', (tester) async {
+    await expectMatchesHifi(
+      tester,
+      hifiScreen(
+        const LiveScreen(),
+        overrides: [
+          liveCodeProvider.overrideWithValue('K7Q2MX'),
+          liveViewProvider.overrideWith(() => Watching(LiveView(LiveViewStatus.live, running))),
+          tournamentProvider.overrideWith(LiveTournamentController.new),
+          clockProvider.overrideWithValue(() => fixedStart.add(const Duration(minutes: 45))),
+        ],
+      ),
+      '12i',
+    );
+    expect(find.text('Isi skor'), findsNothing);
   });
 
   Future<void> pumpRouted(WidgetTester tester, ActiveTournament active, List<String> visited) async {
@@ -172,7 +146,7 @@ void main() {
     expect(visited, ['score:r1c1']);
   });
 
-  testWidgets('Akhiri: match kosong tidak dimainkan, buka Klasemen, item menu hilang', (tester) async {
+  testWidgets('Akhiri: match kosong tidak dimainkan, buka Klasemen, menu tinggal Live score', (tester) async {
     final visited = <String>[];
     await pumpRouted(tester, running, visited);
     await tester.tap(find.bySemanticsLabel('Menu'));
@@ -192,7 +166,11 @@ void main() {
     expect(find.text('Round 5'), findsOneWidget);
     expect(find.text('Tidak dimainkan'), findsNWidgets(2));
     expect(find.text('Lihat klasemen'), findsOneWidget);
-    expect(tester.widget<MabarIconButton>(find.byType(MabarIconButton).last).onPressed, isNull);
     expect(tester.widget<MatchScoreRow>(find.byType(MatchScoreRow).last).onTap, isNull);
+    // ⋯ tetap aktif (12f): Akhiri turnamen hilang, Live score tetap ada.
+    await tester.tap(find.bySemanticsLabel('Menu'));
+    await tester.pumpAndSettle();
+    expect(find.text('Live score'), findsOneWidget);
+    expect(find.text('Akhiri turnamen'), findsNothing);
   });
 }

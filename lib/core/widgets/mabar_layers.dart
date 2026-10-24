@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/mabar_icons.dart';
 import '../theme/mabar_theme.dart';
+import 'mabar_ball.dart';
 import 'mabar_controls.dart';
 
 /// `.sheet` — satu-satunya bottom sheet app. Anatomi: pegangan 38×5 · judul 21/800 · [subtitle] berisi
@@ -295,6 +296,9 @@ class MabarMenuItem<T> {
   final bool enabled;
   final bool dividerBefore;
 
+  /// Titik bola di ujung kanan: fitur item ini sedang menyala (Live score, 12f).
+  final bool live;
+
   const MabarMenuItem({
     required this.icon,
     required this.label,
@@ -302,6 +306,7 @@ class MabarMenuItem<T> {
     this.danger = false,
     this.enabled = true,
     this.dividerBefore = false,
+    this.live = false,
   });
 }
 
@@ -422,6 +427,7 @@ class MabarMenu<T> extends StatelessWidget {
                   maxLines: 1,
                 ),
               ),
+              if (item.live) const LiveDot(),
             ],
           ),
         ),

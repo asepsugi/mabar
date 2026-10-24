@@ -13,6 +13,25 @@ class MabarBall extends StatelessWidget {
   Widget build(BuildContext context) => CustomPaint(size: Size.square(size), painter: const _BallPainter());
 }
 
+/// `.live` — titik bola 7 pt bertepi 1 pt di luar: round yang sedang berjalan (tab), live score yang aktif
+/// (menu ⋯, tag "Live"). [off] = titik abu tanpa tepi (tag "Offline").
+class LiveDot extends StatelessWidget {
+  final bool off;
+
+  const LiveDot({super.key, this.off = false});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 7,
+    height: 7,
+    decoration: BoxDecoration(
+      color: off ? MabarColors.dim : MabarColors.ball,
+      shape: BoxShape.circle,
+      border: off ? null : Border.all(color: MabarColors.ballEdge, strokeAlign: BorderSide.strokeAlignOutside),
+    ),
+  );
+}
+
 class _BallPainter extends CustomPainter {
   const _BallPainter();
 

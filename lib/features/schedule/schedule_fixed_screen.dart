@@ -8,14 +8,18 @@ import '../../core/theme/mabar_theme.dart';
 import '../../core/widgets/mabar_controls.dart';
 import '../../core/widgets/mabar_layers.dart';
 import '../../models/models.dart';
+import '../live/live_score.dart';
+import '../live/live_view_controller.dart';
 import 'schedule_widgets.dart';
 import 'tournament_controller.dart';
 import 'widgets/resting_list.dart';
 import 'widgets/round_tabs.dart';
 import 'widgets/schedule_match_row.dart';
 
+enum _MenuAction { live, finish }
+
 /// Screen 05 · Jadwal Fixed — round-robin penuh sudah dibuat. Semua round bisa dibuka lewat tab, tapi
-/// round di depan round berjalan terkunci sampai semua skor round itu terisi.
+/// round di depan round berjalan terkunci sampai semua skor round itu terisi. Di halaman penonton (12i) baca saja.
 class ScheduleFixedScreen extends ConsumerStatefulWidget {
   final TournamentConfig config;
   const ScheduleFixedScreen({super.key, required this.config});
@@ -34,7 +38,9 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
     super.initState();
     // Provider tidak boleh diubah selama widget sedang dibangun, jadi turnamen dimulai sesudah frame ini.
     Future.microtask(() {
-      if (mounted) ref.read(tournamentProvider.notifier).startIfNeeded(widget.config);
+      if (mounted && ref.read(liveCodeProvider) == null) {
+        ref.read(tournamentProvider.notifier).startIfNeeded(widget.config);
+      }
     });
     // Kotak jam di strip court mengikuti jam sungguhan: ditik di setiap pergantian menit sejak turnamen dimulai.
     _clock = MinuteTicker(
@@ -52,14 +58,31 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
     super.dispose();
   }
 
-  Future<void> _openMenu(BuildContext anchor) async {
-    final picked = await showMabarMenu<bool>(
+  Future<void> _openMenu(BuildContext anchor, bool finished) async {
+    final picked = await showMabarMenu<_MenuAction>(
       anchor,
-      items: const [MabarMenuItem(icon: MabarIcons.flag, label: 'Akhiri turnamen', value: true, danger: true)],
+      items: [
+        liveScoreMenuItem(ref, _MenuAction.live),
+        if (!finished)
+          const MabarMenuItem(
+            icon: MabarIcons.flag,
+            label: 'Akhiri turnamen',
+            value: _MenuAction.finish,
+            danger: true,
+            dividerBefore: true,
+          ),
+      ],
     );
-    if (picked != true || !mounted || !await confirmFinishTournament(context)) return;
-    ref.read(tournamentProvider.notifier).finishNow();
-    if (mounted) context.push('/leaderboard');
+    if (!mounted) return;
+    switch (picked) {
+      case _MenuAction.live:
+        await openLiveScore(context, ref);
+      case _MenuAction.finish:
+        if (!await confirmFinishTournament(context)) return;
+        ref.read(tournamentProvider.notifier).finishNow();
+        if (mounted) context.push('/leaderboard');
+      case null:
+    }
   }
 
   @override
@@ -67,6 +90,8 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
     final active = ref.watch(tournamentProvider);
     if (active == null) return const Scaffold(backgroundColor: MabarColors.paper);
 
+    final watching = ref.watch(liveCodeProvider) != null;
+    final now = ref.read(clockProvider)();
     final finished = active.tournament.isFinished;
     final current = active.currentRound;
     final live = !finished && !active.isRoundComplete(current);
@@ -78,6 +103,7 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
     final byePair = byePairId == null ? null : active.pairById(byePairId);
 
     void openScore(MatchGame m) => context.push('/score-input', extra: m.id);
+    final readOnly = watching || locked;
 
     Widget faded(double opacity, Widget child) => locked ? Opacity(opacity: opacity, child: child) : child;
 
@@ -88,17 +114,20 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
         children: [
           MabarAppBar(
             title: 'Round $selected',
-            subtitle: scheduleSubtitle(active),
-            onBack: () => context.pop(),
+            subtitle: scheduleSubtitle(active, named: watching),
+            onBack: watching ? null : () => context.pop(),
             actions: [
-              Builder(
-                builder: (anchor) => MabarIconButton(
-                  icon: MabarIcons.dotsThree,
-                  semanticLabel: 'Menu',
-                  // Satu-satunya item Fixed ("Akhiri turnamen") hilang setelah diakhiri.
-                  onPressed: finished ? null : () => _openMenu(anchor),
-                ),
-              ),
+              if (!watching)
+                Builder(
+                  builder: (anchor) => MabarIconButton(
+                    icon: MabarIcons.dotsThree,
+                    semanticLabel: 'Menu',
+                    // Setelah diakhiri menunya tinggal Live score (12f).
+                    onPressed: () => _openMenu(anchor, finished),
+                  ),
+                )
+              else if (!active.isFinal(now))
+                const LiveTag(),
             ],
           ),
           RoundTabs(
@@ -136,9 +165,9 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
                         ScheduleMatchRow(
                           active: active,
                           match: m,
-                          now: ref.read(clockProvider)(),
-                          onTap: locked ? null : () => openScore(m),
-                          onFill: locked || m.status != MatchStatus.pending ? null : () => openScore(m),
+                          now: now,
+                          onTap: readOnly ? null : () => openScore(m),
+                          onFill: readOnly || m.status != MatchStatus.pending ? null : () => openScore(m),
                         ),
                       ],
                     ],
@@ -152,22 +181,7 @@ class _ScheduleFixedScreenState extends ConsumerState<ScheduleFixedScreen> {
             ),
           ),
           MabarActionBar(
-            children: [
-              Expanded(
-                child: active.isFinal(ref.read(clockProvider)())
-                    ? MabarButton(
-                        label: 'Lihat klasemen',
-                        icon: MabarIcons.ranking,
-                        onPressed: () => context.push('/leaderboard'),
-                      )
-                    : MabarButton(
-                        label: 'Klasemen',
-                        icon: MabarIcons.ranking,
-                        variant: MabarButtonVariant.secondary,
-                        onPressed: () => context.push('/leaderboard'),
-                      ),
-              ),
-            ],
+            children: [Expanded(child: LeaderboardButton(isFinal: active.isFinal(now)))],
           ),
         ],
       ),

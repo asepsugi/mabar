@@ -7,10 +7,12 @@ import '../../../core/widgets/match_score_row.dart';
 import '../../../models/models.dart';
 
 /// Subjudul app bar Jadwal: "Tennis · Race to 6", atau "… · diakhiri". Waktu tidak di sini: court bisa mulai di
-/// jam berbeda, jadi sisa booking ditulis di strip court masing-masing ([ScheduleMatchRow]).
-String scheduleSubtitle(ActiveTournament active) {
+/// jam berbeda, jadi sisa booking ditulis di strip court masing-masing ([ScheduleMatchRow]). [named] = halaman
+/// penonton: nama turnamen menggantikan olahraga kalau ada, seperti Beranda (12h).
+String scheduleSubtitle(ActiveTournament active, {bool named = false}) {
   final config = active.config;
-  return '${config.sport.label} · ${config.format.label}${active.tournament.isFinished ? ' · diakhiri' : ''}';
+  final lead = named ? config.name ?? config.sport.label : config.sport.label;
+  return '$lead · ${config.format.label}${active.tournament.isFinished ? ' · diakhiri' : ''}';
 }
 
 /// Nama depan pasangan dipisah titik tengah: "Andi · Budi" (baris match, Istirahat Fixed).
