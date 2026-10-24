@@ -236,10 +236,11 @@ Keputusan host 2026-10-24 (frame 06c/06d/06i, 12a–12o; PRD §5.11; aturan rinc
 membagikan link `asepsugi.github.io/mabar/#/live/KODE`; pemain lain melihat Jadwal, Klasemen, Detail di browser, baca
 saja, Fixed dan Mixed. **Tanpa database**: `relay/src/index.js` (Cloudflare Worker + satu Durable Object per kode, paket
 gratis) hanya memegang salinan JSON `TournamentCodec` terakhir, terhapus 3 hari setelah kiriman terakhir. Deploy relay
-dari `relay/`: `npm install`, `npx wrangler login` (akun Cloudflare host), `npm run deploy`; URL-nya =
-`LiveRelay.url` (`lib/services/live/live_relay.dart`, bisa diganti `--dart-define=LIVE_RELAY=…`). Uji relay:
-`npm run dev` (port 8790; 8787 dipakai proses lain di Mac host) lalu `npm run smoke` (`relay/smoke.sh`, juga dengan
-`BASE=https://…` untuk hasil deploy). Relay tidak ikut `flutter test`/CI.
+dari `relay/`: `npm install`, `npx wrangler login` (akun Cloudflare host), `npm run deploy`. URL produksi
+`https://mabar-live.mabar-live.workers.dev` (subdomain workers.dev akun = `mabar-live`) = `LiveRelay.url`
+(`lib/services/live/live_relay.dart`, bisa diganti `--dart-define=LIVE_RELAY=…`). Uji relay: `npm run dev` (port 8790;
+8787 dipakai proses lain di Mac host) lalu `npm run smoke` (`relay/smoke.sh`; `BASE=<url produksi>` untuk hasil
+deploy). Relay tidak ikut `flutter test`/CI.
 
 - `services/live/live_relay.dart` — klien HTTP (`package:http`) + `LiveSession` (kode, token rahasia, `sentAt`). Sesi
   disimpan di box Hive yang sama, kunci `live` (`TournamentStore.loadLive/saveLive`). Token tidak pernah ikut isi.

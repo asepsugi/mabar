@@ -78,7 +78,7 @@ class LiveRelayException implements Exception {
 class LiveRelay {
   /// Worker hasil `npm run deploy` di `relay/`; `--dart-define=LIVE_RELAY=http://127.0.0.1:8790` untuk
   /// `npm run dev`.
-  static const url = String.fromEnvironment('LIVE_RELAY', defaultValue: 'https://mabar-live.asepsugi.workers.dev');
+  static const url = String.fromEnvironment('LIVE_RELAY', defaultValue: 'https://mabar-live.mabar-live.workers.dev');
 
   /// Web Mabar di GitHub Pages; penonton membuka `#/live/KODE` di sini.
   static const viewerBase = 'https://asepsugi.github.io/mabar/';
