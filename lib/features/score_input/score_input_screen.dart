@@ -77,7 +77,7 @@ class _ScoreInputScreenState extends ConsumerState<ScoreInputScreen> {
     final feedback = switch (verdict) {
       ScoreWin(:final winnerSide, :final winnerScore, :final loserScore) =>
         '${team(winnerSide == 1 ? match.pair1 : match.pair2)} menang '
-            // Americano: total tetap, jadi yang berarti selisihnya.
+            // Americano: yang berarti selisihnya; skornya sudah besar di papan.
             '${active.config.format.method == ScoringMethod.americano ? '+${winnerScore - loserScore}' : '$winnerScore–$loserScore'}',
       ScoreDraw() => 'Seri',
       ScoreInvalid(:final message) => message,

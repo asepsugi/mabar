@@ -42,10 +42,11 @@ enum ScoringMethod {
   /// Siapa duluan menang N game, match langsung selesai. Sah: N lawan 0..N−1. Tidak pernah seri.
   raceTo,
 
-  /// Main tepat N game; seri kalau N genap dan skornya sama.
+  /// Paling banyak N game; boleh berhenti begitu satu tim pasti menang ([ScoreFormat.minWinningScore]). Seri kalau
+  /// N genap dan skornya sama dengan total penuh.
   bestOf,
 
-  /// Poin reli, total N poin per match; seri kalau N genap.
+  /// Poin reli, paling banyak N poin per match, boleh berhenti lebih awal seperti Best of; seri kalau N genap.
   americano,
 }
 
@@ -111,14 +112,15 @@ class ScoreFormat {
     ScoringMethod.bestOf || ScoringMethod.americano => target.isEven,
   };
 
-  /// Best of & Americano: total kedua sisi tetap, jadi sisi lawan terisi otomatis `N − x`.
+  /// Best of & Americano: total paling banyak N, jadi kotak lawan yang masih kosong terisi otomatis `N − x`.
   bool get fillsOpponent => method == ScoringMethod.bestOf || method == ScoringMethod.americano;
 
   /// Isi satu kotak skor paling tinggi N: Race to N berhenti begitu satu tim mencapai N, Best of / Americano
   /// tidak bisa melebihi total.
   int get maxPerSide => target;
 
-  /// Skor menang terkecil Best of / Americano: ⌊N ÷ 2⌋ + 1 (Americano 21 → 11, 24 → 13; Best of 5 → 3).
+  /// Skor menang terkecil Best of / Americano: ⌊N ÷ 2⌋ + 1 (Americano 21 → 11, 24 → 13; Best of 5 → 3). Begitu
+  /// tercapai lawan tidak mungkin mengejar, jadi match boleh berhenti sebelum total N.
   int get minWinningScore => target ~/ 2 + 1;
 
   /// Game/poin untuk pemenang WO (PRD 4.4): Race to N → N; Best of & Americano → rata-rata skor dari

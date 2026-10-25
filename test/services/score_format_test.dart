@@ -7,7 +7,7 @@ import 'package:mabar/services/scoring/score_entry.dart';
 import 'package:mabar/services/storage/tournament_codec.dart';
 
 /// Format skor desain v2 (design/spec/logic.md §1–§2): Race to N, Best of N, Americano N, dan
-/// simpanan app lama yang tidak dimuat. Angka = frame 07a–07k.
+/// simpanan app lama yang tidak dimuat. Angka = frame 07a–07o.
 
 const race6 = ScoreFormat(ScoringMethod.raceTo, 6);
 const race9 = ScoreFormat(ScoringMethod.raceTo, 9);
@@ -129,13 +129,35 @@ void main() {
       }
     });
 
-    test('Best of / Americano: total harus pas, seri hanya kalau genap', () {
-      expect(ScoreRules.judge(bestOf5, 3, 2), isA<ScoreWin>());
+    test('Best of / Americano: total paling banyak N; kurang dari N sah kalau pemenang sudah ⌊N ÷ 2⌋ + 1 (07m)', () {
+      for (final (f, a, b) in [
+        (bestOf5, 3, 2),
+        (bestOf5, 3, 1),
+        (bestOf5, 0, 3),
+        (americano21, 13, 8),
+        (americano21, 11, 5),
+        (americano21, 0, 11),
+        (americano24, 13, 0),
+      ]) {
+        expect(ScoreRules.judge(f, a, b), isA<ScoreWin>(), reason: '${f.label} $a–$b');
+      }
+      final early = ScoreRules.judge(americano21, 5, 11) as ScoreWin;
+      expect((early.winnerSide, early.winnerScore, early.loserScore), (2, 11, 5));
+    });
+
+    test('Best of / Americano: seri hanya dengan total penuh, jadi tetap cuma di N genap (07f)', () {
       expect(ScoreRules.judge(bestOf6, 3, 3), isA<ScoreDraw>());
       expect(ScoreRules.judge(americano24, 12, 12), isA<ScoreDraw>());
-      expect(ScoreRules.judge(americano21, 13, 8), isA<ScoreWin>());
-      expect(_message(americano21, 13, 9), 'Total poin harus 21');
-      expect(_message(bestOf5, 3, 3), 'Total game harus 5');
+      expect(_message(americano21, 5, 5), 'Minimal skor pemenang 11');
+      expect(_message(americano24, 11, 11), 'Minimal skor pemenang 13');
+    });
+
+    test('Best of / Americano: ditolak dengan pesan frame 07n/07o', () {
+      expect(_message(americano21, 13, 9), 'Total poin lebih dari 21');
+      expect(_message(bestOf5, 3, 3), 'Total game lebih dari 5');
+      expect(_message(americano21, 10, 5), 'Minimal skor pemenang 11');
+      expect(_message(bestOf5, 2, 1), 'Minimal skor pemenang 3');
+      expect(_message(bestOf6, 0, 3), 'Minimal skor pemenang 4');
     });
   });
 
@@ -203,13 +225,43 @@ void main() {
       expect(e.verdict, isA<ScoreWin>());
     });
 
-    test('Best of 5: tombol 6–9 mati; mengetik di sisi otomatis mengisi ulang sisi pertama (07e)', () {
+    test('Best of 5: tombol 6–9 mati; mengetik di sisi otomatis tidak mengisi ulang sisi pertama (07e, 07o)', () {
       var e = ScoreEntry.start(bestOf5);
       expect(_keys(e), [0, 1, 2, 3, 4, 5]);
       e = e.type(3);
       expect((e.side1, e.side2, e.autoSide), (3, 2, 2));
-      e = e.select(2).type(4);
-      expect((e.side1, e.side2, e.autoSide), (1, 4, 1));
+      e = e.select(2).type(1);
+      expect((e.side1, e.side2, e.autoSide), (3, 1, null));
+      expect(e.verdict, isA<ScoreWin>());
+      e = e.select(1).type(2);
+      expect((e.side1, e.side2), (2, 1));
+      expect((e.verdict as ScoreInvalid).message, 'Minimal skor pemenang 3');
+    });
+
+    test('Americano: nilai otomatis ikut ketikan; lawan yang sudah diketik tidak dihitung ulang (07m, 07n)', () {
+      var e = ScoreEntry.start(americano21).type(1);
+      expect((e.side1, e.side2, e.autoSide), (1, 20, 2));
+      e = e.type(1);
+      expect((e.side1, e.side2, e.autoSide), (11, 10, 2), reason: 'masih otomatis: ikut berubah');
+      e = e.next().type(5);
+      expect((e.side1, e.side2, e.autoSide), (11, 5, null), reason: '11 tidak jadi 16');
+      expect((e.score?.side1, e.score?.side2), (11, 5));
+      e = e.select(1).type(1).type(3);
+      expect((e.side1, e.side2), (13, 5));
+      e = e.select(2).type(9);
+      expect((e.side1, e.side2), (13, 9));
+      expect((e.verdict as ScoreInvalid).message, 'Total poin lebih dari 21');
+      expect(e.score, isNull);
+      e = e.select(1).backspace().backspace();
+      expect((e.side1, e.side2, e.autoSide), (null, 9, null), reason: 'lawan yang diketik tidak ikut dihapus');
+      e = e.type(1).type(2);
+      expect((e.side1, e.side2, e.autoSide), (12, 9, null));
+    });
+
+    test('skor tersimpan tidak diisi ulang: mengubah satu sisi membiarkan sisi lain', () {
+      final e = ScoreEntry.edit(americano21, const SetScore(side1: 11, side2: 10)).select(1).type(1).type(2);
+      expect((e.side1, e.side2, e.autoSide), (12, 10, null));
+      expect((e.verdict as ScoreInvalid).message, 'Total poin lebih dari 21');
     });
 
     test('hapus: Best of/Americano mengosongkan sisi otomatis juga', () {

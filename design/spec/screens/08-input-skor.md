@@ -47,7 +47,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `S
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `ScoreBoard / ScoreKeypad`
 
-- Isi satu sisi; sisi lain terisi `N − x` dan tampil pudar sebagai tanda otomatis. Mengetik di sisi lawan menimpa nilai otomatis dan mengisi ulang sisi pertama.
+- Isi satu sisi; kotak lawan yang masih kosong terisi `N − x` dan tampil pudar sebagai tanda otomatis. Mengetik di kotak lawan menimpa nilai otomatis; sisi pertama tidak dihitung ulang (07m, 07o).
 - Angka di atas N tidak bisa diketik: tombol 6–9 mati untuk Best of 5.
 
 ## 07f · Best of 6 · seri
@@ -64,7 +64,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `S
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `ScoreBoard / ScoreKeypad`
 
-- Poin reli dengan total tetap. Isi satu sisi, sisi lain terisi `total − x`. Kalimat "Isi salah satu, skor lawan terisi otomatis" dihapus.
+- Poin reli. Isi satu sisi, kotak lawan yang masih kosong terisi `total − x`; total boleh kurang dari 21 kalau match dihentikan lebih awal (07m). Kalimat "Isi salah satu, skor lawan terisi otomatis" dihapus.
 
 ## 07h · Americano · batas total di keypad
 
@@ -74,7 +74,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `S
 
 - Isi kotak tidak bisa melebihi total (21). Setelah mengetik "2", hanya 0 dan 1 yang masih aktif (20, 21); tombol lain mati. Dulu angka seperti 25 bisa diketik lalu ditolak dengan pesan.
 - Sisi lawan langsung terisi total − x, jadi skor selalu sah selama hanya satu sisi diketik; tombol Simpan aktif.
-- Kalau sisi lawan diketik manual dan jumlahnya ≠ total: "Total poin harus 21", Simpan mati.
+- Kotak lawan yang diketik sendiri dipegang apa adanya: total kurang dari 21 sah kalau pemenang sudah 11 (07m), lebih dari 21 ditolak (07n).
 
 ## 07i · Mengubah skor tersimpan
 
@@ -85,6 +85,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `S
 - Skor tersimpan diisi otomatis, belum ada kotak aktif sampai diketuk. Tombol jadi "Perbarui skor".
 - Selama belum ada kotak aktif semua angka mati; ketuk salah satu kotak (atau →) untuk mulai mengubah (keputusan host 2026-10-22).
 - Match WO dibuka di sini juga: skor lama (kalau ada) terisi; menyimpan skor mengubahnya dari WO jadi selesai.
+- Best of dan Americano: skor tersimpan tidak diisi ulang otomatis; mengubah satu sisi membiarkan sisi lain (07n).
 
 ## 07j · Sheet · walkover
 
@@ -115,5 +116,33 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `S
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `ScoreBoard / ScoreKeypad`
 
-- Contoh court yang baru ditambah (06q). Subjudul menulis sisa court ini dengan format yang sama dengan strip: "Round 5 · Americano 21 · sisa 02:00"; 07a–07k memakai aturan yang sama.
+- Contoh court yang baru ditambah (06q). Subjudul menulis sisa court ini dengan format yang sama dengan strip: "Round 5 · Americano 21 · sisa 02:00"; 07a–07k dan 07m–07o memakai aturan yang sama.
 - Hanya untuk match di round yang sedang berjalan (Mixed: round terakhir; Fixed: round yang dibuka), termasuk saat mengubah skornya (07i), selama turnamen belum diakhiri. Match di round yang sudah lewat: subjudul tanpa sisa. Sisa kurang dari satu durasi match: "sisa 00:12" clay; sudah lewat: "waktu habis" clay. Skor tetap bisa disimpan.
+
+## 07m · Americano · berhenti lebih awal
+
+![07m](../../frames/07m.png)
+
+Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `ScoreBoard / ScoreKeypad`
+
+- Match boleh dihentikan begitu lawan tidak mungkin mengejar: pemenang sudah mencapai skor menang terkecil ⌊N ÷ 2⌋ + 1 (Americano 21 → 11, Americano 24 → 13, Best of 5 → 3, Best of 6 → 4). Total boleh kurang dari N, jadi yang kalah tidak dapat poin dari sisa yang tidak dimainkan (keputusan host 2026-10-26).
+- Isi 11, kotak lawan terisi 10 otomatis; ketik 5 di kotak lawan → 11 tetap, tidak dihitung ulang jadi 16. Nilai otomatis hanya mengisi kotak yang kosong atau yang masih otomatis, dan ikut berubah selama sisi pertama diketik (1 → 20, 11 → 10).
+- Best of 5 berhenti di 3–1 atau 3–0 berlaku sama.
+
+## 07n · Americano · total lebih dari 21
+
+![07n](../../frames/07n.png)
+
+Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `ScoreBoard / ScoreKeypad`
+
+- Kedua sisi diketik sendiri dan jumlahnya lebih dari N: "Total poin lebih dari 21" (Best of 5: "Total game lebih dari 5"), Simpan mati. Terjadi saat mengoreksi salah satu sisi atau mengubah skor tersimpan (07i), karena sisi lain tidak dihitung ulang.
+- Tombol tidak dimatikan karena isi lawan (07k), jadi 9 tetap bisa diketik; pesannya yang menolak.
+
+## 07o · Best of 5 · belum ada pemenang
+
+![07o](../../frames/07o.png)
+
+Komponen: `MabarAppBar`, `MabarButton`, `MabarTextButton`, `MabarIconButton`, `ScoreBoard / ScoreKeypad`
+
+- Total kurang dari N dan belum ada yang mencapai skor menang terkecil: "Minimal skor pemenang 3", Simpan mati. Americano 21: 10–5 atau 5–5 → "Minimal skor pemenang 11".
+- Seri hanya dengan total penuh (07f), jadi tetap hanya di N genap dan kolom W–L–D Klasemen tidak berubah.

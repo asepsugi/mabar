@@ -1,6 +1,6 @@
 # PRD — Aplikasi Mabar Tennis/Padel (Klub/Komunitas)
 
-**Versi dokumen:** 2.6 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21; Kelola court 2026-10-22; nama turnamen dan batas 30 pemain 2026-10-23; live score 2026-10-24; nama lengkap di baris match, Akhiri di Beranda, dan pemain telat menyusul 2026-10-25) dan app **2.7.0**
+**Versi dokumen:** 2.7 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21; Kelola court 2026-10-22; nama turnamen dan batas 30 pemain 2026-10-23; live score 2026-10-24; nama lengkap di baris match, Akhiri di Beranda, dan pemain telat menyusul 2026-10-25; Best of/Americano berhenti lebih awal 2026-10-26) dan app **2.8.0**
 **Platform:** Android + iOS + Web/PWA (1 codebase — Flutter)
 **Target user:** Host mabar klub/komunitas tennis & padel, 4–30 pemain per turnamen, 1 HP host, offline
 
@@ -159,14 +159,18 @@ untuk tennis maupun padel.
 | Format | Arti | N | Skor akhir sah | Seri |
 |--------|------|---|----------------|------|
 | **Race to N** (default 6) | Duluan N game | 2–9 | N lawan 0…N−1 (match selesai begitu satu tim mencapai N; tanpa 7–5/7–6) | Tidak |
-| **Best of N** (default 5) | Main tepat N game | 1–15 | Jumlah = N | Kalau N genap |
-| **Americano N** (default 21) | Poin reli, total tetap | 2–99 | Jumlah = N | Kalau N genap |
+| **Best of N** (default 5) | Paling banyak N game | 1–15 | Jumlah ≤ N, pemenang ≥ ⌊N ÷ 2⌋ + 1 | Kalau N genap (N÷2 sama) |
+| **Americano N** (default 21) | Poin reli, paling banyak N | 2–99 | Jumlah ≤ N, pemenang ≥ ⌊N ÷ 2⌋ + 1 | Kalau N genap (N÷2 sama) |
 
-- Best of & Americano: mengisi satu sisi otomatis mengisi lawan `N − x`.
+- Best of & Americano boleh berhenti begitu lawan tidak mungkin mengejar (pemenang sudah ⌊N ÷ 2⌋ + 1, mis. 11–5 di
+  Americano 21), supaya yang kalah tidak dapat sisa poin gratis. Total lebih dari N ditolak ("Total poin lebih dari
+  21"), pemenang di bawah batas ditolak ("Minimal skor pemenang 11"). Seri hanya dengan total penuh (2026-10-26).
+- Best of & Americano: mengisi satu sisi otomatis mengisi kotak lawan dengan `N − x` hanya kalau kotak itu masih
+  kosong atau masih otomatis; kotak yang sudah diketik (juga skor tersimpan) tidak dihitung ulang.
 - Keypad sendiri: tombol angka yang membuat isi kotak melebihi batas format mati (Race to N: N; Best of N: N;
   Americano: total). Tombol tidak melihat isi kotak lawan. Kotak yang sudah penuh atau baru dipilih menerima ketikan
   berikutnya sebagai pengganti isinya; saat mengubah skor tersimpan, angka mati sampai salah satu kotak diketuk
-  (keputusan host 2026-10-22). Pesan validasi persis seperti frame 07d/07h.
+  (keputusan host 2026-10-22). Pesan validasi persis seperti frame 07d, 07n, dan 07o.
 - Seri dihitung setengah menang di Win %.
 - Format best of 3 set (app lama) sudah dihapus; turnamen app lama tidak dimuat (lihat 5.10).
 
@@ -266,7 +270,7 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
   Fixed yang sudah diakhiri tidak punya item menu lagi: ikon ⋯ tampil pudar dan tidak bisa diketuk.
 - Mixed: Buat R(n+1) / Batalkan Rn / Pemain (n) / Tambah jam / Lanjutkan turnamen.
 
-### 5.6 Input Skor & Walkover (07a–07k)
+### 5.6 Input Skor & Walkover (07a–07o)
 - Papan skor gelap: nama lengkap satu pemain per baris, satu angka besar per tim, keypad sendiri, pesan validasi,
   "Perbarui skor" saat mengubah.
 - Subjudul menulis sisa booking court itu untuk match di round yang sedang berjalan ("· sisa 02:00").
@@ -332,7 +336,7 @@ Frame di hi-fi adalah kriteria selesai. Ringkasannya:
 | Jadwal Fixed | 06a–06e |
 | Jadwal Mixed (+ sheet Cara kerja Mixed) | 06f–06t |
 | Sheet Kelola pemain, Lanjutkan turnamen, Kelola court + detail court | 08a–08k |
-| Input Skor + sheet Walkover | 07a–07l |
+| Input Skor + sheet Walkover | 07a–07o |
 | Klasemen | 09a–09f |
 | Detail Pemain | 10a–10c |
 | Bagikan | 11a–11l |
@@ -413,6 +417,9 @@ State teks sederhana tanpa frame: "Halaman tidak ditemukan", "Belum ada turnamen
     "Round n · Lanjutkan" (2026-10-25).
 14. Pemain telat di Mixed menyusul jumlah main: diprioritaskan dengan jeda 1 round setelah k round beruntun (3.4),
     menggantikan kredit yang membuat selisihnya tetap (2026-10-25).
+15. Best of & Americano boleh berhenti lebih awal begitu lawan tidak mungkin mengejar (pemenang ⌊N ÷ 2⌋ + 1); isi
+    otomatis `N − x` hanya ke kotak lawan yang kosong, jadi koreksi skor tidak memberi poin gratis ke yang kalah (4.1)
+    (2026-10-26).
 
 ---
 

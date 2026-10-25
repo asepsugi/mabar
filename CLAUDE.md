@@ -6,7 +6,7 @@ App Flutter untuk host turnamen mabar tennis/padel (klub, 4–30 pemain, 1 devic
 - `PRD.md` — produk, algoritma, aturan skor & ranking, **versi 2.1 sejalan dengan hi-fi v2** (diselaraskan 2026-10-22).
   Kalau keputusan host mengubah perilaku, perbarui PRD + hi-fi (`design/hifi.html` dan artifact online
   `H9ZVDUfYvEBXsoBqih4iov`, publish file yang sama) dalam perubahan yang sama.
-- `design/hifi.html` — **hi-fi v2 final** (disetujui host 2026-10-21): Fondasi, Komponen, 103 frame (layar 390×844 + lembar gambar) +
+- `design/hifi.html` — **hi-fi v2 final** (disetujui host 2026-10-21): Fondasi, Komponen, 107 frame (layar 390×844 + lembar gambar) +
   catatan perilaku, Cakupan. Acuan visual dan perilaku untuk semua pekerjaan UI berikutnya.
 - `design/spec/` — paket implementasi v2. **Mulai dari `design/spec/README.md`** (urutan kerja, aturan golden), lalu
   `tokens.json`, `components.md`, `logic.md` (aturan logika yang berubah + data test), `screens/*.md` (per alur).
@@ -132,7 +132,7 @@ dinaikkan di commit yang membawa perubahan ke `main` (tiap push = deploy web), k
 naik tiap rilis. Sebut kategorinya di pesan commit/PR (`[minor]`). Branch `redesain-v2-spec` = 2.0.0 (MAJOR: redesain +
 format skor + data app lama tidak dimuat); 2.2.0 (MINOR) = Kelola court; 2.3.0 (MINOR) = nama turnamen;
 2.4.0 (MINOR) = batas 30 pemain; 2.5.0 (MINOR) = live score; 2.6.0 (MINOR) = nama lengkap di baris match, Akhiri di
-Beranda, back PWA; 2.7.0 (MINOR) = pemain telat Mixed menyusul (kredit dihapus).
+Beranda, back PWA; 2.7.0 (MINOR) = pemain telat Mixed menyusul (kredit dihapus); 2.8.0 (MINOR) = Best of/Americano berhenti lebih awal.
 
 ## Arsitektur
 
@@ -186,8 +186,12 @@ Mesin domain yang sudah ada + ter-test (semua `flutter test` lulus, termasuk gol
 - `ActiveTournament.isFinal(now)` — status Final/Sementara: diakhiri, Fixed semua match terisi, Mixed waktu booking habis + round terakhir lengkap (bukan tiap round lengkap). `playedRoundCount` = jumlah round yang punya match selesai/WO ("5 round · 10 match").
 - **Format skor** (`TournamentConfig.format` = `ScoreFormat(method, target)`; tes `test/services/score_format_test.dart`):
   Race to N (2–9, default 6 — default kedua olahraga; murni: skor akhir N lawan 0..N−1, tanpa 7–5/7–6), Best of N (1–15, default 5), Americano N (2–99, default 21).
-  Semua disimpan sebagai **satu `SetScore`**, jadi ranking/share/codec tidak bercabang; Best of & Americano mengisi
-  lawan `N − x`; seri hanya kalau N genap (`canDraw`, juga penentu kolom D). Aturan sah + pesan frame 07d/07h di
+  Semua disimpan sebagai **satu `SetScore`**, jadi ranking/share/codec tidak bercabang. Best of & Americano: total ≤ N
+  dan pemenang ≥ `minWinningScore` (⌊N÷2⌋+1) — match boleh berhenti begitu lawan tidak mungkin mengejar (11–5 di
+  Americano 21, keputusan host 2026-10-26, pesan "Total poin lebih dari 21" / "Minimal skor pemenang 11"); `N − x`
+  hanya mengisi kotak lawan yang kosong atau masih otomatis (`autoSide`), yang sudah diketik/skor tersimpan tidak
+  dihitung ulang supaya yang kalah tidak dapat poin gratis; seri hanya dengan total penuh di N genap (`canDraw`, juga
+  penentu kolom D). Aturan sah + pesan frame 07d/07n/07o di
   `services/scoring/score_entry.dart` (`ScoreRules.judge`), begitu juga keypad v2 (`ScoreEntry`: batas per kotak
   `maxPerSide`, ketikan pertama setelah kotak dipilih mengganti isi, digit penuh → pindah ke kotak lawan yang kosong,
   tombol tidak melihat isi lawan). Durasi match selalu kelipatan 5 (`TournamentConfig.roundDuration`). Config yang disalin wajib lewat

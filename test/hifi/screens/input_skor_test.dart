@@ -12,7 +12,7 @@ import '../hifi_golden.dart';
 import 'schedule_fixture.dart';
 import 'screen_harness.dart';
 
-/// Golden layar penuh Input Skor, frame 07a–07k. Match sama dengan Jadwal: Round 2 Tennis (06a: court 1
+/// Golden layar penuh Input Skor, frame 07a–07o. Match sama dengan Jadwal: Round 2 Tennis (06a: court 1
 /// Andi·Budi 6–4 Citra·Dewant, court 2 Eko·Fajar vs Gina·Hana) dan Round 3 Mixed (06f: court 1
 /// Andi·Dewant vs Citra·Fajar, court 2 Eko·Budi vs Hana·Gina). Skor diketik lewat keypad seperti host.
 void main() {
@@ -60,6 +60,27 @@ void main() {
   ]) {
     testWidgets('$frame ${format.label}', (tester) async {
       await expectMatchesHifi(tester, screen(round3(format), 'r3c1'), frame, act: (tester) => type(tester, digits));
+    });
+  }
+
+  // Sisi kedua diketik sendiri: nilai otomatis ditimpa, sisi pertama tidak dihitung ulang.
+  for (final (frame, format, first, second) in [
+    ('07m', const ScoreFormat(ScoringMethod.americano, 21), [1, 1], [5]),
+    ('07n', const ScoreFormat(ScoringMethod.americano, 21), [1, 3], [9]),
+    ('07o', const ScoreFormat(ScoringMethod.bestOf, 5), [2], [1]),
+  ]) {
+    testWidgets('$frame ${format.label} dua sisi diketik', (tester) async {
+      await expectMatchesHifi(
+        tester,
+        screen(round3(format), 'r3c1'),
+        frame,
+        act: (tester) async {
+          await type(tester, first);
+          await tester.tap(find.bySemanticsLabel('Tim berikutnya'));
+          await tester.pump();
+          await type(tester, second);
+        },
+      );
     });
   }
 
@@ -132,14 +153,17 @@ void main() {
     expect(find.text('Citra L & Dewant R menang 6–3'), findsOneWidget);
   });
 
-  testWidgets('Americano: mengetik di sisi lawan menimpa nilai otomatis', (tester) async {
-    await pumpRouted(tester, round3(const ScoreFormat(ScoringMethod.americano, 21)), 'r3c1');
-    await type(tester, [1, 3]);
+  testWidgets('Americano berhenti lebih awal: 11–5 tersimpan apa adanya', (tester) async {
+    final container = await pumpRouted(tester, round3(const ScoreFormat(ScoringMethod.americano, 21)), 'r3c1');
+    await type(tester, [1, 1]);
     await tester.tap(find.bySemanticsLabel('Tim berikutnya'));
     await tester.pump();
-    await type(tester, [9]);
-    // Mengetik di sisi lawan menimpa nilai otomatis dan mengisi ulang sisi pertama (21 − 9 = 12).
-    expect(find.text('Andi P & Dewant R menang +3'), findsOneWidget);
+    await type(tester, [5]);
+    await tester.tap(find.text('Simpan skor'));
+    await tester.pumpAndSettle();
+    expect(find.text('Jadwal'), findsOneWidget);
+    final match = container.read(tournamentProvider)!.matchById('r3c1')!;
+    expect((match.status, match.sets.single.side1, match.sets.single.side2), (MatchStatus.done, 11, 5));
   });
 
   testWidgets('WO: Simpan WO mati sampai dipilih; menyimpan → Jadwal; membuka lagi terisi', (tester) async {

@@ -27,7 +27,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarSegmented`, `MabarStepper`, `MabarField`, `ModePicker`, `CourtColorPicker`
 
-- Americano: poin reli, total per match tetap. Default 21, batas 2–99 (kotak skor 2 digit). Total genap boleh seri.
+- Americano: poin reli, total per match paling banyak N; boleh berhenti lebih awal begitu lawan tidak mungkin mengejar (07m). Default 21, batas 2–99 (kotak skor 2 digit). Total genap boleh seri.
 - Mixed: tombol langsung ke Jadwal Mixed dan membuat R1. Estimasi memakai court terpendek (1 jam ÷ 15 mnt = 4 round).
 - Nama court custom ("Court VIP") dipakai di header Input Skor dan sheet Lanjutkan. Strip di Jadwal tetap nomor + warna.
 - Dengan 3 court atau lebih isi layar melebihi satu layar (kotak nama di atas); isinya di-scroll, tombol tetap menempel di bawah.
@@ -38,9 +38,9 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `Ma
 
 Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarActionBar`, `MabarGroup / MabarRow`, `MabarSegmented`, `MabarStepper`, `MabarField`, `ModePicker`, `CourtColorPicker`
 
-- Best of N: main tepat N game, yang menang game lebih banyak jadi pemenang. Jumlah game 1–15, default 5.
+- Best of N: paling banyak N game, yang menang game lebih banyak jadi pemenang; boleh berhenti begitu satu tim mencapai ⌊N ÷ 2⌋ + 1 (3–1 di Best of 5). Jumlah game 1–15, default 5.
 - N genap (mis. 6) bisa berakhir seri 3–3. Saat N genap muncul catatan kecil di bawah grup: "Bisa berakhir seri". Seri dihitung setengah menang di Win %.
-- Di Input Skor, mengisi satu sisi otomatis mengisi sisi lain dengan N − x, seperti Americano.
+- Di Input Skor, mengisi satu sisi otomatis mengisi kotak lawan yang masih kosong dengan N − x, seperti Americano.
 - Kotak nama aktif: garis biru court seperti kotak lain. Keyboard huruf kapital di awal kata.
 
 ## 03d · Durasi tidak muat

@@ -32,19 +32,24 @@ class ScoreRules {
   /// Memeriksa skor [side1]–[side2] satu match.
   static ScoreVerdict judge(ScoreFormat format, int side1, int side2) {
     final n = format.target;
+    final high = side1 > side2 ? side1 : side2;
+    final low = side1 > side2 ? side2 : side1;
     switch (format.method) {
       case ScoringMethod.raceTo:
         // Race to N murni: match selesai begitu satu tim mencapai N, jadi skor akhir N lawan 0..N−1.
-        final high = side1 > side2 ? side1 : side2;
-        final low = side1 > side2 ? side2 : side1;
         if (side1 == side2 && side1 == n) return ScoreInvalid('Hanya satu tim yang bisa mencapai $n');
         if (high < n) return ScoreInvalid('Belum ada yang sampai $n');
         if (high > n || low >= n) return ScoreInvalid('Skor akhir race to $n: $n–0 sampai $n–${n - 1}');
         return _win(side1, side2);
       case ScoringMethod.bestOf:
       case ScoringMethod.americano:
-        if (side1 + side2 != n) return ScoreInvalid('Total ${format.unit} harus $n');
-        return side1 == side2 ? const ScoreDraw() : _win(side1, side2);
+        // Total boleh kurang dari N: match dihentikan begitu lawan tidak mungkin mengejar, yaitu pemenang sudah
+        // mencapai ⌊N ÷ 2⌋ + 1 (11–5 di Americano 21). Sisa yang tidak dimainkan bukan poin gratis untuk yang kalah
+        // (keputusan host 2026-10-26). Seri hanya dengan total penuh, jadi tetap cuma di N genap ([ScoreFormat.canDraw]).
+        if (side1 + side2 > n) return ScoreInvalid('Total ${format.unit} lebih dari $n');
+        if (side1 + side2 == n && side1 == side2) return const ScoreDraw();
+        if (high < format.minWinningScore) return ScoreInvalid('Minimal skor pemenang ${format.minWinningScore}');
+        return _win(side1, side2);
     }
   }
 
@@ -65,7 +70,8 @@ class ScoreEntry {
   /// Kotak yang menerima ketikan; null = belum ada (skor tersimpan dibuka, 07i).
   final int? active;
 
-  /// Sisi yang diisi otomatis `N − x` (Best of, Americano), ditampilkan pudar.
+  /// Sisi yang diisi otomatis `N − x` (Best of, Americano), ditampilkan pudar. Nilainya ikut berubah selama sisi lain
+  /// diketik; begitu diketik sendiri jadi nilai tetap.
   final int? autoSide;
 
   /// Ketikan berikutnya mengganti isi kotak aktif, bukan menambah digit. Benar setelah kotak dipilih
@@ -126,30 +132,22 @@ class ScoreEntry {
 
   ScoreEntry next() => select(_other(active ?? 2));
 
-  /// Mengisi [side] dengan [value]; Best of & Americano sekalian mengisi lawan `N − x` (atau
-  /// mengosongkannya kalau [value] dihapus dan lawan memang terisi otomatis).
+  /// Mengisi [side] dengan [value]; Best of & Americano sekalian mengisi lawan `N − x` (atau mengosongkannya kalau
+  /// [value] dihapus), tapi hanya kalau kotak lawan kosong atau masih berisi nilai otomatis. Lawan yang sudah diketik
+  /// tidak dihitung ulang: mengoreksi 11–5 tidak boleh mengembalikan 11 jadi 16 (keputusan host 2026-10-26).
   ScoreEntry _set(int side, int? value) {
     var one = side == 1 ? value : side1;
     var two = side == 2 ? value : side2;
     var auto = autoSide == side ? null : autoSide;
-    if (format.fillsOpponent) {
-      final other = _other(side);
-      if (value != null) {
-        final complement = format.target - value;
-        if (other == 1) {
-          one = complement;
-        } else {
-          two = complement;
-        }
-        auto = other;
-      } else if (autoSide == other) {
-        if (other == 1) {
-          one = null;
-        } else {
-          two = null;
-        }
-        auto = null;
+    final other = _other(side);
+    if (format.fillsOpponent && (valueOf(other) == null || autoSide == other)) {
+      final fill = value == null ? null : format.target - value;
+      if (other == 1) {
+        one = fill;
+      } else {
+        two = fill;
       }
+      auto = fill == null ? null : other;
     }
     return ScoreEntry._(format, one, two, active, auto, false);
   }
