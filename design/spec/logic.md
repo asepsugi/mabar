@@ -110,11 +110,38 @@ Win %: 1 Eko 100 · 2 Budi 83 · 3 Indra 75 · 4 Andi 67 · 5 Fajar 67 · 6 Joko
 
 ## 5. Generator Mixed: undian seri dikunci per round
 
-Implementasi: `EndlessRoundGenerator.priorityOrder` / `generateRound(seed:)`. Urutan pemilihan = (jumlah main + kredit,
-round terakhir main, kunci undian, id). Kunci undian: `Random(drawSeed + nomorRound)` dibagikan ke pemain yang diurut
+Implementasi: `EndlessRoundGenerator.priorityOrder` / `generateRound(seed:)`. Urutan pemilihan = (jumlah main,
+round terakhir main, kunci undian, id), lalu pemain telat yang perlu jeda dipindah ke paling bawah (§5a). Kunci undian: `Random(drawSeed + nomorRound)` dibagikan ke pemain yang diurut
 id. `drawSeed` = FNV-1a dari id turnamen (`ActiveTournament.drawSeed`), **tidak** disimpan sebagai kunci baru; perkaliannya
 dipecah supaya hasilnya sama di web. Test `test/services/mixed_priority_test.dart`: urutan dua kali hitung untuk round
 yang sama identik; round berbeda memberi undian berbeda; hasil `generateRound` = daftar prioritas yang ditampilkan.
+
+### 5a. Pemain telat menyusul (keputusan host 2026-10-25, app 2.7.0)
+
+Menggantikan kredit catch-up (`matchCredits`, ≤ 2.6), yang menyejajarkan pemain baru dengan pemain aktif paling jarang
+main sehingga selisihnya tetap selamanya. Kunci `credits` di simpanan lama diabaikan.
+
+- Pemain telat = `ActiveTournament.latePlayerIds`: pemain aktif yang absen di salah satu round yang sudah dibuat (tidak
+  main dan tidak ada di daftar istirahat round itu) — masuk telat atau kembali setelah keluar.
+- Tanpa kredit, pemain telat paling sedikit main jadi otomatis di atas. Jeda: kalau jumlah mainnya masih di bawah yang
+  paling banyak main **dan** dia main di k round tepat sebelumnya, dia dipindah ke paling bawah urutan (istirahat 1
+  round kalau slotnya cukup tanpa dia).
+- k = max(2, ⌊slot ÷ yang istirahat⌋ + 1); tanpa yang istirahat tidak ada jeda. Main k dari k + 1 round selalu lebih
+  sering dari bagian pemain lain (slot ÷ pemain), jadi dia pasti menyusul.
+- Pemain yang hadir sejak awal tidak kena jeda: undian seri kadang memberi mereka k round beruntun (5 pemain / 1 court
+  bisa 8), dan memotongnya bisa membuat selisih main jadi 2.
+
+| Pemain / court | Pemain lain main | k | Pola pemain telat |
+|---|---|---|---|
+| 12 / 1 | 1 dari 3 round | 2 | menyusul di round pertama, lalu rotasi biasa |
+| 12 / 2 | 2 dari 3 | 3 | MMM-MMM-… (selisih rata-rata turun ±0,1 per round) |
+| 14 / 2 | 4 dari 7 | 2 | MM-MM-… |
+| 14 / 3 | 6 dari 7 | 7 | MMMMMMM-… |
+| 12 / 3 | semua | — | semua main tiap round, selisih tetap |
+
+Test: `test/services/mixed_priority_test.dart` (grup "pemain telat menyusul dengan jeda": k per baris tabel, pemain
+lama dan yang sudah menyusul tidak kena jeda) dan `test/services/mixed_roster_test.dart` (10 pemain + 2 setelah R3,
+2 court → kedua pemain baru "MMM-MMM-MMM-"; 1 court → selisih ≤ 1 tiap round).
 
 ## 6. Daftar istirahat (Jadwal Mixed)
 

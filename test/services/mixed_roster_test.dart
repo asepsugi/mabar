@@ -6,13 +6,13 @@ import 'package:mabar/services/storage/tournament_codec.dart';
 
 /// Tambah/keluarkan pemain di tengah turnamen Mixed.
 
-TournamentConfig _mixedConfig(int players) => TournamentConfig(
+TournamentConfig _mixedConfig(int players, {int courts = 2}) => TournamentConfig(
       sport: SportType.padel,
       mode: PartnerMode.mixed,
       matchDurationMinutes: 10,
-      courts: const [
-        Court(id: 'c1', name: 'Court 1', colorIndex: 0, bookingDurationMinutes: 300),
-        Court(id: 'c2', name: 'Court 2', colorIndex: 1, bookingDurationMinutes: 300),
+      courts: [
+        for (var i = 1; i <= courts; i++)
+          Court(id: 'c$i', name: 'Court $i', colorIndex: i - 1, bookingDurationMinutes: 300),
       ],
       players: [for (var i = 0; i < players; i++) Player(id: 'p$i', name: 'Pemain $i')],
     );
@@ -70,28 +70,52 @@ void main() {
     expect(read().config.players, contains(zaki));
   });
 
-  test('pemain baru disejajarkan, bukan main terus sampai menyusul', () {
-    controller.startIfNeeded(_mixedConfig(9));
-    for (var i = 0; i < 5; i++) {
+  /// Pola main [id] sejak round [from]: "M" main, "-" istirahat.
+  String pattern(ActiveTournament a, String id, int from) => [
+        for (var r = from; r <= a.roundCount; r++)
+          a.matchesOfRound(r).any((m) => m.pair1.contains(id) || m.pair2.contains(id)) ? 'M' : '-',
+      ].join();
+
+  /// Kasus host (2026-10-25): 10 pemain, 2 pemain baru setelah R3. Dulu kredit menyejajarkan mereka dengan yang
+  /// paling jarang main, jadi selisihnya tetap selamanya.
+  test('pemain telat menyusul: 12 pemain / 2 court → main 3, istirahat 1', () {
+    controller.startIfNeeded(_mixedConfig(10));
+    for (var i = 0; i < 2; i++) {
       _playRound(controller, read);
     }
     controller.addPlayer('Zaki');
-    final zakiId = read().config.players.last.id;
-    final credit = read().matchCredits[zakiId]!;
-    expect(credit, greaterThan(0));
-
-    for (var i = 0; i < 8; i++) {
-      _playRound(controller, read);
+    controller.addPlayer('Yoga');
+    final late = read().config.players.skip(10).map((p) => p.id).toList();
+    double gap() {
       final counts = _scheduledCounts(read());
-      final effective = [
-        for (final p in read().activePlayers) (counts[p.id] ?? 0) + (read().matchCredits[p.id] ?? 0),
-      ]..sort();
-      expect(effective.last - effective.first, lessThanOrEqualTo(1), reason: 'setelah round ${read().roundCount}');
+      double avg(Iterable<String> ids) => ids.map((id) => counts[id] ?? 0).reduce((a, b) => a + b) / ids.length;
+      return avg(read().activePlayers.map((p) => p.id).where((id) => !late.contains(id))) - avg(late);
     }
 
-    // Tanpa kredit Zaki akan main di tiap round berturut-turut sejak masuk.
-    final zakiRounds = read().matches.where((m) => m.pair1.contains(zakiId) || m.pair2.contains(zakiId));
-    expect(zakiRounds.length, lessThan(9));
+    _playRound(controller, read);
+    final start = gap();
+    for (var i = 0; i < 11; i++) {
+      _playRound(controller, read);
+    }
+    for (final id in late) {
+      expect(pattern(read(), id, 4), 'MMM-MMM-MMM-');
+    }
+    expect(gap(), lessThan(start), reason: 'selisih turun, bukan tetap');
+  });
+
+  test('1 court: pemain telat langsung menyusul, selisih main ≤ 1', () {
+    controller.startIfNeeded(_mixedConfig(10, courts: 1));
+    for (var i = 0; i < 2; i++) {
+      _playRound(controller, read);
+    }
+    controller.addPlayer('Zaki');
+    controller.addPlayer('Yoga');
+    for (var i = 0; i < 12; i++) {
+      _playRound(controller, read);
+      final counts = _scheduledCounts(read());
+      final played = [for (final p in read().activePlayers) counts[p.id] ?? 0]..sort();
+      expect(played.last - played.first, lessThanOrEqualTo(1), reason: 'setelah R${read().roundCount}');
+    }
   });
 
   test('pemain keluar tidak dijadwalkan lagi tapi tetap ada di peringkat', () {
@@ -115,7 +139,7 @@ void main() {
     expect(read().activePlayers, hasLength(4));
   });
 
-  test('pemain yang kembali dapat kredit dan ikut rotasi lagi', () {
+  test('pemain yang kembali menyusul seperti pemain baru', () {
     controller.startIfNeeded(_mixedConfig(9));
     controller.withdrawPlayer('p0');
     for (var i = 0; i < 4; i++) {
@@ -124,7 +148,9 @@ void main() {
 
     expect(controller.reinstatePlayer('p0'), isNull);
     expect(read().withdrawnPlayerIds, isNot(contains('p0')));
-    expect(read().matchCredits['p0'], greaterThan(0));
+    expect(read().latePlayerIds, contains('p0'));
+    _playRound(controller, read);
+    expect(pattern(read(), 'p0', read().roundCount), 'M', reason: 'paling sedikit main → langsung main');
   });
 
   test('nama duplikat ditolak, termasuk milik pemain yang sudah keluar', () {
@@ -145,31 +171,31 @@ void main() {
     expect(controller.reinstatePlayer('p0'), 'Maksimal 30 pemain aktif');
   });
 
-  test('daftar keluar & kredit ikut tersimpan, payload lama tetap terbaca', () {
+  test('daftar keluar ikut tersimpan; payload lama (tanpa daftar, atau dengan kredit 2.6) tetap terbaca', () {
     controller.startIfNeeded(_mixedConfig(9));
     _playRound(controller, read);
     controller.addPlayer('Zaki');
     controller.withdrawPlayer('p3');
 
-    final decoded = TournamentCodec.decode(TournamentCodec.encode(read()))!;
+    final encoded = TournamentCodec.encode(read());
+    final decoded = TournamentCodec.decode(encoded)!;
     expect(decoded.withdrawnPlayerIds, {'p3'});
-    expect(decoded.matchCredits, read().matchCredits);
     expect(decoded.config.players.last.name, 'Zaki');
+    expect(decoded.latePlayerIds, read().latePlayerIds);
 
-    // Simpanan dari versi sebelum fitur ini tidak punya kedua kunci tersebut.
-    final legacy = TournamentCodec.encode(read())
-        .replaceFirst(RegExp(r',"withdrawn":\[[^\]]*\],"credits":\{[^}]*\}'), '');
+    // Simpanan dari versi sebelum fitur keluar/masuk tidak punya daftar keluar.
+    final legacy = encoded.replaceFirst(RegExp(r',"withdrawn":\[[^\]]*\]'), '');
     expect(legacy, isNot(contains('withdrawn')));
-    final old = TournamentCodec.decode(legacy)!;
-    expect(old.withdrawnPlayerIds, isEmpty);
-    expect(old.matchCredits, isEmpty);
+    expect(TournamentCodec.decode(legacy)!.withdrawnPlayerIds, isEmpty);
+
+    // Sampai 2.6 pemain telat dapat kredit; kuncinya diabaikan.
+    final withCredits = encoded.replaceFirst(RegExp(r'\}$'), ',"credits":{"p0":2}}');
+    expect(TournamentCodec.decode(withCredits)!.config.players, hasLength(10));
   });
 
   bool plays(MatchGame m, String id) => m.pair1.contains(id) || m.pair2.contains(id);
 
   test('batalkan round tanpa skor: round dihapus, pemain baru main di round penggantinya', () {
-    // 12 pemain, 2 court: R3 berisi tepat 8 pemain dengan jumlah main paling
-    // sedikit, jadi kredit yang ikut menghitung R3 membuat Zaki kalah prioritas.
     controller.startIfNeeded(_mixedConfig(12));
     for (var i = 0; i < 2; i++) {
       _playRound(controller, read);
@@ -190,15 +216,8 @@ void main() {
     }
     expect(cancelled.canGenerateNextRound(DateTime.now()), isTrue);
 
-    // Kredit dihitung ulang tanpa R3 yang dihapus; kalau tidak, Zaki istirahat.
     controller.generateNextRound();
-    final after = read();
-    expect(after.matchesOfRound(3).any((m) => plays(m, zakiId)), isTrue);
-    final counts = _scheduledCounts(after);
-    final effective = [
-      for (final p in after.activePlayers) (counts[p.id] ?? 0) + (after.matchCredits[p.id] ?? 0),
-    ]..sort();
-    expect(effective.last - effective.first, lessThanOrEqualTo(1));
+    expect(read().matchesOfRound(3).any((m) => plays(m, zakiId)), isTrue);
   });
 
   test('R1 tidak bisa dibatalkan', () {

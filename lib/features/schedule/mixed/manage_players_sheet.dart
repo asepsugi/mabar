@@ -88,8 +88,8 @@ class _ManagePlayersState extends ConsumerState<_ManagePlayers> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Text(
-              'Pemain baru langsung ikut main. Jumlah match mengikuti pemain yang paling jarang main. '
-              'Total Point tertinggal; Win % lebih adil untuk pemain baru.',
+              'Pemain baru langsung ikut main dan diprioritaskan sampai jumlah match-nya menyusul, dengan jeda '
+              'istirahat 1 round. Total Point tertinggal; Win % lebih adil untuk pemain baru.',
               style: small,
             ),
           ),

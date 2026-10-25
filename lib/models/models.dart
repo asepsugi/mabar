@@ -418,17 +418,11 @@ class ActiveTournament {
   /// dari `config.players` supaya nama di match lama dan peringkatnya tetap ada.
   final Set<String> withdrawnPlayerIds;
 
-  /// Mode Mixed: tambahan jumlah main untuk pemain yang masuk/kembali di tengah
-  /// jalan, supaya generator tidak menyuruhnya main terus sampai "menyusul".
-  /// Hanya dipakai untuk prioritas jadwal, tidak ikut ranking.
-  final Map<String, int> matchCredits;
-
   const ActiveTournament({
     required this.tournament,
     this.byePairIdByRound = const {},
     this.restingPlayerIdsByRound = const {},
     this.withdrawnPlayerIds = const {},
-    this.matchCredits = const {},
   });
 
   TournamentConfig get config => tournament.config;
@@ -443,6 +437,21 @@ class ActiveTournament {
   int get roundCount => matches.isEmpty ? 0 : matches.last.roundNumber;
 
   List<MatchGame> matchesOfRound(int round) => matches.where((m) => m.roundNumber == round).toList();
+
+  /// Mixed: pemain aktif yang absen di salah satu round yang sudah dibuat — tidak main dan tidak tercatat istirahat,
+  /// artinya masuk telat atau kembali setelah keluar. Mereka yang menyusul dengan jeda di
+  /// `EndlessRoundGenerator.priorityOrder`.
+  Set<String> get latePlayerIds {
+    final late = <String>{};
+    for (var r = 1; r <= roundCount; r++) {
+      final present = {
+        ...?restingPlayerIdsByRound[r],
+        for (final m in matchesOfRound(r)) ...[...m.pair1.playerIds, ...m.pair2.playerIds],
+      };
+      late.addAll(activePlayers.map((p) => p.id).where((id) => !present.contains(id)));
+    }
+    return late;
+  }
 
   /// Round dianggap selesai kalau tidak ada lagi match yang menunggu skor.
   bool isRoundComplete(int round) => matchesOfRound(round).every((m) => m.status != MatchStatus.pending);
@@ -638,12 +647,10 @@ class ActiveTournament {
     Tournament? tournament,
     Map<int, List<String>>? resting,
     Set<String>? withdrawn,
-    Map<String, int>? matchCredits,
   }) => ActiveTournament(
     tournament: tournament ?? this.tournament,
     byePairIdByRound: byePairIdByRound,
     restingPlayerIdsByRound: resting ?? restingPlayerIdsByRound,
     withdrawnPlayerIds: withdrawn ?? withdrawnPlayerIds,
-    matchCredits: matchCredits ?? this.matchCredits,
   );
 }

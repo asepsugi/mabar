@@ -76,7 +76,7 @@ class TournamentController extends Notifier<ActiveTournament?> {
       history: current.matches,
       roundNumber: roundNumber,
       seed: current.drawSeed,
-      matchCredits: current.matchCredits,
+      latePlayerIds: current.latePlayerIds,
     );
     if (round == null) return;
 
@@ -93,37 +93,14 @@ class TournamentController extends Notifier<ActiveTournament?> {
     if (current == null || !current.canCancelLastRound) return;
 
     final round = current.roundCount;
-    final history = [
-      for (final m in current.matches)
-        if (m.roundNumber != round) m,
-    ];
-    final scheduled = {
-      for (final m in current.matchesOfRound(round)) ...[...m.pair1.playerIds, ...m.pair2.playerIds],
-      ...?current.restingPlayerIdsByRound[round],
-    };
-
-    // Pemain yang tidak ada di round ini berarti masuk/kembali setelah round
-    // ini dibuat, dan kreditnya ikut menghitung match round ini (pending tetap
-    // dihitung). Tanpa dihitung ulang dari history tanpa round ini, kreditnya
-    // kelebihan satu dan dia justru istirahat di round yang dibuat berikutnya.
-    final credits = {...current.matchCredits};
-    for (final p in current.activePlayers) {
-      if (scheduled.contains(p.id) || !credits.containsKey(p.id)) continue;
-      credits[p.id] = EndlessRoundGenerator.catchUpCredit(
-        playerId: p.id,
-        otherActivePlayers: [
-          for (final o in current.activePlayers)
-            if (o.id != p.id) o,
-        ],
-        history: history,
-        matchCredits: {...credits}..remove(p.id),
-      );
-    }
-
     state = current.copyWith(
-      tournament: current.tournament.copyWith(matches: history),
+      tournament: current.tournament.copyWith(
+        matches: [
+          for (final m in current.matches)
+            if (m.roundNumber != round) m,
+        ],
+      ),
       resting: {...current.restingPlayerIdsByRound}..remove(round),
-      matchCredits: credits,
     );
   }
 
@@ -151,7 +128,6 @@ class TournamentController extends Notifier<ActiveTournament?> {
       tournament: current.tournament.copyWith(
         config: current.config.copyWith(players: [...current.config.players, player]),
       ),
-      matchCredits: _withCatchUpCredit(current, player.id),
     );
     return null;
   }
@@ -166,31 +142,16 @@ class TournamentController extends Notifier<ActiveTournament?> {
     return true;
   }
 
-  /// Kebalikan [withdrawPlayer]; jumlah mainnya disejajarkan lagi lewat kredit.
+  /// Kebalikan [withdrawPlayer]; kalau tertinggal, dia menyusul seperti pemain baru
+  /// (`EndlessRoundGenerator.priorityOrder`).
   String? reinstatePlayer(String playerId) {
     final current = state;
     if (current == null || !current.withdrawnPlayerIds.contains(playerId)) return null;
     const limit = TournamentConfig.maxPlayers;
     if (current.activePlayers.length >= limit) return 'Maksimal $limit pemain aktif';
-    state = current.copyWith(
-      withdrawn: {...current.withdrawnPlayerIds}..remove(playerId),
-      matchCredits: _withCatchUpCredit(current, playerId),
-    );
+    state = current.copyWith(withdrawn: {...current.withdrawnPlayerIds}..remove(playerId));
     return null;
   }
-
-  static Map<String, int> _withCatchUpCredit(ActiveTournament active, String playerId) => {
-    ...active.matchCredits,
-    playerId: EndlessRoundGenerator.catchUpCredit(
-      playerId: playerId,
-      otherActivePlayers: [
-        for (final p in active.activePlayers)
-          if (p.id != playerId) p,
-      ],
-      history: active.matches,
-      matchCredits: active.matchCredits,
-    ),
-  };
 
   /// Mixed: tambah court di tengah turnamen (Kelola court, 08e–08g). Booking-nya mulai sekarang; court langsung
   /// dipakai kalau round terakhir masih berjalan dan cukup yang istirahat (logic.md §10).

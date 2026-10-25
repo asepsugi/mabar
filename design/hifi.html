@@ -1394,7 +1394,7 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
         <div class="dialog"><h2>Batalkan R4?</h2><p>Jadwal R4 dihapus. Tambahkan pemain yang baru datang lewat Kelola pemain, lalu tekan "Buat R4" lagi.</p><div class="dactions"><span class="txtbtn">Batal</span><span class="txtbtn danger">Batalkan R4</span></div></div>
       </div>
       <ul>
-        <li>Setelah dibatalkan, layar pindah ke R3. Kredit pemain yang tidak ada di R4 dihitung ulang dari riwayat tanpa R4.</li><li>Judul, isi ("tekan Buat R<i>n</i> lagi"), dan tombol memakai n yang sama: setelah dibatalkan, tombol bawah memang kembali jadi "Buat R<i>n</i>".</li>
+        <li>Setelah dibatalkan, layar pindah ke R3. Pemain yang ditambah setelah R4 dibuat paling sedikit main, jadi langsung main di R4 yang baru.</li><li>Judul, isi ("tekan Buat R<i>n</i> lagi"), dan tombol memakai n yang sama: setelah dibatalkan, tombol bawah memang kembali jadi "Buat R<i>n</i>".</li>
       </ul>
     </div>
 
@@ -1522,7 +1522,7 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
       <ul>
         <li>Kondisi terpadat Mixed: 30 pemain aktif. Dengan 2 court, 22 istirahat (11 baris); dengan 1 court 26 istirahat (13 baris) tapi hanya 1 match. Makin banyak court, makin sedikit yang istirahat. Kalau isinya lebih panjang dari layar, daftar di-scroll; app bar, tab, dan action bar tetap.</li>
         <li>Nama dalam dua kolom rata, urut seperti daftar pemain, terpotong elipsis kalau panjang; sama dengan daftar di layar Pemain dan Pasangan, bukan kalimat yang membungkus tidak rata.</li>
-        <li>Yang istirahat lebih banyak dari slot round berikutnya (22 orang, R4 hanya 8 slot = 4 × court), jadi daftarnya dibagi dua: yang pasti main di R4 di bawah judul "Istirahat · Prioritas main di R4" (bagian prioritas bertinta gelap, bukan biru court supaya tidak terbaca sebagai tautan), dan sisanya di daftar kedua "Istirahat lagi di R4" yang lebih pudar. Kalau semua yang istirahat kebagian slot, hanya daftar pertama yang tampil (06f–06h).</li><li>Isi kedua daftar dihitung dengan urutan yang sama persis dengan generator: jumlah main (termasuk kredit), lalu yang paling lama istirahat. Pemain yang seri diundi dengan undian yang dikunci per round (seed turnamen + nomor round), bukan diacak saat "Buat R4" ditekan. Jadi hasil Buat R4 selalu sama dengan daftar ini.</li><li>Daftar dihitung ulang langsung kalau host menambah/mengeluarkan pemain (sheet 08a) atau jumlah court yang masih punya waktu berubah. Pemain yang baru ditambahkan langsung masuk salah satu daftar; yang keluar hilang dari keduanya.</li>
+        <li>Yang istirahat lebih banyak dari slot round berikutnya (22 orang, R4 hanya 8 slot = 4 × court), jadi daftarnya dibagi dua: yang pasti main di R4 di bawah judul "Istirahat · Prioritas main di R4" (bagian prioritas bertinta gelap, bukan biru court supaya tidak terbaca sebagai tautan), dan sisanya di daftar kedua "Istirahat lagi di R4" yang lebih pudar. Kalau semua yang istirahat kebagian slot, hanya daftar pertama yang tampil (06f–06h).</li><li>Isi kedua daftar dihitung dengan urutan yang sama persis dengan generator: jumlah main, lalu yang paling lama istirahat; pemain telat yang sudah main beruntun diberi jeda (08a). Pemain yang seri diundi dengan undian yang dikunci per round (seed turnamen + nomor round), bukan diacak saat "Buat R4" ditekan. Jadi hasil Buat R4 selalu sama dengan daftar ini.</li><li>Daftar dihitung ulang langsung kalau host menambah/mengeluarkan pemain (sheet 08a) atau jumlah court yang masih punya waktu berubah. Pemain yang baru ditambahkan langsung masuk salah satu daftar; yang keluar hilang dari keduanya.</li>
       </ul>
     </div>
 
@@ -1667,7 +1667,7 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
           <span class="grab"></span>
           <div class="shead"><div><h2>Kelola pemain</h2><p>Berlaku mulai R4</p></div></div>
           <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:16px"><div style="display:flex;gap:8px"><span class="inline-field" style="height:48px;box-shadow:inset 0 0 0 2px var(--court);background:var(--card)">Gilang S<span class="caret"></span></span><span class="btn btn-primary" style="flex:none;height:48px;min-height:48px">Tambah</span></div>
-          <p class="small muted" style="padding:0 4px">Pemain baru langsung ikut main. Jumlah match mengikuti pemain yang paling jarang main. Total Point tertinggal; Win % lebih adil untuk pemain baru.</p>
+          <p class="small muted" style="padding:0 4px">Pemain baru langsung ikut main dan diprioritaskan sampai jumlah match-nya menyusul, dengan jeda istirahat 1 round. Total Point tertinggal; Win % lebih adil untuk pemain baru.</p>
           <span class="glabel">10 pemain aktif · 1 keluar</span>
           <div class="group">
             <div class="row"><span class="grow">Andi P</span><span class="rowact">Keluarkan</span></div>
@@ -1689,7 +1689,7 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
         <li>Nama dibersihkan seperti di layar Pemain (nomor/bullet dibuang), cocok-tidaknya tidak peka huruf besar. Enter = Tambah.</li><li>Tombol Tambah 48 pt, sama tinggi dengan kolom nama di sebelahnya.</li>
         <li>"Keluarkan" dan "Kembalikan" memakai <code>.rowact</code>. Keluarkan sengaja netral, bukan merah: bisa dibatalkan lewat Kembalikan, dan merah di setiap baris membuat daftar ramai.</li>
         <li>"Keluarkan" langsung tanpa konfirmasi; pemain tidak dihapus, hanya keluar dari round berikutnya. Match yang sudah terjadwal tetap ada (bisa ditandai WO).</li>
-        <li>Pemain baru/kembali dapat kredit "catch-up" (prioritas jadwal saja, tidak ikut ranking).</li>
+        <li>Pemain baru/kembali (absen di round sebelumnya) diprioritaskan sampai jumlah match-nya menyusul yang paling banyak main, tapi istirahat 1 round setelah main k round beruntun: k = 2, atau satu lebih dari ritme pemain lain kalau 2 belum cukup untuk menyusul (12 pemain / 2 court: pemain lain main 2 dari 3 round → k = 3). Prioritas jadwal saja, tidak ikut ranking. Kalau semua pemain main tiap round (12 pemain / 3 court), selisihnya memang tidak bisa dikejar.</li>
       </ul>
     </div>
 
@@ -2883,6 +2883,7 @@ Citra L<span class="caret"></span></div><div class="tools"><span class="txtbtn">
     <div class="panel">
       <h3>Sudah disetujui</h3>
       <ul class="ruleslist">
+        <li>Pemain telat di Mixed (masuk atau kembali di tengah turnamen) menyusul jumlah main: diprioritaskan, istirahat 1 round setelah main k round beruntun supaya tidak main terus (k = 2, atau satu lebih dari ritme pemain lain kalau 2 belum cukup: 12 pemain / 2 court → 3). Dulu jumlah mainnya disejajarkan dengan pemain yang paling jarang main, jadi selisihnya tetap selamanya (08a, 2026-10-25).</li>
         <li>Nama pemain di baris match, Input Skor, WO, riwayat Detail, dan Istirahat Fixed ditulis lengkap, bukan nama depan: dua pemain bernama depan sama (Lia Ibun, Lia Ncii) membuat siapa yang main membingungkan. Tidak muat → elipsis per nama, nama pendek tetap utuh (06u) (2026-10-25).</li>
         <li>"Akhiri" benar-benar mengakhiri di Beranda: turnamen yang sudah diakhiri tapi belum lewat Selesai di Bagikan tampil sebagai turnamen terakhir (01c, Fixed tidak tampil), bukan "Round n · Lanjutkan"; Mulai turnamen memindahkannya ke turnamen terakhir tanpa dialog 01h (2026-10-25).</li>
         <li>Live score (ide host, 2026-10-24): host membagikan link dan pemain lain melihat Jadwal, Klasemen, dan Detail per pemain di browser, Fixed dan Mixed. Tanpa database: relay kecil di Cloudflare yang hanya memegang salinan turnamen terakhir per kode, terhapus 3 hari setelah perubahan terakhir atau saat Hentikan. Item di menu ⋯ (bukan tombol baru), dialog sebelum mulai karena nama pemain jadi terbuka, tag "Live"/"Offline" hanya di Jadwal penonton, nama turnamen menggantikan olahraga di subjudul penonton, ⋯ Fixed setelah diakhiri tetap aktif (06c). Preview link WhatsApp tetap generik "Mabar" (12a–12o).</li>

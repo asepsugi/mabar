@@ -22,7 +22,6 @@ class TournamentCodec {
     'bye': {for (final e in active.byePairIdByRound.entries) '${e.key}': e.value},
     'resting': {for (final e in active.restingPlayerIdsByRound.entries) '${e.key}': e.value},
     'withdrawn': active.withdrawnPlayerIds.toList(),
-    'credits': active.matchCredits,
   });
 
   /// Mengembalikan null kalau payload kosong, rusak, dari skema lain, atau tanpa versi app.
@@ -40,12 +39,11 @@ class TournamentCodec {
           for (final e in (json['resting'] as Map<String, dynamic>).entries)
             int.parse(e.key): [for (final id in e.value as List) id as String],
         },
-        // Dua kunci ini baru ada belakangan; payload lama tanpa keduanya tetap
-        // sah (artinya: belum ada yang keluar/masuk), jadi schema tidak dinaikkan.
+        // Kunci ini baru ada belakangan; payload lama tanpanya tetap sah (belum
+        // ada yang keluar), jadi schema tidak dinaikkan. Kunci `credits` (kredit
+        // pemain telat sampai 2.6) sengaja diabaikan: pemain yang tertinggal
+        // sekarang menyusul lewat urutan prioritas, bukan disejajarkan.
         withdrawnPlayerIds: {for (final id in (json['withdrawn'] as List?) ?? const []) id as String},
-        matchCredits: {
-          for (final e in ((json['credits'] as Map<String, dynamic>?) ?? const {}).entries) e.key: e.value as int,
-        },
       );
     } catch (_) {
       // Payload rusak (mis. app di-kill di tengah tulis) tidak boleh membuat

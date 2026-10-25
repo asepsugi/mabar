@@ -16,7 +16,8 @@ class EndlessRound {
 /// Generator round mode Mixed.
 ///
 /// Urutannya persis seperti di PRD:
-/// 1. Pilih pemain prioritas — paling sedikit main, lalu paling lama istirahat ([priorityOrder]).
+/// 1. Pilih pemain prioritas — paling sedikit main, lalu paling lama istirahat; pemain yang tertinggal diberi jeda
+///    ([priorityOrder]).
 /// 2. Acak pasangan di antara pemain aktif dengan constraint dari history.
 /// 3. Tempatkan tiap match ke satu court.
 ///
@@ -30,16 +31,18 @@ class EndlessRoundGenerator {
   static const _repeatOpponentPenalty = 3;
   static const _maxAttempts = 400;
 
-  /// [players] hanya pemain aktif (yang keluar tidak dioper). [matchCredits]
-  /// ditambahkan ke jumlah main saat memilih prioritas — lihat [catchUpCredit].
-  /// [seed] = `ActiveTournament.drawSeed`; [random] hanya untuk menyusun pasangan.
+  /// Main beruntun terpendek sebelum pemain yang tertinggal diberi jeda (usulan host), lihat [priorityOrder].
+  static const _catchUpRun = 2;
+
+  /// [players] hanya pemain aktif (yang keluar tidak dioper). [latePlayerIds] = `ActiveTournament.latePlayerIds`,
+  /// lihat [priorityOrder]. [seed] = `ActiveTournament.drawSeed`; [random] hanya untuk menyusun pasangan.
   static EndlessRound? generateRound({
     required List<Player> players,
     required List<Court> courts,
     required List<MatchGame> history,
     required int roundNumber,
     required int seed,
-    Map<String, int> matchCredits = const {},
+    Set<String> latePlayerIds = const {},
     Random? random,
   }) {
     final capacity = slotsFor(players: players.length, courts: courts.length);
@@ -50,12 +53,13 @@ class EndlessRoundGenerator {
       history: history,
       roundNumber: roundNumber,
       seed: seed,
-      matchCredits: matchCredits,
+      slots: capacity,
+      latePlayerIds: latePlayerIds,
     );
     final active = sorted.take(capacity).toList();
     final resting = sorted.skip(capacity).toList();
 
-    final arrangement = _bestArrangement(active, _History(history, matchCredits), random ?? Random());
+    final arrangement = _bestArrangement(active, _History(history), random ?? Random());
 
     final matches = <MatchGame>[];
     for (var i = 0; i < arrangement.length; i++) {
@@ -78,23 +82,31 @@ class EndlessRoundGenerator {
   /// Pemain yang main di satu round: 4 per court, dibatasi jumlah pemain, selalu kelipatan 4.
   static int slotsFor({required int players, required int courts}) => (min(players, courts * 4) ~/ 4) * 4;
 
-  /// Urutan prioritas main di round [roundNumber]: paling sedikit main (termasuk kredit), lalu paling
+  /// Urutan prioritas main di round [roundNumber] yang memakai [slots] pemain: paling sedikit main, lalu paling
   /// lama istirahat, lalu undian. Undiannya dikunci per round — `Random(seed + roundNumber)` dibagikan
   /// ke pemain urut id — jadi daftar "Prioritas main di R…" yang tampil sebelum tombol Buat ditekan
   /// selalu sama dengan hasil Buat. Kunci terakhir id pemain, karena `List.sort` Dart tidak stabil.
+  ///
+  /// Pemain di [latePlayerIds] (masuk telat, kembali setelah keluar) yang jumlah mainnya masih di bawah yang paling
+  /// banyak main dengan sendirinya di atas, tapi setelah main k round berturut-turut dia istirahat satu round
+  /// (keputusan host 2026-10-25). k = 2, atau satu lebih dari rata-rata main beruntun pemain lain (slot ÷ yang
+  /// istirahat) kalau 2 belum lebih sering dari mereka: 12 pemain / 2 court → 3. Main k dari k + 1 round selalu lebih
+  /// sering dari bagian pemain lain, jadi dia menyusul tanpa main terus. Pemain yang hadir sejak awal tidak kena jeda:
+  /// undian seri kadang memberi mereka k round beruntun, dan memotongnya bisa membuat selisih main jadi 2.
   static List<Player> priorityOrder({
     required List<Player> players,
     required List<MatchGame> history,
     required int roundNumber,
     required int seed,
-    Map<String, int> matchCredits = const {},
+    required int slots,
+    Set<String> latePlayerIds = const {},
   }) {
-    final stats = _History(history, matchCredits);
+    final stats = _History(history);
     final ids = players.map((p) => p.id).toList()..sort();
     final rng = Random(seed + roundNumber);
     final draw = {for (final id in ids) id: rng.nextInt(1 << 30)};
 
-    return [...players]..sort((a, b) {
+    final order = [...players]..sort((a, b) {
       final byMatches = stats.matchCount(a.id).compareTo(stats.matchCount(b.id));
       if (byMatches != 0) return byMatches;
       final byRest = stats.lastRound(a.id).compareTo(stats.lastRound(b.id));
@@ -103,6 +115,24 @@ class EndlessRoundGenerator {
       if (byDraw != 0) return byDraw;
       return a.id.compareTo(b.id);
     });
+    final resting = players.length - slots;
+    if (resting <= 0) return order;
+
+    final run = max(_catchUpRun, slots ~/ resting + 1);
+    final top = players.map((p) => stats.matchCount(p.id)).reduce(max);
+    bool due(Player p) =>
+        latePlayerIds.contains(p.id) && stats.matchCount(p.id) < top && stats.runBefore(p.id, roundNumber) >= run;
+    return [...order.where((p) => !due(p)), ...order.where(due)];
+  }
+
+  /// Slot R(n+1) pada [now]: 4 × court yang masih muat satu match. Kalau tidak ada (waktu habis, 06l), dari semua
+  /// court — round berikutnya baru ada setelah Lanjutkan turnamen.
+  static int _nextRoundSlots(ActiveTournament active, DateTime now) {
+    final courts = active.courtsAvailableAt(now);
+    return slotsFor(
+      players: active.activePlayers.length,
+      courts: courts.isEmpty ? active.config.courts.length : courts.length,
+    );
   }
 
   /// Baris Istirahat di tab round terakhir n (06f–06o): pemain aktif **sekarang** yang tidak main di
@@ -121,17 +151,14 @@ class EndlessRoundGenerator {
     ];
     if (resting.isEmpty) return (priority: const [], later: const []);
 
-    final courts = active.courtsAvailableAt(now);
-    final slots = slotsFor(
-      players: active.activePlayers.length,
-      courts: courts.isEmpty ? active.config.courts.length : courts.length,
-    );
+    final slots = _nextRoundSlots(active, now);
     final next = priorityOrder(
       players: active.activePlayers,
       history: active.matches,
       roundNumber: n + 1,
       seed: active.drawSeed,
-      matchCredits: active.matchCredits,
+      slots: slots,
+      latePlayerIds: active.latePlayerIds,
     ).take(slots).map((p) => p.id).toSet();
 
     return (
@@ -175,7 +202,8 @@ class EndlessRoundGenerator {
         history: active.matches,
         roundNumber: n + 1,
         seed: active.drawSeed,
-        matchCredits: active.matchCredits,
+        slots: _nextRoundSlots(active, now),
+        latePlayerIds: active.latePlayerIds,
       ).where((p) => !playing.contains(p.id)).toList();
       if (waiting.length >= 4) return (use: CourtUse.now, players: waiting.take(4).toList());
     }
@@ -195,7 +223,7 @@ class EndlessRoundGenerator {
     final n = active.roundCount;
     final (pair1, pair2) = _bestArrangement(
       players,
-      _History(active.matches, active.matchCredits),
+      _History(active.matches),
       random ?? Random(),
     ).single;
     final number = active.matchesOfRound(n).fold(0, (top, m) => max(top, m.matchNumberInRound)) + 1;
@@ -207,26 +235,6 @@ class EndlessRoundGenerator {
       pair1: pair1,
       pair2: pair2,
     );
-  }
-
-  /// Kredit untuk [playerId] yang masuk (atau kembali) di tengah turnamen:
-  /// jumlah mainnya disejajarkan dengan pemain aktif lain yang paling sedikit
-  /// main. Tanpa ini pemain baru (0 match) selalu di urutan prioritas teratas
-  /// dan main terus beberapa round sampai menyusul, sementara yang lain istirahat.
-  /// Kredit tidak pernah turun, jadi pemain yang kembali tidak "diutangi" lagi.
-  static int catchUpCredit({
-    required String playerId,
-    required List<Player> otherActivePlayers,
-    required List<MatchGame> history,
-    Map<String, int> matchCredits = const {},
-  }) {
-    final current = matchCredits[playerId] ?? 0;
-    if (otherActivePlayers.isEmpty) return current;
-
-    final stats = _History(history, matchCredits);
-    final floor = otherActivePlayers.map((p) => stats.matchCount(p.id)).reduce(min);
-    final played = stats.matchCount(playerId) - current;
-    return max(current, floor - played);
   }
 
   /// Coba beberapa susunan acak, ambil yang penaltinya paling kecil.
@@ -276,13 +284,12 @@ class EndlessRoundGenerator {
 class _History {
   final Map<String, int> _matchCount = {};
   final Map<String, int> _lastRound = {};
+  final Map<String, Set<int>> _rounds = {};
   final Map<String, int> _partner = {};
   final Map<String, int> _opponent = {};
   final Set<String> _matchups = {};
 
-  final Map<String, int> _credits;
-
-  _History(List<MatchGame> history, this._credits) {
+  _History(List<MatchGame> history) {
     for (final m in history) {
       if (m.status == MatchStatus.cancelled) continue;
 
@@ -291,6 +298,7 @@ class _History {
         for (final id in pair.playerIds) {
           _matchCount[id] = (_matchCount[id] ?? 0) + 1;
           _lastRound[id] = m.roundNumber;
+          _rounds.putIfAbsent(id, () => {}).add(m.roundNumber);
         }
       }
       for (final a in m.pair1.playerIds) {
@@ -312,9 +320,18 @@ class _History {
     return keys.join('|');
   }
 
-  /// Termasuk kredit — angka inilah yang dipakai untuk prioritas.
-  int matchCount(String playerId) => (_matchCount[playerId] ?? 0) + (_credits[playerId] ?? 0);
+  int matchCount(String playerId) => _matchCount[playerId] ?? 0;
   int lastRound(String playerId) => _lastRound[playerId] ?? 0;
+
+  /// Jumlah round berturut-turut tepat sebelum [round] yang ada match [playerId]-nya.
+  int runBefore(String playerId, int round) {
+    final rounds = _rounds[playerId] ?? const <int>{};
+    var run = 0;
+    while (rounds.contains(round - 1 - run)) {
+      run++;
+    }
+    return run;
+  }
   int partnerCount(String a, String b) => _partner[EndlessRoundGenerator._pairKey(a, b)] ?? 0;
   int opponentCount(String a, String b) => _opponent[EndlessRoundGenerator._pairKey(a, b)] ?? 0;
   bool hasPlayedMatchup(Pair a, Pair b) => _matchups.contains(_matchupKey(a, b));

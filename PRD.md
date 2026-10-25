@@ -1,6 +1,6 @@
 # PRD — Aplikasi Mabar Tennis/Padel (Klub/Komunitas)
 
-**Versi dokumen:** 2.6 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21; Kelola court 2026-10-22; nama turnamen dan batas 30 pemain 2026-10-23; live score 2026-10-24; nama lengkap di baris match dan Akhiri di Beranda 2026-10-25) dan app **2.6.0**
+**Versi dokumen:** 2.6 — sejalan dengan hi-fi v2 (`design/hifi.html`, disetujui host 2026-10-21; Kelola court 2026-10-22; nama turnamen dan batas 30 pemain 2026-10-23; live score 2026-10-24; nama lengkap di baris match, Akhiri di Beranda, dan pemain telat menyusul 2026-10-25) dan app **2.7.0**
 **Platform:** Android + iOS + Web/PWA (1 codebase — Flutter)
 **Target user:** Host mabar klub/komunitas tennis & padel, 4–30 pemain per turnamen, 1 HP host, offline
 
@@ -107,20 +107,29 @@ function generateRoundRobin(pairs):
 function generateNextRound(activePlayers, history, courts, round):
     slots = courtsAvailableAt(now) × 4
     order = activePlayers.sortBy(
-        matchCount + catchUpCredit ASC,   // paling sedikit main
+        matchCount ASC,                   // paling sedikit main
         lastRoundPlayed ASC,              // paling lama istirahat
         lockedDraw(drawSeed + round),     // undian seri DIKUNCI per round
         id)
+    k = max(2, slots ÷ (activePlayers − slots) + 1)   // bulat ke bawah; tanpa yang istirahat → tanpa jeda
+    order = order tanpa pemain telat yang perlu jeda + mereka di paling bawah
+            // telat = absen di round sebelumnya; jeda = di bawah yang paling banyak main dan sudah main k round beruntun
     playing = order.take(slots); resting = order.skip(slots)
     pairing terbaik dari 400 percobaan, penalti: ulang match persis 1000, ulang partner 10, ulang lawan 3
 ```
 
 - `drawSeed` = FNV-1a dari id turnamen. Karena undian dikunci, daftar "Istirahat · Prioritas main di R(n+1)" yang
   tampil di Jadwal selalu sama dengan hasil Buat R(n+1).
-- **Properti fairness:** selisih jumlah main antar pemain aktif ≤ 1 setiap saat (dihitung dengan kredit); yang
-  istirahat diprioritaskan di round berikutnya.
-- Pemain baru/kembali mendapat **kredit catch-up** = disejajarkan dengan pemain aktif yang paling sedikit main.
-  Kredit hanya untuk prioritas jadwal, tidak ikut peringkat.
+- **Properti fairness:** selisih jumlah main antar pemain yang hadir sejak awal ≤ 1 setiap saat; yang istirahat
+  diprioritaskan di round berikutnya.
+- **Pemain telat menyusul** (keputusan host 2026-10-25): pemain baru/kembali (absen di salah satu round yang sudah
+  dibuat) paling sedikit main, jadi diprioritaskan, tapi istirahat 1 round setelah main k round beruntun supaya tidak
+  main terus. k = 2, atau satu lebih dari ritme pemain lain kalau 2 belum cukup untuk menyusul (12 pemain / 2 court:
+  pemain lain main 2 dari 3 round → k = 3). Jeda berhenti begitu jumlah mainnya sama dengan yang paling banyak main.
+  Menyusulnya sebanding dengan sisa istirahat: 10 pemain + 2 setelah R3 di 2 court → selisih rata-rata turun ±0,1
+  match per round; 1 court langsung ≤ 1; kalau semua main tiap round (12 pemain / 3 court) tidak bisa dikejar.
+  Hanya untuk prioritas jadwal, tidak ikut peringkat. Dulu (≤ 2.6) pemain telat disejajarkan dengan yang paling jarang
+  main lewat kredit, jadi selisihnya tetap selamanya; kredit di simpanan lama diabaikan.
 - Waktu booking dihitung dari **jam sungguhan** sejak court itu mulai (keputusan host 2026-10-22), bukan dari
   jumlah round × durasi. Court ikut round yang dibuat sekarang kalau sisa booking-nya (ujung booking − menit berjalan)
   masih muat satu match, jadi round yang selesai lebih cepat dari durasinya menyisakan waktu untuk round tambahan.
@@ -402,6 +411,8 @@ State teks sederhana tanpa frame: "Halaman tidak ditemukan", "Belum ada turnamen
     main membingungkan. Tidak muat → elipsis per nama (2026-10-25).
 13. "Akhiri" mengakhiri turnamen juga di Beranda: yang sudah diakhiri tampil sebagai turnamen terakhir, bukan
     "Round n · Lanjutkan" (2026-10-25).
+14. Pemain telat di Mixed menyusul jumlah main: diprioritaskan dengan jeda 1 round setelah k round beruntun (3.4),
+    menggantikan kredit yang membuat selisihnya tetap (2026-10-25).
 
 ---
 

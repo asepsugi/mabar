@@ -4,8 +4,8 @@ import 'package:mabar/features/schedule/tournament_controller.dart';
 import 'package:mabar/models/models.dart';
 import 'package:mabar/services/schedule/endless_round_generator.dart';
 
-/// Jadwal Mixed desain v2 (design/spec/logic.md §5–§7): undian pemain seri dikunci per round, daftar
-/// Istirahat sama persis dengan hasil "Buat R…", estimasi Lanjutkan, dan WO/skor yang menimpa.
+/// Jadwal Mixed desain v2 (design/spec/logic.md §5–§7): undian pemain seri dikunci per round, jeda pemain telat,
+/// daftar Istirahat sama persis dengan hasil "Buat R…", estimasi Lanjutkan, dan WO/skor yang menimpa.
 
 TournamentConfig _config({int players = 10, int courts = 2, int booking = 120}) => TournamentConfig(
   sport: SportType.padel,
@@ -44,7 +44,8 @@ void main() {
     history: a.matches,
     roundNumber: round,
     seed: seed ?? a.drawSeed,
-    matchCredits: a.matchCredits,
+    slots: EndlessRoundGenerator.slotsFor(players: a.activePlayers.length, courts: a.config.courts.length),
+    latePlayerIds: a.latePlayerIds,
   ).map((p) => p.id).toList();
 
   group('undian dikunci per round', () {
@@ -73,8 +74,79 @@ void main() {
         history: a.matches,
         roundNumber: 2,
         seed: a.drawSeed,
+        slots: 8,
       ).map((p) => p.id).toList();
       expect(reversed, order(a, 2));
+    });
+  });
+
+  group('pemain telat menyusul dengan jeda', () {
+    /// Posisi Zaki di urutan R(top + 1): [players] pemain aktif, [courts] court. Pemain lain main di R1–R[top]
+    /// (lawannya pengisi di luar daftar), Zaki main di [run] round terakhir saja.
+    int position({required int players, required int courts, required int run, required int top, bool late = true}) {
+      final others = [for (var i = 0; i < players - 1; i++) Player(id: 'p${i.toString().padLeft(2, '0')}', name: 'P$i')];
+      const zaki = Player(id: 'z', name: 'Zaki');
+      MatchGame match(int round, String id) => MatchGame(
+        id: 'm-$round-$id',
+        roundNumber: round,
+        matchNumberInRound: 1,
+        courtId: 'c0',
+        pair1: Pair(id: '$id+x1', player1Id: id, player2Id: 'x1'),
+        pair2: const Pair(id: 'x2+x3', player1Id: 'x2', player2Id: 'x3'),
+      );
+      final order = EndlessRoundGenerator.priorityOrder(
+        players: [...others, zaki],
+        history: [
+          for (var r = 1; r <= top; r++) ...[
+            for (final p in others) match(r, p.id),
+            if (r > top - run) match(r, zaki.id),
+          ],
+        ],
+        roundNumber: top + 1,
+        seed: 1,
+        slots: EndlessRoundGenerator.slotsFor(players: players, courts: courts),
+        latePlayerIds: late ? {zaki.id} : const {},
+      );
+      return order.indexWhere((p) => p.id == zaki.id);
+    }
+
+    // Jeda setelah k round beruntun: k = 2, atau satu lebih dari slot ÷ yang istirahat (12 pemain / 2 court → 3).
+    for (final (players, courts, k) in [(12, 1, 2), (14, 2, 2), (12, 2, 3), (14, 3, 7)]) {
+      test('$players pemain, $courts court: istirahat setelah $k round beruntun', () {
+        expect(position(players: players, courts: courts, run: k, top: k + 1), players - 1);
+        expect(position(players: players, courts: courts, run: k - 1, top: k + 1), 0);
+      });
+    }
+
+    test('hanya pemain telat yang masih tertinggal', () {
+      // Hadir sejak awal: undian seri kadang memberi k round beruntun, tidak dipotong.
+      expect(position(players: 12, courts: 2, run: 3, top: 4, late: false), 0);
+      // Sudah menyusul (sama dengan yang paling banyak main): ikut urutan biasa.
+      expect(
+        position(players: 12, courts: 2, run: 3, top: 3),
+        position(players: 12, courts: 2, run: 3, top: 3, late: false),
+      );
+    });
+
+    test('semua main tiap round (12 pemain, 3 court): tidak ada yang bisa diistirahatkan', () {
+      expect(position(players: 12, courts: 3, run: 9, top: 11), 0);
+    });
+
+    test('pemain telat = absen di round yang sudah dibuat, termasuk yang kembali', () {
+      controller.startIfNeeded(_config(players: 12));
+      scoreRound();
+      controller.generateNextRound();
+      expect(read().latePlayerIds, isEmpty);
+
+      controller.withdrawPlayer('p00');
+      expect(controller.addPlayer('Zaki'), isNull);
+      final zaki = read().config.players.last.id;
+      expect(read().latePlayerIds, {zaki}, reason: 'p00 keluar, tidak aktif');
+
+      scoreRound();
+      controller.generateNextRound();
+      controller.reinstatePlayer('p00');
+      expect(read().latePlayerIds, {zaki, 'p00'});
     });
   });
 

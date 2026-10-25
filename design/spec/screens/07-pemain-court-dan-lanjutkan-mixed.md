@@ -16,7 +16,7 @@ Komponen: `MabarAppBar`, `MabarButton`, `MabarIconButton`, `MabarRowAction`, `Ma
 - Tombol Tambah 48 pt, sama tinggi dengan kolom nama di sebelahnya.
 - "Keluarkan" dan "Kembalikan" memakai `.rowact`. Keluarkan sengaja netral, bukan merah: bisa dibatalkan lewat Kembalikan, dan merah di setiap baris membuat daftar ramai.
 - "Keluarkan" langsung tanpa konfirmasi; pemain tidak dihapus, hanya keluar dari round berikutnya. Match yang sudah terjadwal tetap ada (bisa ditandai WO).
-- Pemain baru/kembali dapat kredit "catch-up" (prioritas jadwal saja, tidak ikut ranking).
+- Pemain baru/kembali (absen di round sebelumnya) diprioritaskan sampai jumlah match-nya menyusul yang paling banyak main, tapi istirahat 1 round setelah main k round beruntun: k = 2, atau satu lebih dari ritme pemain lain kalau 2 belum cukup untuk menyusul (12 pemain / 2 court: pemain lain main 2 dari 3 round → k = 3). Prioritas jadwal saja, tidak ikut ranking. Kalau semua pemain main tiap round (12 pemain / 3 court), selisihnya memang tidak bisa dikejar.
 
 ## 08b · Kelola · nama sudah ada · batas minimum
 
