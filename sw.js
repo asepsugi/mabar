@@ -1,6 +1,8 @@
-// Pengganti service worker app Mabar lama (cache-first) di /mabar/: tanpa ini PWA yang sudah terpasang terus
-// menyajikan versi lama dari cache dan tidak pernah melihat pengalihan ke Match Addict. Begitu terpasang, cache lama
-// dihapus, service worker ini melepas dirinya, lalu setiap tab dimuat ulang dari jaringan → index.html pengalih.
+// Alamat lama asepsugi.github.io/mabar/ sudah dimatikan (keputusan host 2026-11-02): PWA lama yang membuka
+// /match-addict/ menampilkan bar URL karena di luar scope-nya, jadi tidak dialihkan lagi.
+// File ini satu-satunya yang tersisa: service worker app Mabar lama (cache-first) terus menyajikan versi lama dari
+// cache selama sw.js baru tidak bisa diunduh (404 tidak mencopotnya). Begitu terpasang, cache lama dihapus, service
+// worker ini melepas dirinya, lalu setiap tab dimuat ulang dari jaringan → halaman 404.
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
